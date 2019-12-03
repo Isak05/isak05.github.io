@@ -500,6 +500,9 @@ window.onload = function() {
     timer = 0;
     xVel = 0;
     yVel = 0;
+    if(cheatmode) {
+      leveltimer = 0;
+    }
     //console.log("switch");
     for(var i = 0; i < switchableWalls.length; i++) {
       switchableWalls[i].switched = false;
