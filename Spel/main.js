@@ -18,6 +18,7 @@ window.onload = function() {
   let interacting = false;
   let lastLevel = 0;
   let wonGame = false;
+  var leveltimer = 0;
   let spawnpoints = [new spawnpoint(700, -100, -1),
                      new spawnpoint(700, 600, 0),
                      new spawnpoint(700, 600, 1),
@@ -353,15 +354,16 @@ window.onload = function() {
     ctx.fillStyle = "rgb(0, 255, 0)";
     if(timerRunning && !wonGame) {  
       timer += 1 / fps;
+      leveltimer += 1 / fps;
       totalTimer += 1 / fps;
       ctx.fillStyle = "rgb(255, 255, 255)"; // Timer
     }
     if(level != -1) {
       ctx.font = "30px Arial";
-     ctx.fillText(Math.round(timer), 20, 30);  
+     ctx.fillText(Math.round(leveltimer * 100) / 100, 20, 30);  
     } else if(level == -1) {
       ctx.font = "200px Arial";
-     ctx.fillText(Math.round(timer), 200, 300);  
+     ctx.fillText(Math.round(leveltimer * 100) / 100, 200, 300);  
     }
     
     if(level != -1) {
@@ -371,7 +373,7 @@ window.onload = function() {
     if(wonGame) {
       ctx.fillStyle = "rgb(0, 255, 0)";
       ctx.font = "200px Arial";
-      ctx.fillText(Math.round(totalTimer), 200, 300);  
+      ctx.fillText(Math.round(totalTimer * 100) / 100, 200, 300);  
     }
       
   }
@@ -480,6 +482,7 @@ window.onload = function() {
     } else if(level == -1) {
       level = lastLevel + 1;
       timer = 0;
+      leveltimer = 0;
       timerRunning = true;
     }
     pX = spawnpoints[level + 1].x;
@@ -492,7 +495,7 @@ window.onload = function() {
     timer = 0;
     xVel = 0;
     yVel = 0;
-    console.log("switch");
+    //console.log("switch");
     for(var i = 0; i < switchableWalls.length; i++) {
       switchableWalls[i].switched = false;
       
