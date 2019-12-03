@@ -1,4 +1,4 @@
-window.onload = function() {
+
   let c = document.getElementById("canvas");
   c.width = screen.width;
   c.height = screen.height;
@@ -20,11 +20,15 @@ window.onload = function() {
   let wonGame = false;
   var leveltimer = 0;
   var cheatmode = false;
+  var totalPrevious = [];
+  var savedTimer = 0;
+  var replayButton = new wall(300, 600, 25, 25, 255, 0, 0, -1);
   let spawnpoints = [new spawnpoint(700, -100, -1),
                      new spawnpoint(700, 600, 0),
                      new spawnpoint(700, 600, 1),
                      new spawnpoint(675, 650, 2),
-                     new spawnpoint(500, 500, 3)];
+                     new spawnpoint(500, 500, 3), 
+                     new spawnpoint(700, -100, 4)];
   let movableLavas = [new movableLava(screen.width / 2, 700, 50, 25, 0, 500, 0.6, 1, 0),
                       new movableLava(-1500, 600, 2000, 25, 2, 500, 2, 1, 0),
                       new movableLava(900, 600, 2000, 25, 2, 500, 2, 1, 0),
@@ -47,7 +51,7 @@ window.onload = function() {
   
   let finishes = [new finish(1250, screen.height - 75, 0),
                   new finish(500, 100, 1),
-                  new finish(900, 500, -1),
+                  new finish(900, 600, -1),
                   new finish(400, 100, 2),
                   new finish(862, 125, 3)];
   let levels = 4;
@@ -104,10 +108,111 @@ window.onload = function() {
   let backgrounds = ["katt", "hund", "marsvin", "katt2", "hund2", "igelkott", "sengangare", "kanin", "skoldpadda", "lejon"];
   let random = Math.round(Math.random() * (backgrounds.length - 1));
   let background = backgrounds[random];
+  var previous = [];
   
-  setInterval(update, 1000 / fps);
+  function vec2(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  
+  function playerCopy() {
+    this.level;
+    this.xVel;
+    this.yVel;
+    this.interacting = false;
+    this.keys = new key();
+  }
+  
+  function key() {
+    this.w = false;
+    this.a = false;
+    this.d = false;
+    this.e = false;
+  }
+  
+  var replayIndex = 0;
+  var replayLoop;
+  var replayRunning = false;
+  function replay() {
+    if(level == 4) {
+      previous = totalPrevious;
+    } 
+    savedTimer = leveltimer;
+    replayIndex = 0;
+    timer = 0;
+    leveltimer = 0;
+    timerRunning = true;
+    replayRunning = true;
+    level = previous[0].level;
+    die();
+    replayLoop = setInterval(updateReplay, 1000 / fps);
+  }
+  
+  function updateReplay() {
+    if(level == 4) {
+      previous = totalPrevious;
+    } 
+    if(level != lastLevel) {
+      lastLevel = level;
+      die();
+    }
+    
+    level = previous[replayIndex].level;
+    if(level == -1) {
+      clearInterval(replayLoop);
+      level = lastLevel;
+      previous = [];
+      replayRunning = false;
+      win();
+      if(wonGame) {
+        level = levels;
+      }
+      ctx.restore();
+      return;
+    }
+    
+    if(previous[replayIndex].xVel != undefined) {
+      xVel = previous[replayIndex].xVel;
+    }
+    if(previous[replayIndex].yVel != undefined) {
+      yVel = previous[replayIndex].yVel;
+    }
+    if(previous[replayIndex].interacting != undefined) {
+      interacting = previous[replayIndex].interacting;
+    }
+
+    replayIndex++;
+    if(replayIndex >= previous.length) {
+      clearInterval(replayLoop);
+      timer = 0;
+      replayRunning = false;
+      win();
+      if(wonGame) {
+        level = levels;
+      }
+      leveltimer = savedTimer;
+      ctx.restore();
+    }
+  }
+  
+  var loop = setInterval(update, 1000 / fps);
   
   function update() {
+    if(pY > 5000) {
+      die();
+    }
+    
+    if(!replayRunning && level != -1 && level != 4) {
+      previous.push(new playerCopy());
+      previous[previous.length - 1].level = level;
+      if(previous.length - 2 > 0) {
+        previous[previous.length - 1].interacting = previous[previous.length - 2].interacting;
+        previous[previous.length - 1].keys = JSON.parse(JSON.stringify(previous[previous.length - 2].keys));
+      } else {
+        previous[previous.length - 1].interacting = false;
+      }
+    }
+    
     if(level != -1 && level != levels) {
       ctx.drawImage(document.getElementById(background), 0, 0, screen.width, screen.height);      
     } else if(level == -1 || level == levels) {
@@ -245,6 +350,16 @@ window.onload = function() {
       }
     }
     
+    collider = replayButton;
+    if(replayButton.level == level || level == 4) {
+      if(collision(collider) != undefined) {
+        replay();
+        ctx.save();
+        ctx.scale(0.8, 0.8);
+      }
+      ctx.fillStyle = "rgb(" + collider.r + ", " + collider.g + "," + collider.b + ")";
+      ctx.fillRect(collider.x, collider.y, collider.w, collider.h);
+    }
     
     collider = finishes;
     for(let i = 0; i < collider.length; i++) {  
@@ -353,10 +468,12 @@ window.onload = function() {
     
     
     ctx.fillStyle = "rgb(0, 255, 0)";
-    if(timerRunning && !wonGame) {  
+    if(timerRunning && !wonGame || replayRunning) {  
       timer += 1 / fps;
       leveltimer += 1 / fps;
-      totalTimer += 1 / fps;
+      if(!wonGame) {
+        totalTimer += 1 / fps;
+      }
       ctx.fillStyle = "rgb(255, 255, 255)"; // Timer
     }
     if(level != -1) {
@@ -378,12 +495,57 @@ window.onload = function() {
       ctx.fillText("Level " + (level + 1), 1250, 35);
     }
     
-    if(wonGame) {
+    if(wonGame && !replayRunning) {
       ctx.fillStyle = "rgb(0, 255, 0)";
       ctx.font = "200px Arial";
       ctx.fillText(Math.round(totalTimer * 100) / 100, 200, 300);  
     }
+    
+    if(replayRunning) {
+      ctx.fillStyle = "#555555";
+      ctx.fillRect(c.width, 0, 1000, 1000);
+      ctx.fillRect(0, c.height, 2000, 1000);
       
+      
+      ctx.font = "50px Arial";
+      
+      if(previous[replayIndex].keys.w) {
+        ctx.fillStyle = "#777777";
+      } else {
+        ctx.fillStyle = "#AAAAAA";
+      }
+      ctx.fillRect(1500, 100, 50, 50);
+      ctx.fillStyle = "#000000";
+      ctx.fillText("W", 1500, 150);  
+      
+      if(previous[replayIndex].keys.a) {
+        ctx.fillStyle = "#777777";
+      } else {
+        ctx.fillStyle = "#AAAAAA";
+      }
+      ctx.fillRect(1425, 175, 50, 50);
+      ctx.fillStyle = "#000000";
+      ctx.fillText("A", 1425, 225); 
+      
+      if(previous[replayIndex].keys.d) {
+        ctx.fillStyle = "#777777";
+      } else {
+        ctx.fillStyle = "#AAAAAA";
+      }
+      ctx.fillRect(1575, 175, 50, 50);
+      ctx.fillStyle = "#000000";
+      ctx.fillText("D", 1575, 225); 
+      
+      if(previous[replayIndex].keys.e) {
+        ctx.fillStyle = "#777777";
+      } else {
+        ctx.fillStyle = "#AAAAAA";
+      }
+      ctx.fillRect(1575, 100, 50, 50);
+      ctx.fillStyle = "#000000";
+      ctx.fillText("E", 1575, 150); 
+    }
+    
   }
     
   function wall(x, y, w, h, r, g, b, level) {
@@ -485,7 +647,7 @@ window.onload = function() {
     xVel = 0;
     yVel = 0;
     timerRunning = false;
-
+    
     if(level != -1) {
       lastLevel = level;
       level = -1;
@@ -498,6 +660,14 @@ window.onload = function() {
       timer = 0;
       leveltimer = 0;
       timerRunning = true;
+      
+      for(var i = 0; i < previous.length; i++) {
+        totalPrevious.push(previous[i]);
+      }
+      previous = [];
+      previous.push(new playerCopy());
+      previous[previous.length - 1].level = level;
+      previous[previous.length - 1].interacting = false;
     }
     pX = spawnpoints[level + 1].x;
     pY = spawnpoints[level + 1].y;
@@ -518,6 +688,13 @@ window.onload = function() {
     yVel = 0;
     if(cheatmode) {
       leveltimer = 0;
+      
+      if(!replayRunning) {
+        previous = [];
+        previous.push(new playerCopy());
+        previous[previous.length - 1].level = level;
+        previous[previous.length - 1].interacting = false;
+      }
     }
     //console.log("switch");
     for(var i = 0; i < switchableWalls.length; i++) {
@@ -545,6 +722,7 @@ window.onload = function() {
   }
     
   window.onkeydown = function(e) {
+  if(!replayRunning) {
     if(e.keyCode - 48 > 0 && e.keyCode - 48 < 5) {
       cheatmode = true;
       level = e.keyCode - 48 - 1;
@@ -552,36 +730,62 @@ window.onload = function() {
       leveltimer = 0;
       timer = 0;
       timerRunning = true;
+      
+      previous = [];
+      previous.push(new playerCopy());
+      previous[previous.length - 1].level = level;
+      previous[previous.length - 1].interacting = false;
     }
     
     if(e.keyCode == 65) { // A
+      previous[previous.length - 1].xVel = -speed;
+      previous[previous.length - 1].keys.a = true;
       xVel = -speed;
     } else if(e.keyCode == 68) { // D
+      previous[previous.length - 1].xVel = speed;
+      previous[previous.length - 1].keys.d = true;
       xVel = speed;
     } else if(e.keyCode == 87) { // W
+      
       for(let i = 0; i < walls.length; i++) {
         if(walls[i].level == level) {
           if(pY + pH > walls[i].y - 1 && pX < walls[i].x + walls[i].w && pX + pW > walls[i].x && pY + pH < walls[i].y + walls[i].h) {
             yVel = -jumpStrength;
+            previous[previous.length - 1].yVel = -jumpStrength;
+            previous[previous.length - 1].keys.w = true;
           }
         }
       }
     } else if(e.keyCode == 69) {
+      previous[previous.length - 1].interacting = true;
+      previous[previous.length - 1].keys.e = true;
       interacting = true;
+    }
     }
   }
     
   window.onkeyup = function(e) {
+  if(!replayRunning) {
     if(e.keyCode == 65) { // A
+previous[previous.length - 1].keys.a = false;
       if(xVel < 0) {
         xVel = 0;
+        previous[previous.length - 1].xVel = 0;
+        
       }
     } else if(e.keyCode == 68) { // D 
+    previous[previous.length - 1].keys.d = false;
       if(xVel > 0) {
         xVel = 0;
+        previous[previous.length - 1].xVel = 0;
+        
       }
     } else if(e.keyCode == 69) {
+    previous[previous.length - 1].interacting = false;
+    previous[previous.length - 1].keys.e = false;
       interacting = false;
+    } else if(e.keyCode == 87) {
+    previous[previous.length - 1].keys.w = false;
+    }
     }
   }
-};
