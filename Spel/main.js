@@ -1,4 +1,4 @@
-
+window.onload = function() {
   let c = document.getElementById("canvas");
   c.width = screen.width;
   c.height = screen.height;
@@ -789,3 +789,4 @@ previous[previous.length - 1].keys.a = false;
     }
     }
   }
+};
