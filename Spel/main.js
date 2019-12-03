@@ -19,6 +19,7 @@ window.onload = function() {
   let lastLevel = 0;
   let wonGame = false;
   var leveltimer = 0;
+  var cheatmode = false;
   let spawnpoints = [new spawnpoint(700, -100, -1),
                      new spawnpoint(700, 600, 0),
                      new spawnpoint(700, 600, 1),
@@ -480,7 +481,11 @@ window.onload = function() {
       lastLevel = level;
       level = -1;
     } else if(level == -1) {
-      level = lastLevel + 1;
+      if(cheatmode == false) {
+        level = lastLevel + 1;
+      } else {
+        level = lastLevel;
+      }
       timer = 0;
       leveltimer = 0;
       timerRunning = true;
@@ -521,6 +526,15 @@ window.onload = function() {
   }
     
   window.onkeydown = function(e) {
+    if(e.keyCode - 48 > 0 && e.keyCode - 48 < 5) {
+      cheatmode = true;
+      level = e.keyCode - 48 - 1;
+      die();
+      leveltimer = 0;
+      timer = 0;
+      timerRunning = true;
+    }
+    
     if(e.keyCode == 65) { // A
       xVel = -speed;
     } else if(e.keyCode == 68) { // D
