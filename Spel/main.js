@@ -367,7 +367,14 @@ window.onload = function() {
      ctx.fillText(Math.round(leveltimer * 100) / 100, 200, 300);  
     }
     
+    if(cheatmode) {
+      ctx.font = "30px Arial";
+      ctx.fillStyle = "rgb(255, 0, 0)"; 
+     ctx.fillText("Save mode", 150, 30);  
+    }
+    
     if(level != -1) {
+    ctx.fillStyle = "rgb(255, 255, 255)"; 
       ctx.fillText("Level " + (level + 1), 1250, 35);
     }
     
