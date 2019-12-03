@@ -475,6 +475,8 @@ window.onload = function() {
   }
   
   function win() {
+    xVel = 0;
+    yVel = 0;
     timerRunning = false;
 
     if(level != -1) {
@@ -492,9 +494,16 @@ window.onload = function() {
     }
     pX = spawnpoints[level + 1].x;
     pY = spawnpoints[level + 1].y;
+    
+    for(var i = 0; i < switchableWalls.length; i++) {
+      switchableWalls[i].switched = false;
+      
+    }
   }
   
   function die() {
+    xVel = 0;
+    yVel = 0;
     pX = spawnpoints[level + 1].x;
     pY = spawnpoints[level + 1].y;
     timer = 0;
