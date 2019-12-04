@@ -22,6 +22,7 @@ window.onload = function() {
   var cheatmode = false;
   var totalPrevious = [];
   var savedTimer = 0;
+  var replayPaused = false;
   var replayButton = new wall(300, 600, 25, 25, 255, 0, 0, -1);
   let spawnpoints = [new spawnpoint(700, -100, -1),
                      new spawnpoint(700, 600, 0),
@@ -109,6 +110,9 @@ window.onload = function() {
   let random = Math.round(Math.random() * (backgrounds.length - 1));
   let background = backgrounds[random];
   var previous = [];
+  var replayIndex = 0;
+  var replayLoop;
+  var replayRunning = false;
   
   function vec2(x, y) {
     this.x = x;
@@ -130,9 +134,6 @@ window.onload = function() {
     this.e = false;
   }
   
-  var replayIndex = 0;
-  var replayLoop;
-  var replayRunning = false;
   function replay() {
     if(level == 4) {
       previous = totalPrevious;
@@ -149,6 +150,7 @@ window.onload = function() {
   }
   
   function updateReplay() {
+  if(!replayPaused) {
     if(level == 4) {
       previous = totalPrevious;
     } 
@@ -192,12 +194,15 @@ window.onload = function() {
       }
       leveltimer = savedTimer;
       ctx.restore();
+      replayPaused = false;
+    }
     }
   }
   
   var loop = setInterval(update, 1000 / fps);
   
   function update() {
+  if(!replayPaused) { 
     if(pY > 5000) {
       die();
     }
@@ -545,7 +550,7 @@ window.onload = function() {
       ctx.fillStyle = "#000000";
       ctx.fillText("E", 1575, 150); 
     }
-    
+    }
   }
     
   function wall(x, y, w, h, r, g, b, level) {
@@ -760,7 +765,12 @@ window.onload = function() {
       previous[previous.length - 1].interacting = true;
       previous[previous.length - 1].keys.e = true;
       interacting = true;
+    } 
     }
+    if(e.keyCode == 32) {
+      if(replayRunning) {
+        replayPaused = !replayPaused;
+      }
     }
   }
     
