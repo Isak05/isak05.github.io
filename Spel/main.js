@@ -471,7 +471,7 @@ window.onload = function() {
     if(timerRunning && !wonGame || replayRunning) {  
       timer += 1 / fps;
       leveltimer += 1 / fps;
-      if(!wonGame) {
+      if(!wonGame && !replayRunning) {
         totalTimer += 1 / fps;
       }
       ctx.fillStyle = "rgb(255, 255, 255)"; // Timer
