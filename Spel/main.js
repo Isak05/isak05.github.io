@@ -114,7 +114,8 @@
   var replayLoop;
   var replayRunning = false;
   var musics = ["musik", "musik2"];
-  document.getElementById("music").innerHTML = '<source src="' + musics[Math.round(Math.random() * 1)] + '" type="audio/mpeg">';
+  document.getElementById("music").innerHTML = '<source src="' + musics[Math.round(Math.random() * 1)] + '.mp3" type="audio/mpeg">';
+  document.getElementById("music").load();
   
   function vec2(x, y) {
     this.x = x;
