@@ -113,9 +113,14 @@
   var replayIndex = 0;
   var replayLoop;
   var replayRunning = false;
+  var epilepsyMode = false;
   var musics = ["musik", "musik2"];
   document.getElementById("music").innerHTML = '<source src="' + musics[Math.round(Math.random() * 1)] + '.mp3" type="audio/mpeg">';
   document.getElementById("music").load();
+  
+  if(Math.random() < 1 / 100) {
+    epilepsyMode = true;
+  }
   
   function vec2(x, y) {
     this.x = x;
@@ -227,6 +232,10 @@
       ctx.fillStyle = "rgb(30, 30, 30)";
       ctx.fillRect(0, 0, screen.width, screen.height); 
     }
+    if(epilepsyMode) {
+      ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ", 0.75)";
+      ctx.fillRect(0, 0, c.width, c.height);
+    }
     
     if(level == 3) {
       ctx.fillStyle = "rgb(200, 0, 255)";
@@ -262,6 +271,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -291,6 +303,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -322,10 +337,16 @@
         
         if(collider[i].switched == false) {
           ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+          if(epilepsyMode) {
+            ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+          }
         }
         
         if(collider[i].switched == true) {
           ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ", 0.5)";
+          if(epilepsyMode) {
+            ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ", 0.5)";
+          }
         }
         
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
@@ -354,6 +375,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -366,6 +390,9 @@
         ctx.scale(0.8, 0.8);
       }
       ctx.fillStyle = "rgb(" + collider.r + ", " + collider.g + "," + collider.b + ")";
+      if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
       ctx.fillRect(collider.x, collider.y, collider.w, collider.h);
     }
     
@@ -389,6 +416,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -415,6 +445,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -463,6 +496,9 @@
         } 
 
         ctx.fillStyle = "rgb(" + collider[i].r + ", " + collider[i].g + "," + collider[i].b + ")";
+        if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
         ctx.fillRect(collider[i].x, collider[i].y, collider[i].w, collider[i].h);
       }
     }
@@ -472,6 +508,9 @@
     }
       
     ctx.fillStyle = "rgb(255, 255, 0)"; // Player
+    if(epilepsyMode) {
+      ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+    }
     ctx.fillRect(pX, pY, pW, pH);
     
     
@@ -495,6 +534,9 @@
     if(cheatmode) {
       ctx.font = "30px Arial";
       ctx.fillStyle = "rgb(255, 0, 0)"; 
+      if(epilepsyMode) {
+          ctx.fillStyle = "rgb(" + Math.random() * 255 + ", " + Math.random() * 255 + ", " + Math.random() * 255 + ")";
+        }
      ctx.fillText("Save mode", 150, 30);  
     }
     
