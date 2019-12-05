@@ -1,4 +1,4 @@
-window.onload = function() {
+
   let c = document.getElementById("canvas");
   c.width = screen.width;
   c.height = screen.height;
@@ -113,6 +113,8 @@ window.onload = function() {
   var replayIndex = 0;
   var replayLoop;
   var replayRunning = false;
+  var musics = ["musik", "musik2"];
+  document.getElementById("music").innerHTML = '<source src="' + musics[Math.round(Math.random() * 1)] + '" type="audio/mpeg">';
   
   function vec2(x, y) {
     this.x = x;
@@ -799,4 +801,3 @@ previous[previous.length - 1].keys.a = false;
     }
     }
   }
-};
