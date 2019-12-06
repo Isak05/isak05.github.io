@@ -772,6 +772,15 @@
   }
     
   window.onkeydown = function(e) {
+  if(e.keyCode == 70) {
+    level = 0;
+    wonGame = 0;
+    die();
+    timer = 0;
+    leveltimer = 0;
+    totalTimer = 0;
+    cheatmode = false;
+  }
   if(!replayRunning) {
     if(e.keyCode - 48 > 0 && e.keyCode - 48 < 5) {
       cheatmode = true;
@@ -787,15 +796,15 @@
       previous[previous.length - 1].interacting = false;
     }
     
-    if(e.keyCode == 65) { // A
+    if(e.keyCode == 65 || e.keyCode == 37) { // A
       previous[previous.length - 1].xVel = -speed;
       previous[previous.length - 1].keys.a = true;
       xVel = -speed;
-    } else if(e.keyCode == 68) { // D
+    } else if(e.keyCode == 68 || e.keyCode == 39) { // D
       previous[previous.length - 1].xVel = speed;
       previous[previous.length - 1].keys.d = true;
       xVel = speed;
-    } else if(e.keyCode == 87) { // W
+    } else if(e.keyCode == 87 || e.keyCode == 38) { // W
       
       for(let i = 0; i < walls.length; i++) {
         if(walls[i].level == level) {
@@ -821,14 +830,14 @@
     
   window.onkeyup = function(e) {
   if(!replayRunning) {
-    if(e.keyCode == 65) { // A
+    if(e.keyCode == 65 || e.keyCode == 37) { // A
 previous[previous.length - 1].keys.a = false;
       if(xVel < 0) {
         xVel = 0;
         previous[previous.length - 1].xVel = 0;
         
       }
-    } else if(e.keyCode == 68) { // D 
+    } else if(e.keyCode == 68 || e.keyCode == 39) { // D 
     previous[previous.length - 1].keys.d = false;
       if(xVel > 0) {
         xVel = 0;
