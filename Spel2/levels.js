@@ -105,6 +105,7 @@ function crate(x, y, width, height, texture) {
               this.pos.x + this.size.x / 2) {
 
               player.vel.x *= player.crateSpeed;
+              player.vel.x *= player.crateSpeed;
               this.vel.x = (player.pos.x + player.vel.x - this.size.x + 1) - this.pos.x;
             }
 
@@ -113,6 +114,7 @@ function crate(x, y, width, height, texture) {
               this.player_.pos.x + this.player_.size.x / 2 < 
               this.pos.x + this.size.x / 2) {
 
+              player.vel.x *= player.crateSpeed;
               player.vel.x *= player.crateSpeed;
               this.vel.x = (player.pos.x + player.vel.x + player.size.x - 1) - this.pos.x;
               

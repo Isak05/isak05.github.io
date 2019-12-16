@@ -188,7 +188,7 @@ function update() {
       player.vel.y /= 1.5;
     }
   }
-  
+
   // Player and camera movement
   player.pos.x += player.vel.x;
   player.pos.y += player.vel.y;
