@@ -50,8 +50,8 @@ var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(0, 0);
 var levels = data;
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "buttons"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "object.pressed = true"];
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true"];
 for(var i = 0; i < levels.length; i++) {
   for(var j = 0; j < objectNames.length; j++) {
     var objectLength = eval("levels[i]." + objectNames[j] + ".length");
@@ -60,6 +60,11 @@ for(var i = 0; i < levels.length; i++) {
       eval("levels[i]." + objectNames[j] + "[k].pos.y *= c.height");
       eval("levels[i]." + objectNames[j] + "[k].size.x *= c.height");
       eval("levels[i]." + objectNames[j] + "[k].size.y *= c.height");
+      
+      if(objectNames[j] == "doors") {
+        eval("levels[i]." + objectNames[j] + "[k].origPos.x *= c.height");
+        eval("levels[i]." + objectNames[j] + "[k].origPos.y *= c.height");
+      }
     }
   }
 }
@@ -74,6 +79,8 @@ for(var i = 0; i < textureFiles.length; i++) {
 var prevTime = 0;
 var time = 0;
 var actualFps = 0;
+var avgFps = -1;
+var avgSize = 1;
 
 var loop = setInterval(update, 1000 / fps);
 function update() {
@@ -112,6 +119,10 @@ function update() {
   }
   
   // Buttons
+  for(var i = 0; i < levels[0].signals.length; i++) {
+    levels[0].signals[i] = false;
+  }
+  
   for(var i = 0; i < levels[0].buttons.length; i++) {
     if(levels[0].buttons[i].pressed == true && levels[0].buttons[i].size.y != 0.005 * c.height) {
       levels[0].buttons[i].size.y = 0.005 * c.height;
@@ -121,6 +132,15 @@ function update() {
       levels[0].buttons[i].size.y = 0.015 * c.height;
       levels[0].buttons[i].pos.y -= 0.01 * c.height;
     }
+    
+    if(levels[0].buttons[i].pressed) {
+      levels[0].signals[levels[0].buttons[i].id] = true;
+    }
+  }
+  
+  // Doors
+  for(var i = 0; i < levels[0].doors.length; i++) {
+    levels[0].doors[i].update();
   }
   
   // Animations
@@ -133,7 +153,7 @@ function update() {
     }
   }
   
-  if(player.onGround && player.currentAnim != 1 && player.acc.x == 0) {
+  if(player.onGround && !player.onCrate && player.currentAnim != 1 && player.acc.x == 0) {
     player.setAnim(1);
     player.textureFlipped = false;
   }
@@ -204,6 +224,13 @@ function update() {
   draw();
   
   actualFps = 1000 / (time - prevTime);
+  if(avgFps == -1) {
+    avgFps = actualFps;
+  } else {
+    avgFps = avgFps * avgSize + actualFps;
+    avgFps /= avgSize + 1;
+    avgSize++;
+  }
   prevTime = time;
 }
 
@@ -260,13 +287,15 @@ function draw() {
   }
   ctx.globalCompositeOperation = "source-over";
   
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fillRect(0, 0, 140, 80);
   
-  ctx.fillStyle = "#000000";
-  ctx.font = "25px Arial";
-  ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, 10, 30);
-  ctx.fillText("ms: " + Math.round(time - prevTime), 10, 60);
+  
+  ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+  ctx.fillRect(0, 0, c.height * 0.15, c.height * 0.2);
+  
+  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+  ctx.font = c.height * 0.02 + "px Arial";
+  ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01, c.height * 0.03);
+  ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01, c.height * 0.06);
 }
 
 

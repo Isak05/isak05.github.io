@@ -17,21 +17,60 @@ data[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982
 data[0].backgrounds.push(new background(-1, -1, 4, 3, 2, true, 0.2));
 
 data[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1, 7));
+data[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1, 7));
 
-data[0].buttons.push(new button(0.6, 0.885));
+data[0].buttons.push(new button(0.6, 0.885, 0));
+data[0].buttons.push(new button(0.75, 0.885, 0));
+data[0].buttons.push(new button(0.3, 0.885, 1));
+
+data[0].doors.push(new door(0.75, 0, 0.05, 0.5, 0));
+data[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
+
+var x = 0;
+for(var i = 0; i < data[0].buttons.length; i++) {
+  if(data[0].buttons[i].id > x) {
+    x = data[0].buttons[i].id;
+  }
+}
+for(var i = 0; i < x + 1; i++) {
+  data[0].signals.push(false);
+}
 
 function level() {
   this.walls = [];
   this.backgrounds = [];
   this.crates = [];
   this.buttons = [];
+  this.doors = [];
+  this.signals = [];
 }
 
-function button(x, y) {
+function door(x, y, width, height, id) {
+  this.pos = {x, y};
+  this.origPos = {x, y};
+  this.size = {x: width, y: height};
+  this.id = id;
+  this.texture = 6;
+  
+  this.update = function() {
+    if(levels[0].signals[this.id]) {
+      if(this.origPos.y - this.size.y < this.pos.y) {
+        this.pos.y -= c.height * 0.025;
+      }
+    } else {
+      if(this.pos.y < this.origPos.y) {
+        this.pos.y += c.height * 0.025;
+      }
+    }
+  }
+}
+
+function button(x, y, id) {
   this.pos = {x, y};
   this.size = {x: 0.1, y: 0.015};
-  this.texture = 6;
+  this.texture = 0;
   this.pressed = false;
+  this.id = id;
 }
 
 function crate(x, y, width, height, texture) {
@@ -79,24 +118,28 @@ function crate(x, y, width, height, texture) {
             player.vel.x *= player.crateSpeed;
             this.vel.x = (player.pos.x + player.vel.x - this.size.x + 1) - this.pos.x;
           }
-          
+        }
+        
+        this.player_.size.x += Math.abs(player.vel.x) * 2 + 2;
+        this.player_.pos.x += -(Math.abs(player.vel.x) + 1);
+        if(checkCollision(this.next, this.player_)) {
           if(!player.interacting && player.prevInteracting) {
             if(this.player_.pos.x + this.player_.size.x / 2 < 
               this.pos.x + this.size.x / 2) {
-              
+
               this.pos.x = player.pos.x + player.size.x;
+
             }
 
             if(this.player_.pos.x + this.player_.size.x / 2 > 
               this.pos.x + this.size.x / 2) {
-              
+
               this.pos.x = player.pos.x - this.size.x;
             }
           }
         }
+        
         if(player.interacting) {
-          this.player_.size.x += Math.abs(player.vel.x) * 2 + 2;
-          this.player_.pos.x += -(Math.abs(player.vel.x) + 1);
           if(checkCollision(this.next, this.player_)) {
             player.onCrate = true;
             // Going right on right side
