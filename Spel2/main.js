@@ -50,7 +50,7 @@ var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(0, 0);
 var levels = data;
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons"];
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses"];
 var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true"];
 for(var i = 0; i < levels.length; i++) {
   for(var j = 0; j < objectNames.length; j++) {
@@ -69,11 +69,17 @@ for(var i = 0; i < levels.length; i++) {
   }
 }
 
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2"];
+var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
   textures[i].src = "Textures/" + textureFiles[i] + ".png";
+}
+
+textures[textures.length - 1].onload = function() {
+  for(var i = 0; i < textures.length; i++) {
+    levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, textures[i].width / (textures[i].height / (c.height * 0.1)), c.height * 0.1, i, false, 0.1));
+  }
 }
 
 var prevTime = 0;
@@ -197,6 +203,8 @@ function update() {
     player.texture = player.anims[player.currentAnim][player.currentAnimFrame].texture;
   }
   
+  levels[0].princesses[0].update();
+  
   // Friction
   if(!cheatMode) {
     if(player.onGround) {
@@ -257,7 +265,14 @@ function draw() {
           ctx.fillRect(0, 0, objects[k].size.x / s / repeatSize, objects[k].size.y / s / repeatSize);
           ctx.restore();
         } else {
-          ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+          if(objects[k].textureFlipped) {
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(textures[objects[k].texture], -objects[k].pos.x + cameraOffset.x - objects[k].size.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+            ctx.restore();
+          } else {
+            ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+          }
         }
       }
     }

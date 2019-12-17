@@ -26,6 +26,8 @@ data[0].buttons.push(new button(0.3, 0.885, 1));
 data[0].doors.push(new door(0.75, 0, 0.05, 0.5, 0));
 data[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
 
+data[0].princesses.push(new princess(1, 0.25));
+
 var x = 0;
 for(var i = 0; i < data[0].buttons.length; i++) {
   if(data[0].buttons[i].id > x) {
@@ -43,6 +45,7 @@ function level() {
   this.buttons = [];
   this.doors = [];
   this.signals = [];
+  this.princesses = [];
 }
 
 function door(x, y, width, height, id) {
@@ -68,9 +71,88 @@ function door(x, y, width, height, id) {
 function button(x, y, id) {
   this.pos = {x, y};
   this.size = {x: 0.1, y: 0.015};
-  this.texture = 0;
+  this.texture = 6;
   this.pressed = false;
   this.id = id;
+}
+
+function princess(x, y) {
+  this.pos = {x, y};
+  this.vel = {x: 0, y: 0};
+  this.size = {x: 0.064, y: 0.1};
+  this.texture = 8;
+  this.anims = [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]];
+  this.animTimer = 0;
+  this.currentAnimFrame = 0;
+  this.currentAnim = 0;
+  this.collisions = ["walls", "doors", "crates"];
+  this.textureFlipped = false;
+  this.setAnim = function(x) {
+    this.animTimer = 0;
+    this.currentAnimFrame = 0;
+    this.currentAnim = x;
+    this.texture = this.anims[x][this.currentAnimFrame].texture;
+  }
+  this.speed = c.height / 150;
+  
+  this.update = function() {
+    this.vel.x /= 1.7;
+  
+    this.animTimer++;
+    if(this.animTimer >= this.anims[this.currentAnim][this.currentAnimFrame].time) {
+      this.animTimer = 0;
+      if(this.currentAnimFrame < this.anims[this.currentAnim].length - 1) {
+        this.currentAnimFrame++;
+      } else {
+        this.currentAnimFrame = 0;
+      }
+      this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
+    }
+    
+    if(!this.textureFlipped) {
+      this.vel.x += -this.speed;
+    } else {
+      this.vel.x += this.speed;
+    }
+    
+    this.vel.y += gravity;
+    this.turn = false;
+    this.x = 0;
+    
+    //this.next = JSON.parse(JSON.stringify(this));
+    this.next = this;
+    for(var i = 0; i < this.collisions.length; i++) {
+      this.objects = eval("levels[0]." + this.collisions[i]);
+      for(var j = 0; j < this.objects.length; j++) {
+        this.next.pos.x += this.vel.x;
+        if(checkCollision(this.next, this.objects[j])) {
+          this.turn = true;
+          if(!this.textureFlipped) {
+            this.x = this.objects[j].pos.x + this.objects[j].size.x;
+          } else {
+            this.x = this.objects[j].pos.x - this.size.x;
+          }
+        } 
+        this.next.pos.x -= this.vel.x;
+        
+        this.next.pos.y += this.vel.y;
+        if(checkCollision(this.next, this.objects[j])) {
+          this.vel.y = 0;
+          this.pos.y = this.objects[j].pos.y - this.size.y;
+        } 
+        this.next.pos.y -= this.vel.y;
+      }
+    }
+    
+    if(this.turn) {
+      this.vel.x *= -1;
+      this.pos.x = this.x;
+      this.textureFlipped = !this.textureFlipped;
+    }
+    
+    this.pos.x += this.vel.x;
+    this.pos.y += this.vel.y;
+  }
 }
 
 function crate(x, y, width, height, texture) {
@@ -78,6 +160,7 @@ function crate(x, y, width, height, texture) {
   this.vel = {x: 0, y: 0};
   this.size = {x: width, y: height};
   this.texture = texture;
+  this.collisions = ["walls", "doors"];
   this.update = function() {
     this.vel.y += gravity;
     this.vel.x = 0;
@@ -166,45 +249,48 @@ function crate(x, y, width, height, texture) {
         }
       }
     }
-    for(var i = 0; i < levels[0].walls.length; i++) {
-      var xVel = this.vel.x;
-      var yVel = this.vel.y;
-      
-      this.next.pos.x += this.vel.x;
-      if(checkCollision(this.next, levels[0].walls[i])) {
-        // Get closest side
-        if(Math.abs((levels[0].walls[i].pos.x + levels[0].walls[i].size.x) - this.pos.x) < 
-          Math.abs(levels[0].walls[i].pos.x - (this.pos.x + this.size.x))) {
-          // Left
-          xVel = 0;
-          this.pos.x = levels[0].walls[i].pos.x + levels[0].walls[i].size.x;
-        } else {
-          // Right
-          xVel = 0;
-          this.pos.x = levels[0].walls[i].pos.x - this.size.x;
+    for(var j = 0; j < this.collisions.length; j++) {
+      this.objects = eval("levels[0]." + this.collisions[j]);
+      for(var i = 0; i < this.objects.length; i++) {
+        var xVel = this.vel.x;
+        var yVel = this.vel.y;
+
+        this.next.pos.x += this.vel.x;
+        if(checkCollision(this.next, this.objects[i])) {
+          // Get closest side
+          if(Math.abs((this.objects[i].pos.x + this.objects[i].size.x) - this.pos.x) < 
+            Math.abs(this.objects[i].pos.x - (this.pos.x + this.size.x))) {
+            // Left
+            xVel = 0;
+            this.pos.x = this.objects[i].pos.x + this.objects[i].size.x;
+          } else {
+            // Right
+            xVel = 0;
+            this.pos.x = this.objects[i].pos.x - this.size.x;
+          }
         }
-      }
-      
-      this.next.pos.x -= this.vel.x;
-      this.next.pos.y += this.vel.y;
-      if(checkCollision(this.next, levels[0].walls[i])) {
-        // Get closest side
-        if(Math.abs((levels[0].walls[i].pos.y + levels[0].walls[i].size.y) - this.pos.y) < 
-          Math.abs(levels[0].walls[i].pos.y - (this.pos.y + this.size.y))) {
-          // Up
-          yVel = 0;
-          this.pos.y = levels[0].walls[i].pos.y + levels[0].walls[i].size.y;
-        } else {
-          // Down
-          yVel = 0;
-          this.pos.y = levels[0].walls[i].pos.y - this.size.y;
+
+        this.next.pos.x -= this.vel.x;
+        this.next.pos.y += this.vel.y;
+        if(checkCollision(this.next, this.objects[i])) {
+          // Get closest side
+          if(Math.abs((this.objects[i].pos.y + this.objects[i].size.y) - this.pos.y) < 
+            Math.abs(this.objects[i].pos.y - (this.pos.y + this.size.y))) {
+            // Up
+            yVel = 0;
+            this.pos.y = this.objects[i].pos.y + this.objects[i].size.y;
+          } else {
+            // Down
+            yVel = 0;
+            this.pos.y = this.objects[i].pos.y - this.size.y;
+          }
         }
+
+        this.next.pos.y -= this.vel.y;
+
+        this.vel.x = xVel;
+        this.vel.y = yVel;
       }
-      
-      this.next.pos.y -= this.vel.y;
-      
-      this.vel.x = xVel;
-      this.vel.y = yVel;
     }
     
     for(var i = 0; i < levels[0].buttons.length; i++) {
