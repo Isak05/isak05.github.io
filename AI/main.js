@@ -3,9 +3,12 @@ c.width = screen.width;
 c.height = screen.height;
 var ctx = c.getContext("2d");
 
+var graph = [];
+var maxGraph = 0;
 var totalDead = 0;
 var gen = 1;
 var speed = 5;
+var realScore = 0;
 var pipe = new vec2(c.width, Math.round(Math.random() * (c.height - 350) + 300));;
 var birds = [];
 var img = new Image();
@@ -70,29 +73,66 @@ function Bird() {
   };
 }
 
-var fps = 120;
+var speedBoost = 100;
+var fps = 30;
 var loop = setInterval(update, 1000 / fps);
 function update() {
-  // Draw background
+  for(var l = 0; l < speedBoost; l++) {
+    // Move pipes
+    pipe.x -= speed;
+    if(pipe.x + 75 < 0) {
+      pipe.x = c.width / 2 - 25;
+      pipe.y = Math.round(Math.random() * (c.height - 350) + 300);
+      realScore++;
+    }
+
+    // Draw birds and check if alive
+    var birdsAlive = false;
+    for(var i = 0; i < birds.length; i++) {
+      if(!birds[i].dead) {
+        birdsAlive = true;
+        birds[i].agent.update();
+        birds[i].update();
+      }
+    }
+
+    // Get best bird
+    var bestBird = null;
+    var highestId = -1;
+    for(var i = 0; i < birds.length; i++) {
+      if(highestId == -1 || birds[i].time > birds[highestId].time) {
+        highestId = i;
+      }
+    }
+    var bestBird = JSON.parse(JSON.stringify(birds[highestId]));
+
+    // Reset all birds
+    if(!birdsAlive) {
+      realScore = 0;
+      graph.push(bestBird.time);
+      gen++;
+
+      pipe = new vec2(c.width, Math.round(Math.random() * (c.height - 350) + 300));
+      for(var i = 0; i < birds.length; i++) {
+        birds[i] = new Bird();
+        birds[i].agent = new Agent(i);
+        birds[i].agent.neurons = JSON.parse(JSON.stringify(bestBird.agent.neurons));
+        if(i != -1) {
+          birds[i].agent.mutate();
+        }
+      }
+    }
+  }
+  
+  // Draw
   ctx.fillStyle = "rgb(255, 255, 255)";
   ctx.fillRect(0, 0, c.width, c.height);
-
-  // Move and draw pipes
-  pipe.x -= speed;
-  if(pipe.x + 75 < 0) {
-    pipe.x = c.width / 2 - 25;
-    pipe.y = Math.round(Math.random() * (c.height - 350) + 300);
-  }
+  
   ctx.drawImage(img, 330, 0, 26, 135, pipe.x, pipe.y, 150, 600);
   ctx.drawImage(img, 302, 0, 26, 135, pipe.x, pipe.y - 250, 150, -600);
   
-  // Draw birds and check if alive
-  var birdsAlive = false;
   for(var i = 0; i < birds.length; i++) {
     if(!birds[i].dead) {
-      birdsAlive = true;
-      birds[i].agent.update();
-      birds[i].update();
       var rot = birds[i].yVel / 20;
       ctx.translate(birds[i].x + 25 * 1.416, birds[i].y + 25);
       ctx.rotate(rot);
@@ -102,36 +142,14 @@ function update() {
     }
   }
   
-  // Get best bird
-  var bestBird = null;
-  var highestId = -1;
-  for(var i = 0; i < birds.length; i++) {
-    if(highestId == -1 || birds[i].time > birds[highestId].time) {
-      highestId = i;
-    }
-  }
-  var bestBird = JSON.parse(JSON.stringify(birds[highestId]));
-  
-  // Reset all birds
-  if(!birdsAlive) {
-    gen++;
-
-    pipe = new vec2(c.width, Math.round(Math.random() * (c.height - 350) + 300));
-    for(var i = 0; i < birds.length; i++) {
-      birds[i] = new Bird();
-      birds[i].agent = new Agent(i);
-      birds[i].agent.neurons = JSON.parse(JSON.stringify(bestBird.agent.neurons));
-      if(i != -1) {
-        birds[i].agent.mutate();
-      }
-    }
-  }
+  ctx.fillStyle = "#555555";
+  ctx.fillRect(c.width / 2, 0, c.width / 2, c.height);
   
   // Draw text
   ctx.font = "30px verdana";
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillText("Gen: " + gen, 1200, 50);
-  ctx.fillText("Score: " + bestBird.time, 950, 50);
+  ctx.fillText("Score: " + realScore, 950, 50);
   ctx.fillText("Birds killed: " + totalDead, 950, 100);
   
   // Draw weights
@@ -139,8 +157,8 @@ function update() {
     for(var j = 0; j < bestBird.agent.neurons[i].length; j++) {
       for(var k = 0; k < bestBird.agent.neurons[i][j].weights.length + 1; k++) {
         ctx.beginPath();
-        ctx.moveTo((i - 1) * 250 + 100, k * 50 + 50);
-        ctx.lineTo(i * 250 + 100, j * 50 + 50);
+        ctx.moveTo((i - 1) * 250 + 750, k * 50 + 150);
+        ctx.lineTo(i * 250 + 750, j * 50 + 150);
         ctx.closePath();
         
         ctx.strokeStyle = "rgb(0, 0, 0)";
@@ -174,7 +192,7 @@ function update() {
   for(var i = 0; i < bestBird.agent.neurons.length; i++) {
     for(var j = 0; j < bestBird.agent.neurons[i].length + 1; j++) {
       ctx.beginPath();
-      ctx.ellipse(i * 250 + 100, j * 50 + 50, 10, 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(i * 250 + 750, j * 50 + 150, 10, 10, 0, 0, Math.PI * 2);
       ctx.closePath();
 
       if(j < bestBird.agent.neurons[i].length) {
@@ -198,6 +216,24 @@ function update() {
       }
     }
   }
+  
+  // Graph
+  for(var i = 0; i < graph.length; i++) {
+    if(graph[i] > maxGraph) {
+      maxGraph = graph[i];
+    }
+    ctx.beginPath();
+    ctx.moveTo((i * 500) / graph.length + 750, 750 - (graph[i] * 500 / maxGraph));
+    if(i + 1 <= graph.length) {
+      ctx.lineTo(((i + 1) * 500) / graph.length + 750, 750 - (graph[i + 1] * 500 / maxGraph));
+    }
+    ctx.closePath();
+
+    ctx.strokeStyle = "#FF0000";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+  }
+  
 }
 }
 

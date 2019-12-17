@@ -28,15 +28,13 @@ function Agent(id) {
   this.mutate = function() {
     for(var i = 0; i < this.neurons.length; i++) {
       for(var j = 0; j < this.neurons[i].length; j++) {
-        if(i > 0) {
-          for(var k = 0; k < this.neurons[i][j].weights.length; k++) {
-            if(Math.random() > 0.9) {
-              this.neurons[i][j].weights[k] += Math.random() * 0.5 - 0.25;
-            }
+        for(var k = 0; k < this.neurons[i][j].weights.length; k++) {
+          if(i > 0 && Math.random() > 0.9) {
+            this.neurons[i][j].weights[k] += Math.random() * 0.5 - 0.25;
           }
-          if(Math.random() > 0.9) {
-            this.neurons[i][j].bias += Math.random() * 0.5 - 0.25;
-          }
+        }
+        if(i > 0 && Math.random() > 0.9) {
+          this.neurons[i][j].bias += Math.random() * 0.5 - 0.25;
         }
       }
     }
