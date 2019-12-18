@@ -86,6 +86,16 @@ textures[textures.length - 1].onload = function() {
   }
 }
 
+var highScore = document.cookie.substring(10);
+if(highScore == "") {
+  document.cookie = "highScore=0";
+  highScore = 0;
+}
+
+window.onbeforeunload = function() {
+  document.cookie = "highScore=" + highScore;
+}
+
 var prevTime = 0;
 var time = 0;
 var actualFps = 0;
