@@ -86,7 +86,8 @@ textures[textures.length - 1].onload = function() {
   }
 }
 
-var highScore = document.cookie.substring(10);
+var score = 0;
+var highScore = parseInt(document.cookie.substring(10));
 if(highScore == "") {
   document.cookie = "highScore=0";
   highScore = 0;
@@ -105,6 +106,11 @@ var avgSize = 1;
 var loop = setInterval(update, 1000 / fps);
 function update() {
   time = window.performance.now();
+  
+  score = time;
+  if(score > highScore) {
+    highScore = score;
+  }
   
   // Movement
   if(player.onGround || cheatMode) {
@@ -336,6 +342,8 @@ function draw() {
   ctx.font = c.height * 0.02 + "px Arial";
   ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01, c.height * 0.03);
   ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01, c.height * 0.06);
+  ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01, c.height * 0.09);
+  ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01, c.height * 0.12);
 }
 
 
