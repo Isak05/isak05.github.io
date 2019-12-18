@@ -4,8 +4,17 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
+var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2"];
+var textures = [];
+for(var i = 0; i < textureFiles.length; i++) {
+  textures.push(new Image());
+  textures[i].src = "Textures/" + textureFiles[i] + ".png";
+}
+
+loadLevels();
+
 var player = {
-  pos: new vec2(c.height * 0.6, c.height * 0.15),
+  pos: JSON.parse(JSON.stringify(levels[0].spawnPoint)),
   size: {x: c.height * 0.06, y: c.height * 0.1},
   vel: new vec2(0, 0),
   acc: new vec2(0, 0),
@@ -35,6 +44,11 @@ var player = {
     this.currentAnimFrame = 0;
     this.currentAnim = x;
     this.texture = this.anims[x][this.currentAnimFrame].texture;
+  },
+  die: function() {
+    this.pos = JSON.parse(JSON.stringify(levels[0].spawnPoint));
+    this.vel = new vec2(0, 0);
+    loadLevels();
   }
 };
 
@@ -48,47 +62,14 @@ var cheatMode = false;
 var building = false;
 var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(0, 0);
-var levels = data;
+
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true"];
-for(var i = 0; i < levels.length; i++) {
-  for(var j = 0; j < objectNames.length; j++) {
-    var objectLength = eval("levels[i]." + objectNames[j] + ".length");
-    for(var k = 0; k < objectLength; k++) {
-      eval("levels[i]." + objectNames[j] + "[k].pos.x *= c.height");
-      eval("levels[i]." + objectNames[j] + "[k].pos.y *= c.height");
-      eval("levels[i]." + objectNames[j] + "[k].size.x *= c.height");
-      eval("levels[i]." + objectNames[j] + "[k].size.y *= c.height");
-      
-      if(objectNames[j] == "doors") {
-        eval("levels[i]." + objectNames[j] + "[k].origPos.x *= c.height");
-        eval("levels[i]." + objectNames[j] + "[k].origPos.y *= c.height");
-      }
-    }
-  }
-}
-
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2"];
-var textures = [];
-for(var i = 0; i < textureFiles.length; i++) {
-  textures.push(new Image());
-  textures[i].src = "Textures/" + textureFiles[i] + ".png";
-}
-
-textures[textures.length - 1].onload = function() {
-  for(var i = 0; i < textures.length; i++) {
-    if(textures[i].width <= textures[i].height) {
-      levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, textures[i].width / (textures[i].height / (c.height * 0.1)), c.height * 0.1, i, false, 0.1));
-    } else {
-      levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, c.height * 0.1, textures[i].height / (textures[i].width / (c.height * 0.1)), i, false, 0.1));
-    }
-  }
-}
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "player.die()"];
 
 var score = 0;
 var highScore = parseInt(document.cookie.substring(10));
-if(highScore == "") {
+if(!highScore) {
   document.cookie = "highScore=0";
   highScore = 0;
 }
@@ -344,6 +325,10 @@ function draw() {
   ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01, c.height * 0.06);
   ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01, c.height * 0.09);
   ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01, c.height * 0.12);
+  
+  ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
+  ctx.font = c.height * 1.3 + " " + c.height * 0.1 + "px Arial";
+  ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
 }
 
 
@@ -433,7 +418,7 @@ window.onmousedown = function(e) {
     if(building) {
       building = false;
       var wall_ = levels[0].walls[levels[0].walls.length - 1];
-      console.log("data[0].walls.push(new wall(" + 
+      console.log("levels[0].walls.push(new wall(" + 
                   wall_.pos.x / c.height + ", " + 
                   wall_.pos.y / c.height + ", " + 
                   wall_.size.x / c.height + ", " + 

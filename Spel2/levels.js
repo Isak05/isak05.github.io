@@ -1,44 +1,71 @@
-data = [];
+var levels = [];
 
-data.push(new level());
-data[0].walls.push(new wall(0.7, 0.9, 0.8, 0.05, 1));
-data[0].walls.push(new wall(1.45, 0.3, 0.05, 0.6, 1));
-data[0].walls.push(new wall(0.7, 0.3, 0.05, 0.6, 1));
-data[0].walls.push(new wall(0.2, 0.3, 0.3, 0.05, 1));
-data[0].walls.push(new wall(0.7, 0.05, 0.8, 0.05, 1));
-data[0].walls.push(new wall(0.9, 0.6, 0.4, 0.02, 1));
-data[0].walls.push(new wall(0.5, 0.7, 0.2, 0.01, 1));
-data[0].walls.push(new wall(0.2, 0.9, 0.6, 0.05, 1));
-data[0].walls.push(new wall(-0.06640625, -0.006510416666666667, 0.45002442398299025, 0.056806793640777266, 1));
-data[0].walls.push(new wall(0.13411458333333334, -0.3684895833333333, 0.6783470657011753, 0.03932291666654527, 1));
-data[0].walls.push(new wall(0.09635416666666667, -0.3645833333333333, 0.052044982367595694, 0.38958333333333295, 1));
-data[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982367595694, 0.43124999999999963, 1));
+function loadLevels() {
+  levels = [];
 
-data[0].backgrounds.push(new background(-1, -1, 4, 3, 2, true, 0.1));
+  levels.push(new level());
+  levels[0].walls.push(new wall(0.7, 0.9, 0.8, 0.05, 1));
+  levels[0].walls.push(new wall(1.45, 0.3, 0.05, 0.6, 1));
+  levels[0].walls.push(new wall(0.7, 0.3, 0.05, 0.6, 1));
+  levels[0].walls.push(new wall(-0.2, 0.3, 0.7, 0.05, 1));
+  levels[0].walls.push(new wall(0.7, 0.05, 0.8, 0.05, 1));
+  levels[0].walls.push(new wall(0.9, 0.6, 0.4, 0.02, 1));
+  levels[0].walls.push(new wall(0.5, 0.7, 0.2, 0.01, 1));
+  levels[0].walls.push(new wall(0.2, 0.9, 0.6, 0.05, 1));
+  levels[0].walls.push(new wall(-0.06640625, -0.006510416666666667, 0.45002442398299025, 0.056806793640777266, 1));
+  levels[0].walls.push(new wall(0.13411458333333334, -0.3684895833333333, 0.6783470657011753, 0.03932291666654527, 1));
+  levels[0].walls.push(new wall(0.09635416666666667, -0.3645833333333333, 0.052044982367595694, 0.38958333333333295, 1));
+  levels[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982367595694, 0.43124999999999963, 1));
+  levels[0].walls.push(new wall(-3, 0.3, 2.3, 0.05, 1));
 
-data[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1, 7));
-data[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1, 7));
+  levels[0].backgrounds.push(new background(-1.5, -1, 5, 3, 2, true, 0.1));
+  levels[0].backgrounds.push(new background(-2.5, -0.15, 0.5, 0.5, 0, false, 0));
 
-data[0].buttons.push(new button(0.6, 0.885, 0));
-data[0].buttons.push(new button(0.75, 0.885, 0));
-data[0].buttons.push(new button(0.3, 0.885, 1));
+  levels[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1, 7));
+  levels[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1, 7));
 
-data[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
-data[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
+  levels[0].buttons.push(new button(0.6, 0.885, 0));
+  levels[0].buttons.push(new button(0.75, 0.885, 0));
+  levels[0].buttons.push(new button(0.3, 0.885, 1));
 
-data[0].princesses.push(new princess(1, 0.25));
+  levels[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
+  levels[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
 
-var x = 0;
-for(var i = 0; i < data[0].buttons.length; i++) {
-  if(data[0].buttons[i].id > x) {
-    x = data[0].buttons[i].id;
+  levels[0].princesses.push(new princess(1, 0.25));
+
+  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 7, true, 0.05));
+
+  var x = 0;
+  for(var i = 0; i < levels[0].buttons.length; i++) {
+    if(levels[0].buttons[i].id > x) {
+      x = levels[0].buttons[i].id;
+    }
   }
-}
-for(var i = 0; i < x + 1; i++) {
-  data[0].signals.push(false);
+  for(var i = 0; i < x + 1; i++) {
+    levels[0].signals.push(false);
+  }
+  
+  var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths"];
+  for(var i = 0; i < levels.length; i++) {
+    for(var j = 0; j < objectNames.length; j++) {
+      var objectLength = eval("levels[i]." + objectNames[j] + ".length");
+      for(var k = 0; k < objectLength; k++) {
+        eval("levels[i]." + objectNames[j] + "[k].pos.x *= c.height");
+        eval("levels[i]." + objectNames[j] + "[k].pos.y *= c.height");
+        eval("levels[i]." + objectNames[j] + "[k].size.x *= c.height");
+        eval("levels[i]." + objectNames[j] + "[k].size.y *= c.height");
+
+        if(objectNames[j] == "doors") {
+          eval("levels[i]." + objectNames[j] + "[k].origPos.x *= c.height");
+          eval("levels[i]." + objectNames[j] + "[k].origPos.y *= c.height");
+        }
+      }
+    }
+  }
 }
 
 function level() {
+  this.spawnPoint = {x: 0.6 * c.height, y: 0.15 * c.height};
   this.walls = [];
   this.backgrounds = [];
   this.crates = [];
@@ -46,6 +73,15 @@ function level() {
   this.doors = [];
   this.signals = [];
   this.princesses = [];
+  this.deaths = [];
+}
+
+function death(x, y, width, height, texture, repeating, repeatSize) {
+  this.pos = {x, y};
+  this.size = {x: width, y: height};
+  this.texture = texture;
+  this.repeating = repeating;
+  this.repeatSize = repeatSize;
 }
 
 function door(x, y, width, height, id) {
@@ -93,7 +129,7 @@ function princess(x, y) {
     this.currentAnim = x;
     this.texture = this.anims[x][this.currentAnimFrame].texture;
   }
-  this.speed = c.height / 150;
+  this.speed = c.height / 768;
   
   this.update = function() {
     this.vel.x /= 1.7;
