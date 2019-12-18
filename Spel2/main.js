@@ -327,7 +327,7 @@ function draw() {
   ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01, c.height * 0.12);
   
   ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
-  ctx.font = c.height * 1.3 + " " + c.height * 0.1 + "px Arial";
+  ctx.font = "1000 " + c.height * 0.1 + "px Arial";
   ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
 }
 
