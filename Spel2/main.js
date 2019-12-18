@@ -5,7 +5,7 @@ var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
 var player = {
-  pos: new vec2(c.height * 0.7, c.height * 0.15),
+  pos: new vec2(c.height * 0.6, c.height * 0.15),
   size: {x: c.height * 0.06, y: c.height * 0.1},
   vel: new vec2(0, 0),
   acc: new vec2(0, 0),
@@ -20,7 +20,7 @@ var player = {
   wallJumped: false,
   wallJumpStrength: c.height * 0.02,
   jumpStrength: c.height * 0.035,
-  anims: [[{texture: 0, time: 5}, {texture: 3, time: 5}],
+  anims: [[{texture: 0, time: 4}, {texture: 3, time: 4}],
           [{texture: 0, time: 0}],
           [{texture: 4, time: 0}],
           [{texture: 5, time: 0}], 
@@ -69,7 +69,7 @@ for(var i = 0; i < levels.length; i++) {
   }
 }
 
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3"];
+var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -78,7 +78,11 @@ for(var i = 0; i < textureFiles.length; i++) {
 
 textures[textures.length - 1].onload = function() {
   for(var i = 0; i < textures.length; i++) {
-    levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, textures[i].width / (textures[i].height / (c.height * 0.1)), c.height * 0.1, i, false, 0.1));
+    if(textures[i].width <= textures[i].height) {
+      levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, textures[i].width / (textures[i].height / (c.height * 0.1)), c.height * 0.1, i, false, 0.1));
+    } else {
+      levels[0].backgrounds.push(new background(i * c.height * 0.1 + c.height * -1, c.height * -1.1, c.height * 0.1, textures[i].height / (textures[i].width / (c.height * 0.1)), i, false, 0.1));
+    }
   }
 }
 
@@ -130,13 +134,10 @@ function update() {
   }
   
   for(var i = 0; i < levels[0].buttons.length; i++) {
-    if(levels[0].buttons[i].pressed == true && levels[0].buttons[i].size.y != 0.005 * c.height) {
-      levels[0].buttons[i].size.y = 0.005 * c.height;
-      levels[0].buttons[i].pos.y += 0.01 * c.height;
-    }
-    if(levels[0].buttons[i].pressed == false && levels[0].buttons[i].size.y != 0.015 * c.height) {
-      levels[0].buttons[i].size.y = 0.015 * c.height;
-      levels[0].buttons[i].pos.y -= 0.01 * c.height;
+    if(levels[0].buttons[i].pressed) {
+      levels[0].buttons[i].texture = 12;
+    } else {
+      levels[0].buttons[i].texture = 11;
     }
     
     if(levels[0].buttons[i].pressed) {
@@ -273,6 +274,20 @@ function draw() {
           } else {
             ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
           }
+        }
+        
+        if(objects[k].constructor.name == "button") {
+          ctx.fillStyle = "hsl(" + objects[k].id * (360 / levels[0].signals.length) + ", 100%, 50%)";
+          if(!objects[k].pressed) {
+            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
+          } else {
+            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y + objects[k].size.y / 2, 0.02 * c.height, 0.005 * c.height);
+          }
+        }
+        
+        if(objects[k].constructor.name == "door") {
+          ctx.fillStyle = "hsl(" + objects[k].id * (360 / levels[0].signals.length) + ", 100%, 50%)";
+          ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
         }
       }
     }

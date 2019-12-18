@@ -14,7 +14,7 @@ data[0].walls.push(new wall(0.13411458333333334, -0.3684895833333333, 0.67834706
 data[0].walls.push(new wall(0.09635416666666667, -0.3645833333333333, 0.052044982367595694, 0.38958333333333295, 1));
 data[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982367595694, 0.43124999999999963, 1));
 
-data[0].backgrounds.push(new background(-1, -1, 4, 3, 2, true, 0.2));
+data[0].backgrounds.push(new background(-1, -1, 4, 3, 2, true, 0.1));
 
 data[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1, 7));
 data[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1, 7));
@@ -23,7 +23,7 @@ data[0].buttons.push(new button(0.6, 0.885, 0));
 data[0].buttons.push(new button(0.75, 0.885, 0));
 data[0].buttons.push(new button(0.3, 0.885, 1));
 
-data[0].doors.push(new door(0.75, 0, 0.05, 0.5, 0));
+data[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
 data[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
 
 data[0].princesses.push(new princess(1, 0.25));
@@ -71,7 +71,7 @@ function door(x, y, width, height, id) {
 function button(x, y, id) {
   this.pos = {x, y};
   this.size = {x: 0.1, y: 0.015};
-  this.texture = 6;
+  this.texture = 11;
   this.pressed = false;
   this.id = id;
 }
