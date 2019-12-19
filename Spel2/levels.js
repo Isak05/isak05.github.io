@@ -33,7 +33,10 @@ function loadLevels() {
 
   levels[0].princesses.push(new princess(1, 0.25));
 
-  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 7, true, 0.05));
+  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 13, true, 0.05));
+  
+  levels[0].foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
+  levels[0].foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
 
   var x = 0;
   for(var i = 0; i < levels[0].buttons.length; i++) {
@@ -45,7 +48,7 @@ function loadLevels() {
     levels[0].signals.push(false);
   }
   
-  var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths"];
+  var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths", "foregrounds"];
   for(var i = 0; i < levels.length; i++) {
     for(var j = 0; j < objectNames.length; j++) {
       var objectLength = eval("levels[i]." + objectNames[j] + ".length");
@@ -68,12 +71,21 @@ function level() {
   this.spawnPoint = {x: 0.6 * c.height, y: 0.15 * c.height};
   this.walls = [];
   this.backgrounds = [];
+  this.foregrounds = [];
   this.crates = [];
   this.buttons = [];
   this.doors = [];
   this.signals = [];
   this.princesses = [];
   this.deaths = [];
+}
+
+function foreground(x, y, width, height, texture, repeating, repeatSize) {
+  this.pos = {x, y};
+  this.size = {x: width, y: height};
+  this.texture = texture;
+  this.repeating = repeating;
+  this.repeatSize = repeatSize;
 }
 
 function death(x, y, width, height, texture, repeating, repeatSize) {

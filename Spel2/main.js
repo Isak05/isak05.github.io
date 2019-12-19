@@ -4,7 +4,7 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2"];
+var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -64,8 +64,8 @@ var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(0, 0);
 
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "player.die()"];
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths", "foregrounds"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "player.die()", ""];
 
 var score = 0;
 var highScore = parseInt(document.cookie.substring(10));
@@ -249,6 +249,9 @@ function draw() {
   for(var i = 0; i < levels.length; i++) {
     for(var j = 0; j < objectNames.length; j++) {
       var objects = eval("levels[i]." + objectNames[j]);
+      if(objects[0].constructor.name == "foreground") {
+        drawPlayer();
+      }
       for(var k = 0; k < objects.length; k++) {
         if(objects[k].repeating) {
           var pattern = ctx.createPattern(textures[objects[k].texture], "repeat");
@@ -290,6 +293,22 @@ function draw() {
     }
   }
   
+  ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+  ctx.fillRect(0, 0, c.height * 0.15, c.height * 0.2);
+  
+  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+  ctx.font = c.height * 0.02 + "px Arial";
+  ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01, c.height * 0.03);
+  ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01, c.height * 0.06);
+  ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01, c.height * 0.09);
+  ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01, c.height * 0.12);
+  
+  ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
+  ctx.font = "1000 " + c.height * 0.1 + "px Arial";
+  ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
+}
+
+function drawPlayer() {
   if(cheatMode) {
     ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
     ctx.fillRect(player.pos.x - cameraOffset.x, player.pos.y - cameraOffset.y, player.size.x, player.size.y);
@@ -313,22 +332,6 @@ function draw() {
                 player.size.y);
   }
   ctx.globalCompositeOperation = "source-over";
-  
-  
-  
-  ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-  ctx.fillRect(0, 0, c.height * 0.15, c.height * 0.2);
-  
-  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-  ctx.font = c.height * 0.02 + "px Arial";
-  ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01, c.height * 0.03);
-  ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01, c.height * 0.06);
-  ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01, c.height * 0.09);
-  ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01, c.height * 0.12);
-  
-  ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
-  ctx.font = "1000 " + c.height * 0.1 + "px Arial";
-  ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
 }
 
 
@@ -418,11 +421,10 @@ window.onmousedown = function(e) {
     if(building) {
       building = false;
       var wall_ = levels[0].walls[levels[0].walls.length - 1];
-      console.log("levels[0].walls.push(new wall(" + 
-                  wall_.pos.x / c.height + ", " + 
+      console.log(wall_.pos.x / c.height + ", " + 
                   wall_.pos.y / c.height + ", " + 
                   wall_.size.x / c.height + ", " + 
-                  wall_.size.y / c.height + ", 1));");
+                  wall_.size.y / c.height);
       return;
     }
   }
