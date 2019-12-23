@@ -149,7 +149,7 @@ for(var i = 0; i < textureFiles.length; i++) {
 	textures[textures.length - 1].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-var highScore = parseInt(document.cookie.substr(10, 1));
+var highScore = parseInt(document.cookie.substr(10));
 if(!highScore) {
 	highScore = 0;
 }
