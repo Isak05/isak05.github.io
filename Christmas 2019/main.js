@@ -146,7 +146,7 @@ var textureFiles = ["santa", "santa2", "santa3", "building", "mountain", "snowfl
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
 	textures.push(new Image());
-	textures[textures.length - 1].src = "textures/" + textureFiles[i] + ".png";
+	textures[textures.length - 1].src = "Textures/" + textureFiles[i] + ".png";
 }
 
 var highScore = parseInt(document.cookie.substr(10, 1));
