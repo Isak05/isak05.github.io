@@ -468,7 +468,7 @@ function getCookie(c) {
 	var cookies = document.cookie.split(";");
 	for(var i = 0; i < cookies.length; i++) {
 		if(cookies[i].indexOf(c) != -1) {
-			return cookies[i].substr(cookies[i].indexOf("=") + 1);
+			return JSON.parse(cookies[i].substr(cookies[i].indexOf("=") + 1));
 		}
 	}
 }
