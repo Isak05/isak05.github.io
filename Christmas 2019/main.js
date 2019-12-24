@@ -155,7 +155,7 @@ if(!highScore) {
 }
 
 var soundEnabled = getCookie("music");
-if(!("" + soundEnabled)) {
+if("" + soundEnabled == "undefined") {
 	soundEnabled = true;
 }
 
