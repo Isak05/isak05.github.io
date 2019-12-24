@@ -149,18 +149,19 @@ for(var i = 0; i < textureFiles.length; i++) {
 	textures[textures.length - 1].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-if(!getCookie("highScore")) {
+var highScore = getCookie("highScore");
+if(!highScore) {
 	highScore = 0;
 }
 
-if(!getCookie("music")) {
+var soundEnabled = getCookie("music");
+if(!soundEnabled) {
 	soundEnabled = true;
 }
 
 var music = new Audio("music.wav");
 music.loop = true;
 music.volume = 0.05;
-var soundEnabled = true;
 
 var gravity = c.height * 0.001;
 var speed = c.height * 0.0075;
