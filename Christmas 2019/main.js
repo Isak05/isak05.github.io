@@ -586,6 +586,6 @@ window.onkeyup = function(e) {
 }
 
 window.onbeforeunload = function() {
-	setCookie("highScore" + highScore);
-	setCookie("music" + soundEnabled);
+	setCookie("highScore", highScore);
+	setCookie("music", soundEnabled);
 }
