@@ -142,23 +142,32 @@ for(var i = 0; i < 2; i++) {
 
 var windDir = 0;
 
-var textureFiles = ["santa", "santa2", "santa3", "building", "mountain", "snowflake", "present", "tile", "spike", "dirt", "ground", "santa4", "santa5", "santa6"];
+var textureFiles = ["santa", "santa2", "santa3", "building", "mountain", "snowflake", "present", "tile", "spike", "dirt", "ground", "santa4", "santa5", "santa6", "soundOn", "soundOff"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
 	textures.push(new Image());
 	textures[textures.length - 1].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-var highScore = parseInt(document.cookie.substr(10));
-if(!highScore) {
+if(!getCookie("highScore")) {
 	highScore = 0;
 }
+
+if(!getCookie("music")) {
+	soundEnabled = true;
+}
+
+var music = new Audio("music.wav");
+music.loop = true;
+music.volume = 0.05;
+var soundEnabled = true;
 
 var gravity = c.height * 0.001;
 var speed = c.height * 0.0075;
 var buildingTime = 0;
 var mountainTime = 0;
 
+var startScreen = true;
 var paused = false;
 var prevPaused = false;
 var pauseTimer = 0;
@@ -172,7 +181,7 @@ var presentsCollected = 0;
 var fps = 60;
 var loop = setInterval(update, 1000 / fps);
 function update() {
-	if(!paused) {
+	if(!paused && !startScreen) {
 		time++;
 		
 		speed = c.height * (0.0075 + Math.atan(presentsCollected * 0.1) / (Math.PI / 2) * 0.002);
@@ -385,22 +394,37 @@ function update() {
 		}
 	} else {
 		pauseTimer++;
-		
+			
 		if(!prevPaused) {
 			ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
 			ctx.fillRect(0, 0, c.width, c.height);
 		}
 		
-		ctx.font = c.height * 0.1 + "px Arial";
-		ctx.textAlign = "center";
-		ctx.fillStyle = "rgb(255, 255, 255)";
-		ctx.fillText("Score: " + presentsCollected, c.width * 0.5, c.height * 0.25);
-		ctx.fillText("Highscore: " + highScore, c.width * 0.5, c.height * 0.35);
-		
-		ctx.font = c.height * 0.025 + "px Arial";
-		ctx.fillText("Press any key to continue", c.width * 0.5, c.height * 0.55);
+		if(!startScreen) {
+			ctx.font = c.height * 0.1 + "px Arial";
+			ctx.textAlign = "center";
+			ctx.fillStyle = "rgb(255, 255, 255)";
+			ctx.fillText("Score: " + presentsCollected, c.width * 0.5, c.height * 0.25);
+			ctx.fillText("Highscore: " + highScore, c.width * 0.5, c.height * 0.35);
+			
+			ctx.font = c.height * 0.025 + "px Arial";
+			ctx.fillText("Press any key to continue", c.width * 0.5, c.height * 0.55);
+		} else {
+			ctx.textAlign = "center";
+			ctx.fillStyle = "rgb(255, 255, 255)";
+			ctx.font = c.height * 0.1 + "px Arial";
+			ctx.fillText("Press any key to start", c.width * 0.5, c.height * 0.25);
+		}
 		
 		prevPaused = paused;
+	}
+	
+	ctx.fillStyle = "rgb(255, 255, 255)";
+	ctx.fillRect(c.width - 0.1 * c.height, 0.05 * c.height, 0.05 * c.height, 0.05 * c.height);
+	if(soundEnabled) {
+		ctx.drawImage(textures[14], c.width - 0.1 * c.height, 0.05 * c.height, 0.05 * c.height, 0.05 * c.height);
+	} else {
+		ctx.drawImage(textures[15], c.width - 0.1 * c.height, 0.05 * c.height, 0.05 * c.height, 0.05 * c.height);
 	}
 }
 
@@ -437,6 +461,19 @@ function gen(offset, x) {
 			worldEnd = presents[presents.length - 1].x + presents[presents.length - 1].width;
 		}
 	}
+}
+
+function getCookie(c) {
+	var cookies = document.cookie.split(";");
+	for(var i = 0; i < cookies.length; i++) {
+		if(cookies[i].indexOf(c) != -1) {
+			return cookies[i].substr(cookies[i].indexOf("=") + 1);
+		}
+	}
+}
+
+function setCookie(c, v) {
+	document.cookie = c + "=" + v;
 }
 
 function AABB(a, b) {
@@ -506,9 +543,27 @@ function particle(x, y, xSpeed, ySpeed, texture, fadeSpeed) {
 	}
 }
 
+window.onmousedown = function(e) {
+	var a = {x: e.clientX, y: e.clientY, width: 0, height: 0};
+	var b = {x: c.width - 0.1 * c.height, y: 0.05 * c.height, width: 0.05 * c.height, height: 0.05 * c.height};
+	if(AABB(a, b)) {
+		soundEnabled = !soundEnabled;
+		if(!soundEnabled) {
+			music.pause();
+		} else {
+			music.currentTime = 0;
+			music.play();
+		}
+	}
+}
+
 window.onkeydown = function(e) {
 	if(pauseTimer > 30) {
 		player.reset();
+	}
+	if(startScreen) {
+		startScreen = false;
+		music.play();
 	}
 	switch(e.keyCode) {
 	case 87:
@@ -530,5 +585,6 @@ window.onkeyup = function(e) {
 }
 
 window.onbeforeunload = function() {
-	document.cookie = "highScore=" + highScore;
+	setCookie("highScore" + highScore);
+	setCookie("music" + soundEnabled);
 }
