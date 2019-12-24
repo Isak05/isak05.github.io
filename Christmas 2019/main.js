@@ -474,7 +474,7 @@ function getCookie(c) {
 }
 
 function setCookie(c, v) {
-	document.cookie = c + "=" + v;
+	document.cookie = (c + "=" + v);
 }
 
 function AABB(a, b) {
