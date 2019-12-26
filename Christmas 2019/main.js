@@ -567,7 +567,9 @@ window.onkeydown = function(e) {
 	}
 	if(startScreen) {
 		startScreen = false;
-		music.play();
+		if(soundEnabled) {
+			music.play();
+		}
 	}
 	switch(e.keyCode) {
 	case 87:
