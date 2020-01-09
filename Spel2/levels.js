@@ -4,25 +4,25 @@ function loadLevels() {
   levels = [];
 
   levels.push(new level());
-  levels[0].walls.push(new wall(0.7, 0.9, 0.8, 0.05, 1));
-  levels[0].walls.push(new wall(1.45, 0.3, 0.05, 0.6, 1));
-  levels[0].walls.push(new wall(0.7, 0.3, 0.05, 0.6, 1));
-  levels[0].walls.push(new wall(-0.2, 0.3, 0.7, 0.05, 1));
-  levels[0].walls.push(new wall(0.7, 0.05, 0.8, 0.05, 1));
-  levels[0].walls.push(new wall(0.9, 0.6, 0.4, 0.02, 1));
-  levels[0].walls.push(new wall(0.5, 0.7, 0.2, 0.01, 1));
-  levels[0].walls.push(new wall(0.2, 0.9, 0.6, 0.05, 1));
-  levels[0].walls.push(new wall(-0.06640625, -0.006510416666666667, 0.45002442398299025, 0.056806793640777266, 1));
-  levels[0].walls.push(new wall(0.13411458333333334, -0.3684895833333333, 0.6783470657011753, 0.03932291666654527, 1));
-  levels[0].walls.push(new wall(0.09635416666666667, -0.3645833333333333, 0.052044982367595694, 0.38958333333333295, 1));
-  levels[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982367595694, 0.43124999999999963, 1));
-  levels[0].walls.push(new wall(-3, 0.3, 2.3, 0.05, 1));
+  levels[0].walls.push(new wall(0.7, 0.8997395833333334, 0.8, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(1.45, 0.3, 0.05, 0.6, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.7, 0.3, 0.05, 0.6, 19, true, 0.05));
+  levels[0].walls.push(new wall(-0.2, 0.3, 0.7, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.7, 0.05, 0.8, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.9, 0.6, 0.4, 0.02, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.5, 0.7, 0.2, 0.01, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.2, 0.8997395833333334, 0.6, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(-0.06640625, -0.006510416666666667, 0.45002442398299025, 0.056806793640777266, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.13411458333333334, -0.3684895833333333, 0.6783470657011753, 0.03932291666654527, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.09635416666666667, -0.3645833333333333, 0.052044982367595694, 0.38958333333333295, 19, true, 0.05));
+  levels[0].walls.push(new wall(0.7760416666666666, -0.3606770833333333, 0.052044982367595694, 0.43124999999999963, 19, true, 0.05));
+  levels[0].walls.push(new wall(-3, 0.3, 2.3, 0.05, 19, true, 0.05));
 
   levels[0].backgrounds.push(new background(-1.5, -1, 5, 3, 2, true, 0.1));
   levels[0].backgrounds.push(new background(-2.5, -0.15, 0.5, 0.5, 0, false, 0));
 
-  levels[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1, 7));
-  levels[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1, 7));
+  levels[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1));
+  levels[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1));
 
   levels[0].buttons.push(new button(0.6, 0.885, 0));
   levels[0].buttons.push(new button(0.75, 0.885, 0));
@@ -31,12 +31,18 @@ function loadLevels() {
   levels[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
   levels[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
 
-  levels[0].princesses.push(new princess(1, 0.25));
+  levels[0].npcs.push(new npc(0.25, 0.5, [[{texture: 23, time: 5}, {texture: 24, time: 5}]]));
+  levels[0].npcs.push(new npc(1, 0.25, [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]]));
 
   levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 13, true, 0.05));
   
   levels[0].foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
   levels[0].foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
+  
+  levels[0].walls.push(new wall(-0.20052083333333334, 0.8997395833333334, 0.4005208333333334, 0.10026041666666667, 21, true, 0.1));
+  levels[0].walls.push(new wall(-0.25, 0.3997395833333333, 0.04999999999999997, 0.6002604166666669, 20, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-0.7005208333333334, 0.3997395833333333, 0.4505208333333333, 0.050260416666666696, 20, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-0.75, 0.3502604166666667, 0.04999999999999982, 0.09973958333333337, 20, true, 0.05000000000000002));
 
   var x = 0;
   for(var i = 0; i < levels[0].buttons.length; i++) {
@@ -48,7 +54,7 @@ function loadLevels() {
     levels[0].signals.push(false);
   }
   
-  var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "princesses", "deaths", "foregrounds"];
+  var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds"];
   for(var i = 0; i < levels.length; i++) {
     for(var j = 0; j < objectNames.length; j++) {
       var objectLength = eval("levels[i]." + objectNames[j] + ".length");
@@ -76,7 +82,7 @@ function level() {
   this.buttons = [];
   this.doors = [];
   this.signals = [];
-  this.princesses = [];
+  this.npcs = [];
   this.deaths = [];
 }
 
@@ -104,13 +110,15 @@ function door(x, y, width, height, id) {
   this.texture = 6;
   
   this.update = function() {
-    if(levels[0].signals[this.id]) {
-      if(this.origPos.y - this.size.y < this.pos.y) {
-        this.pos.y -= c.height * 0.025;
-      }
-    } else {
-      if(this.pos.y < this.origPos.y) {
-        this.pos.y += c.height * 0.025;
+    if(!editMode || !cheatMode) {
+      if(levels[0].signals[this.id]) {
+        if(this.origPos.y - this.size.y < this.pos.y) {
+          this.pos.y -= c.height * 0.025;
+        }
+      } else {
+        if(this.pos.y < this.origPos.y) {
+          this.pos.y += c.height * 0.025;
+        }
       }
     }
   }
@@ -124,12 +132,12 @@ function button(x, y, id) {
   this.id = id;
 }
 
-function princess(x, y) {
+function npc(x, y, anim) {
   this.pos = {x, y};
   this.vel = {x: 0, y: 0};
-  this.size = {x: 0.064, y: 0.1};
-  this.texture = 8;
-  this.anims = [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]];
+  this.size = {x: 0.1, y: 0.1};
+  this.texture = anim[0][0].texture;
+  this.anims = anim;
   this.animTimer = 0;
   this.currentAnimFrame = 0;
   this.currentAnim = 0;
@@ -203,12 +211,12 @@ function princess(x, y) {
   }
 }
 
-function crate(x, y, width, height, texture) {
+function crate(x, y, width, height) {
   this.pos = {x, y};
   this.vel = {x: 0, y: 0};
   this.size = {x: width, y: height};
-  this.texture = texture;
-  this.collisions = ["walls", "doors"];
+  this.texture = 7;
+  this.collisions = ["walls", "doors", "deaths", "crates"];
   this.update = function() {
     this.vel.y += gravity;
     this.vel.x = 0;
@@ -281,6 +289,7 @@ function crate(x, y, width, height, texture) {
               player.vel.x *= player.crateSpeed;
               player.vel.x *= player.crateSpeed;
               this.vel.x = (player.pos.x + player.vel.x - this.size.x + 1) - this.pos.x;
+              player.pullingCrate = true;
             }
 
             // Going left on left side
@@ -291,7 +300,7 @@ function crate(x, y, width, height, texture) {
               player.vel.x *= player.crateSpeed;
               player.vel.x *= player.crateSpeed;
               this.vel.x = (player.pos.x + player.vel.x + player.size.x - 1) - this.pos.x;
-              
+              player.pullingCrate = true;
             }
           }
         }
@@ -300,44 +309,46 @@ function crate(x, y, width, height, texture) {
     for(var j = 0; j < this.collisions.length; j++) {
       this.objects = eval("levels[0]." + this.collisions[j]);
       for(var i = 0; i < this.objects.length; i++) {
-        var xVel = this.vel.x;
-        var yVel = this.vel.y;
+        if(this.objects[i] != this) {
+          var xVel = this.vel.x;
+          var yVel = this.vel.y;
 
-        this.next.pos.x += this.vel.x;
-        if(checkCollision(this.next, this.objects[i])) {
-          // Get closest side
-          if(Math.abs((this.objects[i].pos.x + this.objects[i].size.x) - this.pos.x) < 
-            Math.abs(this.objects[i].pos.x - (this.pos.x + this.size.x))) {
-            // Left
-            xVel = 0;
-            this.pos.x = this.objects[i].pos.x + this.objects[i].size.x;
-          } else {
-            // Right
-            xVel = 0;
-            this.pos.x = this.objects[i].pos.x - this.size.x;
+          this.next.pos.x += this.vel.x;
+          if(checkCollision(this.next, this.objects[i])) {
+            // Get closest side
+            if(Math.abs((this.objects[i].pos.x + this.objects[i].size.x) - this.pos.x) < 
+              Math.abs(this.objects[i].pos.x - (this.pos.x + this.size.x))) {
+              // Left
+              xVel = 0;
+              this.pos.x = this.objects[i].pos.x + this.objects[i].size.x;
+            } else {
+              // Right
+              xVel = 0;
+              this.pos.x = this.objects[i].pos.x - this.size.x;
+            }
           }
-        }
 
-        this.next.pos.x -= this.vel.x;
-        this.next.pos.y += this.vel.y;
-        if(checkCollision(this.next, this.objects[i])) {
-          // Get closest side
-          if(Math.abs((this.objects[i].pos.y + this.objects[i].size.y) - this.pos.y) < 
-            Math.abs(this.objects[i].pos.y - (this.pos.y + this.size.y))) {
-            // Up
-            yVel = 0;
-            this.pos.y = this.objects[i].pos.y + this.objects[i].size.y;
-          } else {
-            // Down
-            yVel = 0;
-            this.pos.y = this.objects[i].pos.y - this.size.y;
+          this.next.pos.x -= this.vel.x;
+          this.next.pos.y += this.vel.y;
+          if(checkCollision(this.next, this.objects[i])) {
+            // Get closest side
+            if(Math.abs((this.objects[i].pos.y + this.objects[i].size.y) - this.pos.y) < 
+              Math.abs(this.objects[i].pos.y - (this.pos.y + this.size.y))) {
+              // Up
+              yVel = 0;
+              this.pos.y = this.objects[i].pos.y + this.objects[i].size.y;
+            } else {
+              // Down
+              yVel = 0;
+              this.pos.y = this.objects[i].pos.y - this.size.y;
+            }
           }
+
+          this.next.pos.y -= this.vel.y;
+
+          this.vel.x = xVel;
+          this.vel.y = yVel;
         }
-
-        this.next.pos.y -= this.vel.y;
-
-        this.vel.x = xVel;
-        this.vel.y = yVel;
       }
     }
     
@@ -352,10 +363,12 @@ function crate(x, y, width, height, texture) {
   }
 }
 
-function wall(x, y, width, height, texture) {
+function wall(x, y, width, height, texture, repeating, repeatSize) {
   this.pos = {x, y};
   this.size = {x: width, y: height};
   this.texture = texture;
+  this.repeating = repeating;
+  this.repeatSize = repeatSize;
 }
 
 function background(x, y, width, height, texture, repeating, repeatSize) {
