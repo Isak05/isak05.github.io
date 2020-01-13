@@ -35,7 +35,8 @@ var player = {
           [{texture: 4, time: 0}],
           [{texture: 5, time: 0}], 
           [{texture: 16, time: 5}, {texture: 17, time: 5}],
-          [{texture: 18, time: 0}], [{texture: 16, time: 0}]],
+          [{texture: 16, time: 5}, {texture: 17, time: 5}], 
+          [{texture: 16, time: 0}]],
   animTimer: 0,
   currentAnimFrame: 0,
   currentAnim: 1,
@@ -386,15 +387,15 @@ function draw() {
     for(var i = 0; i < textures.length; i++) {
       if(selectedTexture == i) {
         ctx.fillStyle = "rgb(0, 255, 0)";
-        ctx.fillRect((i % 16) * 0.1 * c.height + 0.15 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
+        ctx.fillRect((i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
       } else {
         ctx.fillStyle = "rgb(255, 255, 255, 0.5)";
-        ctx.fillRect((i % 16) * 0.1 * c.height + 0.15 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
+        ctx.fillRect((i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
       }
       if(textures[i].height <= textures[i].width) {
-        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height + 0.15 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, textures[i].height * ((0.1 * c.height) / textures[i].width));
+        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, textures[i].height * ((0.1 * c.height) / textures[i].width));
       } else {
-        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height + 0.15 * c.height, Math.floor(i / 16) * 0.1 * c.height, textures[i].width * ((0.1 * c.height) / textures[i].height), 0.1 * c.height);
+        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, textures[i].width * ((0.1 * c.height) / textures[i].height), 0.1 * c.height);
       }
     }
     
