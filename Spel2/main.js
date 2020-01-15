@@ -4,7 +4,7 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "boi5", "boi6", "boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart"];
+var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "boi5", "boi6", "boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -52,6 +52,7 @@ var player = {
   die: function() {
     this.pos = JSON.parse(JSON.stringify(levels[0].spawnPoint));
     this.vel = new vec2(0, 0);
+    this.onGround = false;
     this.hp = 100;
     this.invulnerableTimer = 0;
     loadLevels();
@@ -400,7 +401,7 @@ function draw() {
     }
     
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0, 0.375 * c.height, 0.175 * c.height, 0.22 * c.height);
+    ctx.fillRect(0, 0.425 * c.height, 0.175 * c.height, 0.22 * c.height);
     
     for(var i = 0; i < objectNames.length; i++) {
       if(selectedType == i) {
@@ -409,11 +410,11 @@ function draw() {
         ctx.fillStyle = "rgb(0, 0, 0)";
       }
       ctx.font = c.height * 0.025 + "px Arial";
-      ctx.fillText(objectNames[i], 0.005 * c.height, i * c.height * 0.025 + c.height * 0.4);
+      ctx.fillText(objectNames[i], 0.005 * c.height, i * c.height * 0.025 + c.height * 0.45);
     }
     
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0, 0.2125 * c.height, 0.2 * c.height, 0.15 * c.height);
+    ctx.fillRect(0, 0.2125 * c.height, 0.2 * c.height, 0.2 * c.height);
        
     ctx.font = c.height * 0.025 + "px Arial";
     
@@ -586,6 +587,11 @@ window.onmousedown = function(e) {
           for(var i = 0; i < x + 1; i++) {
             levels[0].signals.push(false);
           }
+          break;
+        case "buttons":
+          levels[0].buttons.push(new button(Math.round(pos.x), Math.round(pos.y), editId));
+          levels[0].buttons[levels[0].buttons.length - 1].size.x *= c.height;
+          levels[0].buttons[levels[0].buttons.length - 1].size.y *= c.height;
           break;
         }
         return;

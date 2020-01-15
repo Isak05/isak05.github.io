@@ -20,7 +20,8 @@ function loadLevels() {
   levels[0].walls.push(new wall(0.7994791666666666, -0.3502604166666667, 0.050520833333333424, 0.4002604166666666, 19, true, 0.05000000000000002));
   levels[0].walls.push(new wall(0.10026041666666667, -0.3997395833333333, 0.7497395833333335, 0.04973958333333325, 19, true, 0.05000000000000002));
   levels[0].walls.push(new wall(-0.20052083333333334, 0.8997395833333334, 0.9005208333333335, 0.05026041666666684, 21, true, 0.05000000000000002));
-  levels[0].walls.push(new wall(-3.1497395833333335, 0.3502604166666667, 2.3997395833333335, 0.04973958333333339, 20, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-3.1497395833333335, 0.2994791666666667, 2.44973958333, 0.04973958333333339, 20, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-0.20052083333333334, 0.3502604166666667, 0.05052083333333331, 0.04973958333333339, 19, true, 0.05000000000000002));
   
   levels[0].backgrounds.push(new background(-1.5, -1, 5, 3, 2, true, 0.1));
   levels[0].backgrounds.push(new background(-2.5, -0.15, 0.5, 0.5, 0, false, 0));
@@ -35,10 +36,11 @@ function loadLevels() {
   levels[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
   levels[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
 
-  levels[0].npcs.push(new npc(0.25, 0.5, [[{texture: 23, time: 5}, {texture: 24, time: 5}]]));
-  levels[0].npcs.push(new npc(1, 0.25, [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]]));
+  levels[0].npcs.push(new npc(0.25, 0.5, 1, [[{texture: 23, time: 4}, {texture: 24, time: 4}]]));
+  levels[0].npcs.push(new npc(1, 0.25, 0, [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]]));
 
-  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 13, true, 0.05));
+  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 27, true, 0.05));
+  levels[0].deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
   
   levels[0].foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
   levels[0].foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
@@ -131,7 +133,8 @@ function button(x, y, id) {
   this.id = id;
 }
 
-function npc(x, y, anim) {
+function npc(x, y, type, anim) {
+  this.type = type;
   this.pos = {x, y};
   this.vel = {x: 0, y: 0};
   this.size = {x: 0.1, y: 0.1};
@@ -148,7 +151,16 @@ function npc(x, y, anim) {
     this.currentAnim = x;
     this.texture = this.anims[x][this.currentAnimFrame].texture;
   }
-  this.speed = c.height / 768;
+  this.speed = 0;
+  if(this.type == 0) {
+    this.speed = c.height * 0.001;
+  }
+  if(this.type == 1) {
+    this.speed = c.height * 0.003;
+  }
+  
+  this.onGround = false;
+  this.jumpStrength = c.height * 0.035;
   
   this.update = function() {
     this.vel.x /= 1.7;
@@ -164,16 +176,33 @@ function npc(x, y, anim) {
       this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
     }
     
-    if(!this.textureFlipped) {
-      this.vel.x += -this.speed;
-    } else {
-      this.vel.x += this.speed;
+    if(this.type == 0) {
+      if(!this.textureFlipped) {
+        this.vel.x += -this.speed;
+      } else {
+        this.vel.x += this.speed;
+      }
+    }
+    
+    if(this.type == 1) {
+      if(player.pos.x > this.pos.x + this.size.x) {
+        this.vel.x += this.speed;
+      }
+      if(player.pos.x + player.size.x < this.pos.x) {
+        this.vel.x += -this.speed;
+      }
+      if(Math.abs((this.pos.x + this.size.x / 2) - (player.pos.x + player.size.x / 2)) < 200) {
+        if(this.onGround && this.pos.y > player.pos.y + player.size.y) {
+          this.vel.y = -this.jumpStrength;
+          this.onGround = false;
+        }
+      }
     }
     
     this.vel.y += gravity;
     this.turn = false;
-    this.x = 0;
     
+    this.onGround = false;
     //this.next = JSON.parse(JSON.stringify(this));
     this.next = this;
     for(var i = 0; i < this.collisions.length; i++) {
@@ -183,9 +212,9 @@ function npc(x, y, anim) {
         if(checkCollision(this.next, this.objects[j])) {
           this.turn = true;
           if(!this.textureFlipped) {
-            this.x = this.objects[j].pos.x + this.objects[j].size.x;
+            this.pos.x = this.objects[j].pos.x + this.objects[j].size.x;
           } else {
-            this.x = this.objects[j].pos.x - this.size.x;
+            this.pos.x = this.objects[j].pos.x - this.size.x;
           }
         } 
         this.next.pos.x -= this.vel.x;
@@ -193,16 +222,27 @@ function npc(x, y, anim) {
         this.next.pos.y += this.vel.y;
         if(checkCollision(this.next, this.objects[j])) {
           this.vel.y = 0;
-          this.pos.y = this.objects[j].pos.y - this.size.y;
+          if(Math.abs((this.pos.y + this.size.y) - this.objects[j].pos.y) < 
+          Math.abs(this.pos.y - (this.objects[j].pos.y + this.objects[j].size.y))) {
+            this.onGround = true;
+            this.pos.y = this.objects[j].pos.y - this.size.y;
+          } else {
+            this.pos.y = this.objects[j].pos.y + this.objects[j].size.y;
+          }
         } 
         this.next.pos.y -= this.vel.y;
       }
     }
     
-    if(this.turn) {
+    if(this.turn && this.type == 0) {
       this.vel.x *= -1;
-      this.pos.x = this.x;
-      this.textureFlipped = !this.textureFlipped;
+    }
+    
+    if(this.vel.x > 0) {
+      this.textureFlipped = true;
+    }
+    if(this.vel.x < 0) {
+      this.textureFlipped = false;
     }
     
     this.pos.x += this.vel.x;
