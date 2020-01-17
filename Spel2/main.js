@@ -530,31 +530,18 @@ function collideObjects(objects, onCollide) {
       // Check collision in x direction
       var player_ = JSON.parse(JSON.stringify(player));
       player_.pos.x += player_.vel.x;
-      if(checkCollision(player_, object)) {
-        // Get closest side
-        if(Math.abs((object.pos.x + object.size.x) - player.pos.x) < 
-          Math.abs(object.pos.x - (player.pos.x + player.size.x))) {
-          side = 3;
-          eval(onCollide);
-        } else {
-          side = 1;
-          eval(onCollide);
-        }
-      }
-
-      // Check collision in y direction
-      player_ = JSON.parse(JSON.stringify(player));
       player_.pos.y += player_.vel.y;
       if(checkCollision(player_, object)) {
         // Get closest side
-        if(Math.abs((object.pos.y + object.size.y) - player.pos.y) < 
-          Math.abs(object.pos.y - (player.pos.y + player.size.y))) {
-          side = 0;
-          eval(onCollide);
-        } else {
-          side = 2;
-          eval(onCollide);
-        }
+        var dist = [];
+        dist.push({val: Math.abs((object.pos.y + object.size.y) - player.pos.y), id: 0});
+        dist.push({val: Math.abs(object.pos.x - (player.pos.x + player.size.x)), id: 1});
+        dist.push({val: Math.abs(object.pos.y - (player.pos.y + player.size.y)), id: 2});
+        dist.push({val: Math.abs((object.pos.x + object.size.x) - player.pos.x), id: 3});
+        
+        dist.sort((a, b) => {return a.val - b.val});
+        var side = dist[0].id;
+        eval(onCollide);
       }
     }
   }
@@ -664,7 +651,8 @@ window.onmousedown = function(e) {
     }
     if(building) {
       building = false;
-      var o = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");
+      var o_ = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");
+      var o = JSON.parse(JSON.stringify(o_));
       if(o.pos.x > o.pos.x + o.size.x) {
         o.pos.x += o.size.x;
         o.size.x = Math.abs(o.size.x);
@@ -673,13 +661,17 @@ window.onmousedown = function(e) {
         o.pos.y += o.size.y;
         o.size.y = Math.abs(o.size.y);
       }
-      switch(o.constructor.name) {
+      o.pos.x = Math.round(o.pos.x / c.height * 10000) / 10000;
+      o.pos.y = Math.round(o.pos.y / c.height * 10000) / 10000;
+      o.size.x = Math.round(o.size.x / c.height * 10000) / 10000;
+      o.size.y = Math.round(o.size.y / c.height * 10000) / 10000;
+      switch(o_.constructor.name) {
       case "wall":
         console.log("levels[0].walls.push(new wall(" + 
-                    o.pos.x / c.height + ", " + 
-                    o.pos.y / c.height + ", " + 
-                    o.size.x / c.height + ", " + 
-                    o.size.y / c.height + ", " +
+                    o.pos.x + ", " + 
+                    o.pos.y + ", " + 
+                    o.size.x + ", " + 
+                    o.size.y + ", " +
                     o.texture + ", " + 
                     editRepeating + ", " + 
                     editRepeatSize + "));");
@@ -687,10 +679,10 @@ window.onmousedown = function(e) {
         
       case "background":
         console.log("levels[0].backgrounds.push(new background(" + 
-                    o.pos.x / c.height + ", " + 
-                    o.pos.y / c.height + ", " + 
-                    o.size.x / c.height + ", " + 
-                    o.size.y / c.height + ", " +
+                    o.pos.x + ", " + 
+                    o.pos.y + ", " + 
+                    o.size.x + ", " + 
+                    o.size.y + ", " +
                     o.texture + ", " + 
                     editRepeating + ", " + 
                     editRepeatSize + "));");
@@ -698,10 +690,10 @@ window.onmousedown = function(e) {
         
       case "door":
         console.log("levels[0].doors.push(new door(" + 
-                    o.pos.x / c.height + ", " + 
-                    o.pos.y / c.height + ", " + 
-                    o.size.x / c.height + ", " + 
-                    o.size.y / c.height + ", " + 
+                    o.pos.x + ", " + 
+                    o.pos.y + ", " + 
+                    o.size.x + ", " + 
+                    o.size.y + ", " + 
                     editId + "));");
         break;
       }
