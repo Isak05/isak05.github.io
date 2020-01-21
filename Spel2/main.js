@@ -4,7 +4,7 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["boi", "wall", "brick", "boi2", "boi3", "boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "boi5", "boi6", "boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3"];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -43,6 +43,7 @@ var player = {
   texture: 0,
   textureFlipped: false,
   invulnerableTimer: 0,
+  spawnTimer: 15,
   setAnim: function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
@@ -55,15 +56,28 @@ var player = {
     this.onGround = false;
     this.hp = 100;
     this.invulnerableTimer = 0;
+    this.spawnTimer = 30;
     loadLevels();
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) {
+      this.func = function() {
+        return {x: Math.random() * 10 - 5, y: Math.random() * 10};
+      }
+      this.bloodTime = 5;
+      levels[0].particleEmitters.push(new particleEmitter((this.pos.x + player.size.x / 2) / c.height, (this.pos.y + player.size.y / 2) / c.height, this.func, 0.005 + n * 0.00025, 0.005 + n * 0.00025, 0, 0, 10, 26, n / 50));
+      this.bloodParticle = levels[0].particleEmitters.length - 1;
       this.hp -= n;
       this.invulnerableTimer = 15;
+      if(this.hp <= 0) {
+        this.invulnerableTimer = 30;
+        this.hp = 0;
+      }
     }
   },
-  hp: 100
+  hp: 100,
+  bloodParticle: -1,
+  bloodTime: 0
 };
 
 function vec2(x, y) {
@@ -91,8 +105,8 @@ var cameraOffset = new vec2(player.pos.x - c.width / 2, player.pos.y - c.height 
 var godMode = false;
 
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50)", ""];
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds", "pickups"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "object.onPickup(); objects.splice(i, 1); i--"];
 
 var score = 0;
 var highScore = parseInt(document.cookie.substring(10));
@@ -104,6 +118,18 @@ if(!highScore) {
 window.onbeforeunload = function() {
   document.cookie = "highScore=" + highScore;
 }
+
+var cv = document.createElement("canvas");
+cv.width = c.width;
+cv.height = c.width;
+var ctxv = cv.getContext("2d");
+var v = ctx.createRadialGradient(c.width / 2, c.width / 2, c.width / 2, c.width / 2, c.width / 2, 0);
+v.addColorStop(0, "rgb(255, 0, 0, 1)");
+v.addColorStop(1, "rgb(255, 0, 0, 0)");
+ctxv.fillStyle = v;
+ctxv.fillRect(0, 0, cv.width, cv.height);
+var vignette = new Image();
+vignette.src = cv.toDataURL();
 
 var prevTime = 0;
 var time = 0;
@@ -121,9 +147,21 @@ function update() {
   }
   
   if(godMode) {
-    player.hp = 1000;
+    player.hp = Infinity;
   } else if(player.hp > 100) {
     player.hp = 100;
+  }
+  
+  if(player.bloodTime > 0) {
+    player.bloodTime--;
+  }
+  
+  if(player.bloodTime <= 0 && player.bloodParticle != -1) {
+    levels[0].particleEmitters[player.bloodParticle].enabled = false;
+    if(levels[0].particleEmitters[player.bloodParticle].particles.length == 0) {
+      levels[0].particleEmitters.splice(player.bloodParticle, 1);
+      player.bloodParticle = -1;
+    }
   }
   
   // Movement
@@ -181,6 +219,11 @@ function update() {
     levels[0].doors[i].update();
   }
   
+  // Pickups
+  for(var i = 0; i < levels[0].pickups.length; i++) {
+    levels[0].pickups[i].update();
+  }
+  
   // Animations
   if(player.acc.x != 0 && (player.currentAnim != 0 || player.acc.x != player.prevAcc.x) && player.onGround && !player.onCrate) {
     player.setAnim(0);
@@ -193,12 +236,15 @@ function update() {
   
   if(player.onGround && !player.onCrate && player.currentAnim != 1 && player.acc.x == 0) {
     player.setAnim(1);
-    player.textureFlipped = false;
   }
   
-  if(!player.onGround && player.currentAnim != 3) {
+  if((!player.onGround && player.currentAnim != 3) || (!player.onGround && player.acc.x != player.prevAcc.x)) {
     player.setAnim(3);
-    player.textureFlipped = false;
+    if(player.acc.x > 0) {
+      player.textureFlipped = false;
+    } else {
+      player.textureFlipped = true;
+    }
   }
   
   if(player.onWall && player.currentAnim != 2 && !player.onCrate) {
@@ -237,6 +283,10 @@ function update() {
     player.textureFlipped = false;
   }
   
+  if(player.hp <= 0) {
+    player.setAnim(1);
+  }
+  
   player.animTimer++;
   if(player.animTimer >= player.anims[player.currentAnim][player.currentAnimFrame].time) {
     player.animTimer = 0;
@@ -248,8 +298,14 @@ function update() {
     player.texture = player.anims[player.currentAnim][player.currentAnimFrame].texture;
   }
   
+  // Npcs
   for(var i = 0; i < levels[0].npcs.length; i++) {
     levels[0].npcs[i].update();
+    if(levels[0].npcs[i].delete) {
+      levels[0].npcs.splice(i, 1);
+      i--;
+      continue;
+    }
   }
   
   // Friction
@@ -265,8 +321,10 @@ function update() {
   }
 
   // Player and camera movement
-  player.pos.x += player.vel.x;
-  player.pos.y += player.vel.y;
+  if(player.hp > 0) {
+    player.pos.x += player.vel.x;
+    player.pos.y += player.vel.y;
+  }
 
   cameraOffset.x += ((player.pos.x - c.width * 0.5) - cameraOffset.x) * 0.1;
   cameraOffset.y += ((player.pos.y - c.height * 0.5 + player.size.y) - cameraOffset.y) * 0.1;
@@ -277,11 +335,14 @@ function update() {
   player.prevInteracting = player.interacting;
   
   // Player death
-  if(player.hp <= 0) {
-    player.die();
-  }
   if(player.invulnerableTimer > 0) {
     player.invulnerableTimer--;
+  }
+  if(player.hp <= 0 && player.invulnerableTimer <= 0) {
+    player.die();
+  }
+  if(player.spawnTimer > 0) {
+    player.spawnTimer--;
   }
 
   draw();
@@ -311,7 +372,7 @@ function draw() {
   for(var i = 0; i < levels.length; i++) {
     for(var j = 0; j < objectNames.length; j++) {
       var objects = eval("levels[i]." + objectNames[j]);
-      if(objects[0].constructor.name == "foreground") {
+      if(objects.length != 0 && objects[0].constructor.name == "foreground") {
         if(cheatMode) {
           ctx.globalCompositeOperation = "destination-out";
           drawPlayer();
@@ -404,6 +465,19 @@ function draw() {
     }
   }
   
+  // Vignette
+  var heartbeat = Math.max(0, Math.sin((time / (player.hp * 5 + 250)) % 3.3 * Math.PI)) * (1 - player.hp * 1.5 / 100 - 0.25) * 0.2;
+  if(player.hp > 50) {
+    heartbeat = 0;
+  }
+  if(player.hp < 75) {
+    ctx.globalAlpha = (1 - player.hp / 100) ** 4 * 0.75 + heartbeat;
+  } else {
+    ctx.globalAlpha = 0;
+  }
+  ctx.drawImage(vignette, 0, 0, c.width, c.height);
+  ctx.globalAlpha = 1;
+  
   // Hp
   var tex = 26;
   if(player.hp <= 66) {
@@ -417,8 +491,15 @@ function draw() {
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(45, 5, 260, 35);
   
-  ctx.fillStyle = "hsl(" + player.hp + ", 100%, " + (40 + player.invulnerableTimer * 5) + "%)";
-  ctx.fillRect(50, 10, player.hp / 100 * 250, 25);
+  if(player.hp > 500) {
+    ctx.fillStyle = "hsl(" + time / 5 + ", 100%, " + (40 + player.invulnerableTimer * 5) + "%)";
+    ctx.fillRect(50, 10, 100 / 100 * 250, 25);
+  } else {
+    ctx.fillStyle = "hsl(" + player.hp + ", 100%, " + (40 + player.invulnerableTimer * 5) + "%)";
+    ctx.fillRect(50, 10, player.hp / 100 * 250, 25);
+  }
+  
+  var offset = 0.1 * c.height;
   
   if(cheatMode && editMode) {
     ctx.fillStyle = "rgb(255, 255, 255, 0.5)";
@@ -446,7 +527,7 @@ function draw() {
     }
     
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0, 0.425 * c.height, 0.175 * c.height, 0.22 * c.height);
+    ctx.fillRect(0, 0.425 * c.height + offset, 0.175 * c.height, 0.22 * c.height);
     
     for(var i = 0; i < objectNames.length; i++) {
       if(selectedType == i) {
@@ -455,33 +536,33 @@ function draw() {
         ctx.fillStyle = "rgb(0, 0, 0)";
       }
       ctx.font = c.height * 0.025 + "px Arial";
-      ctx.fillText(objectNames[i], 0.005 * c.height, i * c.height * 0.025 + c.height * 0.45);
+      ctx.fillText(objectNames[i], 0.005 * c.height, i * c.height * 0.025 + c.height * 0.45 + offset);
     }
     
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0, 0.2125 * c.height, 0.2 * c.height, 0.2 * c.height);
+    ctx.fillRect(0, 0.2125 * c.height + offset, 0.2 * c.height, 0.2 * c.height );
        
     ctx.font = c.height * 0.025 + "px Arial";
     
     ctx.fillStyle = "rgb(0, 0, 0)";
     if(selectedSetting == 0) ctx.fillStyle = "rgb(0, 200, 0)";
-    ctx.fillText("repeating: " + editRepeating, 0.005 * c.height, c.height * 0.245);
+    ctx.fillText("repeating: " + editRepeating, 0.005 * c.height, c.height * 0.245 + offset);
     
     ctx.fillStyle = "rgb(0, 0, 0)";
     if(selectedSetting == 1) ctx.fillStyle = "rgb(0, 200, 0)";
-    ctx.fillText("repeat size: " + editRepeatSize, 0.005 * c.height, c.height * 0.275);
+    ctx.fillText("repeat size: " + editRepeatSize, 0.005 * c.height, c.height * 0.275 + offset);
     
     ctx.fillStyle = "rgb(0, 0, 0)";
     if(selectedSetting == 2) ctx.fillStyle = "rgb(0, 200, 0)";
-    ctx.fillText("delete", 0.005 * c.height, c.height * 0.305);
+    ctx.fillText("delete", 0.005 * c.height, c.height * 0.305 + offset);
     
     ctx.fillStyle = "rgb(0, 0, 0)";
     if(selectedSetting == 3) ctx.fillStyle = "rgb(0, 200, 0)";
-    ctx.fillText("id: " + editId, 0.005 * c.height, c.height * 0.335);
+    ctx.fillText("id: " + editId, 0.005 * c.height, c.height * 0.335 + offset);
     
     ctx.fillStyle = "rgb(0, 0, 0)";
     if(selectedSetting == 4) ctx.fillStyle = "rgb(0, 200, 0)";
-    ctx.fillText("snap: " + editSnap, 0.005 * c.height, c.height * 0.365);
+    ctx.fillText("snap: " + editSnap, 0.005 * c.height, c.height * 0.365 + offset);
   }
   
   var xOff = 1 * c.width - 0.15 * c.height;
@@ -498,6 +579,15 @@ function draw() {
   ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
   ctx.font = "1000 " + c.height * 0.1 + "px Arial";
   ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
+  
+  if(player.hp <= 0) {
+    ctx.fillStyle = "rgb(0, 0, 0, " + (1 - player.invulnerableTimer / 30) + ")";
+    ctx.fillRect(0, 0, c.width, c.height);
+  }
+  if(player.spawnTimer > 0) {
+    ctx.fillStyle = "rgb(0, 0, 0, " + player.spawnTimer / 15 + ")";
+    ctx.fillRect(0, 0, c.width, c.height);
+  }
 }
 
 function drawPlayer() {
@@ -652,15 +742,15 @@ window.onmousedown = function(e) {
     if(building) {
       building = false;
       var o_ = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");
+      if(o_.pos.x > o_.pos.x + o_.size.x) {
+        o_.pos.x += o_.size.x;
+        o_.size.x = Math.abs(o_.size.x);
+      }
+      if(o_.pos.y > o_.pos.y + o_.size.y) {
+        o_.pos.y += o_.size.y;
+        o_.size.y = Math.abs(o_.size.y);
+      }
       var o = JSON.parse(JSON.stringify(o_));
-      if(o.pos.x > o.pos.x + o.size.x) {
-        o.pos.x += o.size.x;
-        o.size.x = Math.abs(o.size.x);
-      }
-      if(o.pos.y > o.pos.y + o.size.y) {
-        o.pos.y += o.size.y;
-        o.size.y = Math.abs(o.size.y);
-      }
       o.pos.x = Math.round(o.pos.x / c.height * 10000) / 10000;
       o.pos.y = Math.round(o.pos.y / c.height * 10000) / 10000;
       o.size.x = Math.round(o.size.x / c.height * 10000) / 10000;
@@ -716,6 +806,7 @@ window.onmousemove = function(e) {
 }
 
 window.onkeydown = function(e) {
+if(player.hp > 0) {
   if(e.keyCode == 37 && cheatMode && editMode) {
     if(cheatMode && editMode) {
       if(selectedTexture > 0) {
@@ -821,7 +912,15 @@ window.onkeydown = function(e) {
       break;
 
     case 32:
-      player.interacting = true;
+      if(player.onCrate) {
+        player.interacting = true;
+      } else {
+        if(!player.textureFlipped) {
+        levels[0].projectiles.push(new projectile(player.pos.x / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.025, 0, 25, false));
+        } else {
+          levels[0].projectiles.push(new projectile((player.pos.x - player.size.x / 2) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, -0.025, 0, 25, false));
+        }
+      }
       break;
 
     case 69:
@@ -863,6 +962,7 @@ window.onkeydown = function(e) {
       break;
     }
   }
+}
 }
 
 window.onkeyup = function(e) {

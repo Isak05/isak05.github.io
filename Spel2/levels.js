@@ -71,15 +71,19 @@ function loadLevels() {
   levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 27, true, 0.05));
   levels[0].deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
   levels[0].deaths.push(new death(1.5, -0.1, 0.1, 0.05, 13, true, 0.05));
-
   
   levels[0].foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
   levels[0].foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
   levels[0].foregrounds.push(new foreground(1.9, -0.35, 0.03, 0.38, 14, true, 0.04));
   levels[0].foregrounds.push(new foreground(1.88, 0.03, 0.07, 0.07, 15, true, 0.07));
 
-  levels[0].particleEmitters.push(new particleEmitter(-0.7, 0.375, 0.05, 0.05, 0.5, 0, 90, 29, 0.025));
-  levels[0].particleEmitters.push(new particleEmitter(2.6, 1.3, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
+  var func = function() {
+    return {x: 0, y: -1};
+  }
+  levels[0].particleEmitters.push(new particleEmitter(-0.7, 0.375, func, 0.05, 0.05, 0.5, 0, 90, 29, 0.025));
+  levels[0].particleEmitters.push(new particleEmitter(2.6, 1.3, func, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
+  
+  levels[0].pickups.push(new pickup(-0.1, 0.8, 26, () => {player.hp = 100}));
   
   var x = 0;
   for(var i = 0; i < levels[0].buttons.length; i++) {
@@ -103,14 +107,28 @@ function level() {
   this.signals = [];
   this.npcs = [];
   this.deaths = [];
+  this.pickups = [];
   
   this.projectiles = [];
   this.particleEmitters = [];
 }
 
-function particle(x, y, width, height, life, opacityCurve, texture) {
+function pickup(x, y, texture, onPickup) {
+  this.pos = {x: x * c.height, y: y * c.height};
+  this.time = 0;
+  this.size = {x: 0.05 * c.height, y: 0.05 * c.height};
+  this.texture = texture;
+  this.onPickup = onPickup;
+  this.update = function() {
+    this.time++;
+    this.pos.y += Math.sin(this.time / 10) * 0.6;
+  }
+}
+
+function particle(x, y, xVel, yVel, width, height, life, opacityCurve, texture) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.size = {x: width * c.height, y: height * c.height};
+  this.vel = {x: xVel, y: yVel};
   this.texture = texture;
   this.time = 0;
   this.delete = false;
@@ -119,7 +137,8 @@ function particle(x, y, width, height, life, opacityCurve, texture) {
   this.opacity = opacityCurve(0);
   this.update = function() {
     this.time++;
-    this.pos.y += -2;
+    this.pos.x += this.vel.x;
+    this.pos.y += this.vel.y;
     this.opacity = this.opacityCurve(this.time / this.life);
     if(this.time > this.life) {
       this.delete = true;
@@ -127,12 +146,13 @@ function particle(x, y, width, height, life, opacityCurve, texture) {
   };
 }
 
-function particleEmitter(x, y, sizeX, sizeY, rangeX, rangeY, life, texture, rate) {
+function particleEmitter(x, y, velFunc, sizeX, sizeY, rangeX, rangeY, life, texture, rate) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.size = {x: sizeX * c.height, y: sizeY * c.height};
   this.range = {x: rangeX * c.height, y: rangeY * c.height};
   this.particles = [];
   this.rate = rate;
+  this.enabled = true;
   this.texture = texture;
   this.life = life;
   this.opacityCurve = function(time) {return Math.tanh((Math.sin(time*Math.PI*2-Math.PI/2) * 0.5 + 0.5)*3)};
@@ -143,19 +163,21 @@ function particleEmitter(x, y, sizeX, sizeY, rangeX, rangeY, life, texture, rate
         this.particles.splice(i, 1);
       }
     }
-    if(Math.random() < this.rate) {
+    if(Math.random() < this.rate && this.enabled) {
       this.w = this.size.x / c.height;
       this.h = this.size.y / c.height;
-      this.particles.push(new particle((this.pos.x + (this.range.x - this.w * c.height) * Math.random()) / c.height, (this.pos.y + (this.range.y - this.h * c.height) * Math.random()) / c.height, this.w, this.h, this.life, this.opacityCurve, this.texture));
+      this.vel = velFunc();
+      this.particles.push(new particle((this.pos.x + (this.range.x - this.w * c.height) * Math.random()) / c.height, (this.pos.y + (this.range.y - this.h * c.height) * Math.random()) / c.height, this.vel.x, this.vel.y, this.w, this.h, this.life, this.opacityCurve, this.texture));
     }
   };
 }
 
-function projectile(x, y, xVel, yVel, texture) {
+function projectile(x, y, xVel, yVel, texture, canHurtPlayer) {
   this.size = {x: 0.045 * c.height, y: 0.02 * c.height};
   this.pos = {x: x * c.height + this.size.x / 2, y: y * c.height - this.size.y / 2};
   this.texture = texture;
-  this.vel = {x: xVel, y: yVel};
+  this.vel = {x: xVel * c.height, y: yVel * c.height};
+  this.canHurtPlayer = canHurtPlayer;
   this.textureFlipped = false;
   if(this.vel.x > 0) {
     this.textureFlipped = true;
@@ -165,8 +187,8 @@ function projectile(x, y, xVel, yVel, texture) {
   this.update = function() {
     this.pos.x += this.vel.x;
     this.pos.y += this.vel.y;
-    if(!cheatMode && checkCollision(this, player)) {
-      player.damage(25);
+    if(!cheatMode && checkCollision(this, player) && this.canHurtPlayer) {
+      player.damage(15 + Math.round(Math.random() * 20));
       this.delete = true;
     }
     
@@ -263,6 +285,15 @@ function npc(x, y, type) {
     this.speed = c.height * 0.003;
   }
   
+  this.hp = 100;
+  this.damage = function(hp) {
+    this.hp -= hp;
+  }
+  this.delete = false;
+  this.die = function() {
+    this.delete = true;
+  }
+  
   this.onGround = false;
   this.jumpStrength = c.height * 0.035;
   
@@ -320,11 +351,12 @@ function npc(x, y, type) {
       if(this.fireCooldown > 0) {
         this.fireCooldown--;
       }
-      if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y) {
+      if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
+        this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
         if(this.textureFlipped) {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.025 * c.height, 0, 25));
+          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.025, 0, 25, true));
         } else {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, -0.025 * c.height, 0, 25));
+          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, -0.025, 0, 25, true));
         }
         this.fireCooldown = this.fireSpeed;
       }
@@ -335,34 +367,54 @@ function npc(x, y, type) {
     
     this.onGround = false;
     //this.next = JSON.parse(JSON.stringify(this));
-    this.next = this;
+    this.next = {pos: {x: this.pos.x, y: this.pos.y}, size: {x: this.size.x, y: this.size.y}};
+    this.next.pos.x += this.vel.x;
+    this.next.pos.y += this.vel.y;
     for(var i = 0; i < this.collisions.length; i++) {
       this.objects = eval("levels[0]." + this.collisions[i]);
       for(var j = 0; j < this.objects.length; j++) {
-        this.next.pos.x += this.vel.x;
         if(checkCollision(this.next, this.objects[j])) {
-          this.turn = true;
-          if(!this.textureFlipped) {
-            this.pos.x = this.objects[j].pos.x + this.objects[j].size.x;
-          } else {
-            this.pos.x = this.objects[j].pos.x - this.size.x;
-          }
-        } 
-        this.next.pos.x -= this.vel.x;
-        
-        this.next.pos.y += this.vel.y;
-        if(checkCollision(this.next, this.objects[j])) {
-          this.vel.y = 0;
-          if(Math.abs((this.pos.y + this.size.y) - this.objects[j].pos.y) < 
-          Math.abs(this.pos.y - (this.objects[j].pos.y + this.objects[j].size.y))) {
-            this.onGround = true;
-            this.pos.y = this.objects[j].pos.y - this.size.y;
-          } else {
+          // Get closest side
+          var dist = [];
+          dist.push({val: Math.abs((this.objects[j].pos.y + this.objects[j].size.y) - this.pos.y), id: 0});
+          dist.push({val: Math.abs(this.objects[j].pos.x - (this.pos.x + this.size.x)), id: 1});
+          dist.push({val: Math.abs(this.objects[j].pos.y - (this.pos.y + this.size.y)), id: 2});
+          dist.push({val: Math.abs((this.objects[j].pos.x + this.objects[j].size.x) - this.pos.x), id: 3});
+          
+          dist.sort((a, b) => {return a.val - b.val});
+          var side = dist[0].id;
+          switch(side) {
+          case 0:
             this.pos.y = this.objects[j].pos.y + this.objects[j].size.y;
+            this.vel.y = 0;
+            break;
+          case 1:
+            this.pos.x = this.objects[j].pos.x - this.size.x;
+            this.turn = true;
+            break;
+          case 2:
+            this.pos.y = this.objects[j].pos.y - this.size.y;
+            this.vel.y = 0;
+            this.onGround = true;
+            break;
+          case 3:
+            this.pos.x = this.objects[j].pos.x + this.objects[j].size.x;
+            this.turn = true;
+            break;
           }
-        } 
-        this.next.pos.y -= this.vel.y;
+        }
       }
+    }
+    
+    for(var i = 0; i < levels[0].projectiles.length; i++) {
+      if(checkCollision(this, levels[0].projectiles[i]) && !levels[0].projectiles[i].canHurtPlayer) {
+        levels[0].projectiles.splice(i, 1);
+        this.damage(50);
+      }
+    }
+    
+    if(this.hp <= 0) {
+      this.die();
     }
     
     if(this.turn && this.type == 0) {
