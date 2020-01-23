@@ -4,7 +4,7 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2"];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -44,6 +44,8 @@ var player = {
   textureFlipped: false,
   invulnerableTimer: 0,
   spawnTimer: 15,
+  shootTimer: 0,
+  shooting: false,
   setAnim: function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
@@ -57,6 +59,7 @@ var player = {
     this.hp = 100;
     this.invulnerableTimer = 0;
     this.spawnTimer = 30;
+    keys = 0;
     loadLevels();
   }, 
   damage: function(n) {
@@ -92,10 +95,10 @@ var editMode = false;
 var mousePos = {x: 0, y: 0};
 var selectedTexture = 0;
 var selectedType = 0;
-var editRepeating = false;
-var editRepeatSize = 0.1;
+var editRepeating = true;
+var editRepeatSize = 0.05;
 var editId = 0;
-var editSnap = 0.01;
+var editSnap = 0.05;
 var selectedSetting = -1;
 var settingLength = 5;
 var setting = -1;
@@ -103,6 +106,7 @@ var deleting = false;
 var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(player.pos.x - c.width / 2, player.pos.y - c.height * 1);
 var godMode = false;
+var keys = 0;
 
 // The object arrays are in order of rendering
 var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds", "pickups"];
@@ -123,7 +127,7 @@ var cv = document.createElement("canvas");
 cv.width = c.width;
 cv.height = c.width;
 var ctxv = cv.getContext("2d");
-var v = ctx.createRadialGradient(c.width / 2, c.width / 2, c.width / 2, c.width / 2, c.width / 2, 0);
+var v = ctx.createRadialGradient(c.width / 2, c.width / 2, c.width / 2, c.width / 2, c.width / 2, c.width / 10);
 v.addColorStop(0, "rgb(255, 0, 0, 1)");
 v.addColorStop(1, "rgb(255, 0, 0, 0)");
 ctxv.fillStyle = v;
@@ -144,6 +148,15 @@ function update() {
   score = time;
   if(score > highScore) {
     highScore = score;
+  }
+  
+  if(player.shootTimer <= 0 && player.shooting) {
+    player.shootTimer = 15;
+    if(!player.textureFlipped) {
+      levels[0].projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
+    } else {
+      levels[0].projectiles.push(new projectile((player.pos.x - player.size.x / 2) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, -0.025, 0, 36, false));
+    }
   }
   
   if(godMode) {
@@ -240,7 +253,7 @@ function update() {
   
   if((!player.onGround && player.currentAnim != 3) || (!player.onGround && player.acc.x != player.prevAcc.x)) {
     player.setAnim(3);
-    if(player.acc.x > 0) {
+    if(player.vel.x > 0) {
       player.textureFlipped = false;
     } else {
       player.textureFlipped = true;
@@ -298,6 +311,8 @@ function update() {
     player.texture = player.anims[player.currentAnim][player.currentAnimFrame].texture;
   }
   
+  var distEnd = Math.sqrt(2);
+  
   // Npcs
   for(var i = 0; i < levels[0].npcs.length; i++) {
     levels[0].npcs[i].update();
@@ -333,6 +348,19 @@ function update() {
   player.prevAcc.y = player.acc.y;
   
   player.prevInteracting = player.interacting;
+  
+  if(player.shootTimer > 0) {
+    player.shootTimer--;
+    if(player.textureFlipped) {
+      cameraOffset.x += player.shootTimer * 0.75;
+      cameraOffset.x += (Math.random() - 0.5) * 0.001 * c.height * player.shootTimer;
+      cameraOffset.y += (Math.random() - 0.5) * 0.002 * c.height * player.shootTimer;
+    } else {
+      cameraOffset.x += -player.shootTimer * 0.75;
+      cameraOffset.x += (Math.random() - 0.5) * 0.001 * c.height * player.shootTimer;
+      cameraOffset.y += (Math.random() - 0.5) * 0.002 * c.height * player.shootTimer;
+    }
+  }
   
   // Player death
   if(player.invulnerableTimer > 0) {
@@ -437,6 +465,8 @@ function draw() {
     }
   }
   
+  ctx.drawImage(textures[37], levels[0].end.x - cameraOffset.x, levels[0].end.y - cameraOffset.y, 0.15 * c.height, 0.15 * c.height);
+  
   for(var i = 0; i < levels[0].particleEmitters.length; i++) {
     levels[0].particleEmitters[i].update();
     for(var j = 0; j < levels[0].particleEmitters[i].particles.length; j++) {
@@ -486,18 +516,25 @@ function draw() {
   if(player.hp <= 33) {
     tex = 31;
   }
-  ctx.drawImage(textures[tex], 5, 5, 35, 35);
+  ctx.drawImage(textures[tex], 0.005 * c.height, 0.005 * c.height, 0.045 * c.height, 0.045 * c.height);
   
   ctx.fillStyle = "rgb(0, 0, 0)";
-  ctx.fillRect(45, 5, 260, 35);
+  ctx.fillRect(0.06 * c.height, 0.005 * c.height, 0.35 * c.height, 0.05 * c.height);
   
-  if(player.hp > 500) {
+  if(player.hp > 5000) {
     ctx.fillStyle = "hsl(" + time / 5 + ", 100%, " + (40 + player.invulnerableTimer * 5) + "%)";
-    ctx.fillRect(50, 10, 100 / 100 * 250, 25);
+    ctx.fillRect(0.065 * c.height, 0.01 * c.height, 0.34 * c.height, 0.04 * c.height);
   } else {
     ctx.fillStyle = "hsl(" + player.hp + ", 100%, " + (40 + player.invulnerableTimer * 5) + "%)";
-    ctx.fillRect(50, 10, player.hp / 100 * 250, 25);
+    ctx.fillRect(0.065 * c.height, 0.01 * c.height, 0.34 * c.height / 100 * player.hp, 0.04 * c.height);
   }
+  
+  // Keys
+  ctx.drawImage(textures[33], 0.005 * c.height, 0.075 * c.height, 0.05 * c.height, 0.05 * c.height);
+  ctx.font = "600 " + c.height * 0.05 + "px Arial";
+  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.fontWidth = 1000;
+  ctx.fillText(keys, 0.06 * c.height, 0.115 * c.height);
   
   var offset = 0.1 * c.height;
   
@@ -527,7 +564,7 @@ function draw() {
     }
     
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0, 0.425 * c.height + offset, 0.175 * c.height, 0.22 * c.height);
+    ctx.fillRect(0, 0.425 * c.height + offset, 0.175 * c.height, 0.26 * c.height);
     
     for(var i = 0; i < objectNames.length; i++) {
       if(selectedType == i) {
@@ -601,6 +638,9 @@ function drawPlayer() {
                 player.pos.y - cameraOffset.y, 
                 w, 
                 player.size.y);
+    if(player.shootTimer > 0) {
+      ctx.drawImage(textures[34], -(player.pos.x - cameraOffset.x + 0.02 * c.height), player.pos.y - cameraOffset.y + 0.025 * c.height, 0.04 * c.height, 0.04 * c.height);
+    }
     ctx.restore();
   } else {
     ctx.drawImage(textures[player.texture], 
@@ -608,6 +648,9 @@ function drawPlayer() {
                 player.pos.y - cameraOffset.y, 
                 w, 
                 player.size.y);
+    if(player.shootTimer > 0) {
+      ctx.drawImage(textures[34], player.pos.x - cameraOffset.x + 0.04 * c.height, player.pos.y - cameraOffset.y + 0.025 * c.height, 0.04 * c.height, 0.04 * c.height);
+    }
   }
 }
 
@@ -721,6 +764,17 @@ window.onmousedown = function(e) {
           levels[0].npcs.push(new npc(pos.x, pos.y, editId));
           console.log("levels[0].npcs.push(new npc(" + pos.x + ", " + pos.y + ", " + editId + "));");
           break;
+        case "deaths":
+          levels[0].deaths.push(new death(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          building = true;
+          break;
+        case "foregrounds":
+          levels[0].foregrounds.push(new foreground(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          building = true;
+          break;
+        case "pickups":
+          levels[0].pickups.push(new pickup(pos.x, pos.y, selectedTexture, () => {}));
+          break;
         }
         return;
       } else {
@@ -796,12 +850,10 @@ window.onmousemove = function(e) {
   mousePos.x = e.clientX;
   mousePos.y = e.clientY;
   if(cheatMode && building) {
-    if(objectNames[selectedType] == "walls" || objectNames[selectedType] == "backgrounds" || objectNames[selectedType] == "doors") {
-      var pos = {x: Math.round((mousePos.x + cameraOffset.x) / (editSnap * c.height)) * (editSnap * c.height), y: Math.round((mousePos.y + cameraOffset.y) / (editSnap * c.height)) * (editSnap * c.height)};
-      var o = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");;
-      o.size.x = pos.x - o.pos.x;
-      o.size.y = pos.y - o.pos.y;
-    }
+    var pos = {x: Math.round((mousePos.x + cameraOffset.x) / (editSnap * c.height)) * (editSnap * c.height), y: Math.round((mousePos.y + cameraOffset.y) / (editSnap * c.height)) * (editSnap * c.height)};
+    var o = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");;
+    o.size.x = pos.x - o.pos.x;
+    o.size.y = pos.y - o.pos.y;
   }
 }
 
@@ -912,15 +964,7 @@ if(player.hp > 0) {
       break;
 
     case 32:
-      if(player.onCrate) {
-        player.interacting = true;
-      } else {
-        if(!player.textureFlipped) {
-        levels[0].projectiles.push(new projectile(player.pos.x / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.025, 0, 25, false));
-        } else {
-          levels[0].projectiles.push(new projectile((player.pos.x - player.size.x / 2) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, -0.025, 0, 25, false));
-        }
-      }
+      player.interacting = true;
       break;
 
     case 69:
@@ -959,6 +1003,10 @@ if(player.hp > 0) {
       if(cheatMode) {
         godMode = !godMode;
       }
+      break;
+      
+    case 16:
+      player.shooting = true;
       break;
     }
   }
@@ -1006,5 +1054,9 @@ window.onkeyup = function(e) {
   case 32:
     player.interacting = false;
     break;
+    
+  case 16:
+      player.shooting = false;
+      break;
   }
 }

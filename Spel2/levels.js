@@ -21,18 +21,23 @@ function loadLevels() {
   levels[0].walls.push(new wall(-0.2, 0.9, 0.9, 0.05, 21, true, 0.05));
   levels[0].walls.push(new wall(-3.15, 0.3, 2.45, 0.05, 20, true, 0.05));
   levels[0].walls.push(new wall(1.5, 0.3, 0.8, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(2.25, -0.65, 0.05, 0.95, 20, true, 0.05));
-  levels[0].walls.push(new wall(1.45, -0.651, 0.05, 0.7, 20, true, 0.05));
   levels[0].walls.push(new wall(-0.05, -0.65, 0.05, 0.65, 19, true, 0.05));
   levels[0].walls.push(new wall(2.15, 0.05, 0.1, 0.1, 19, true, 0.1));
   levels[0].walls.push(new wall(1.6, -0.1, 0.2, 0.05, 19, true, 0.05));
   levels[0].walls.push(new wall(1.6, -0.4, 0.65, 0.05, 19, true, 0.05));
   levels[0].walls.push(new wall(2.1, -0.6, 0.15, 0.05, 20, true, 0.05));
-  levels[0].walls.push(new wall(0, -0.65, 1.45, 0.05, 20, true, 0.05));
   levels[0].walls.push(new wall(1.45, -0.9, 0.65, 0.05, 20, true, 0.05));
   levels[0].walls.push(new wall(2.05, -0.85, 0.05, 0.3, 20, true, 0.05));
   levels[0].walls.push(new wall(1.5, -0.05, 0.1, 0.05, 19, true, 0.05));
   levels[0].walls.push(new wall(2.45, 1.4, 0.55, 0.05, 21, true, 0.05));
+  levels[0].walls.push(new wall(1.45, -0.65, 0.05, 0.7, 19, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(2.25, -0.65, 0.05, 0.95, 19, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(0, -0.65, 1.45, 0.05, 19, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-0.5, 0.3, 0.1, 0.05, 7, true, 0.05000000000000002));
+  levels[0].walls.push(new wall(-0.05, -1, 0.05, 0.35, 19, true, 0.05));
+  levels[0].walls.push(new wall(0, -1, 0.6, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(-0.85, -0.15, 0.8, 0.05, 19, true, 0.05));
+  levels[0].walls.push(new wall(-0.9, -0.15, 0.05, 0.45, 19, true, 0.05));
   
   levels[0].backgrounds.push(new background(-2, -2, 10, 3, 2, true, 0.1));
   levels[0].backgrounds.push(new background(-2.5, -0.15, 0.5, 0.5, 0, false, 0));
@@ -46,6 +51,8 @@ function loadLevels() {
   levels[0].backgrounds.push(new background(0.85, -0.65, 0.6, 0.7, 20, true, 0.05));
   levels[0].backgrounds.push(new background(0.1, -0.65, 0.75, 0.25, 20, true, 0.05));
   levels[0].backgrounds.push(new background(0, -0.65, 0.1, 0.65, 20, true, 0.05));
+  levels[0].backgrounds.push(new background(-2, -1.85, 1.1, 2.15, 20, true, 0.05));
+  levels[0].backgrounds.push(new background(-0.9, -1.85, 0.85, 1.7, 20, true, 0.05));
 
   levels[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1));
   levels[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1));
@@ -84,6 +91,7 @@ function loadLevels() {
   levels[0].particleEmitters.push(new particleEmitter(2.6, 1.3, func, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
   
   levels[0].pickups.push(new pickup(-0.1, 0.8, 26, () => {player.hp = 100}));
+  levels[0].pickups.push(new pickup(-0.8, 0.15, 33, () => {keys++}));
   
   var x = 0;
   for(var i = 0; i < levels[0].buttons.length; i++) {
@@ -98,6 +106,7 @@ function loadLevels() {
 
 function level() {
   this.spawnPoint = {x: 0.3 * c.height, y: 0.15 * c.height};
+  this.end = {x: 0 * c.height, y: 0.15 * c.height};
   this.walls = [];
   this.backgrounds = [];
   this.foregrounds = [];
@@ -172,8 +181,8 @@ function particleEmitter(x, y, velFunc, sizeX, sizeY, rangeX, rangeY, life, text
   };
 }
 
-function projectile(x, y, xVel, yVel, texture, canHurtPlayer) {
-  this.size = {x: 0.045 * c.height, y: 0.02 * c.height};
+function projectile(x, y, width, height, xVel, yVel, texture, canHurtPlayer) {
+  this.size = {x: width * c.height, y: height * c.height};
   this.pos = {x: x * c.height + this.size.x / 2, y: y * c.height - this.size.y / 2};
   this.texture = texture;
   this.vel = {x: xVel * c.height, y: yVel * c.height};
@@ -181,6 +190,12 @@ function projectile(x, y, xVel, yVel, texture, canHurtPlayer) {
   this.textureFlipped = false;
   if(this.vel.x > 0) {
     this.textureFlipped = true;
+  }
+  if(this.texture == 36) {
+    this.textureFlipped = true;
+    if(this.vel.x > 0) {
+      this.textureFlipped = false;
+    }
   }
   this.delete = false;
   this.collisions = ["walls", "doors", "crates"];
@@ -354,9 +369,9 @@ function npc(x, y, type) {
       if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
         this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
         if(this.textureFlipped) {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.025, 0, 25, true));
+          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));
         } else {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, -0.025, 0, 25, true));
+          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, -0.025, 0, 25, true));
         }
         this.fireCooldown = this.fireSpeed;
       }
