@@ -1,112 +1,155 @@
-var levels = [];
+function loadLevel(id) {
+  var res = new level_();
 
-function loadLevels() {
-  levels = [];
+  switch(id) {
+  case 0:
+    res.spawnPoint = {x: 0.3 * c.height, y: 0.15 * c.height};
+    res.end = {x: 0.2 * c.height, y: -1 * c.height};
+    
+    res.walls.push(new wall(0.7, 0.9, 0.8, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(1.45, 0.3, 0.05, 0.6, 19, true, 0.05));
+    res.walls.push(new wall(0.7, 0.3, 0.05, 0.6, 19, true, 0.05));
+    res.walls.push(new wall(-0.2, 0.3, 0.7, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(0.7, 0.05, 0.8, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(0.9, 0.6, 0.4, 0.02, 19, true, 0.05));
+    res.walls.push(new wall(0.5, 0.7, 0.2, 0.01, 19, true, 0.05));
+    res.walls.push(new wall(-0.2, 0.9, 0.4, 0.05, 21, true, 0.05));
+    res.walls.push(new wall(-0.25, 0.4, 0.05, 0.55, 20, true, 0.05));
+    res.walls.push(new wall(-0.7, 0.4, 0.45, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-0.05, 0, 0.45, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(0.1, -0.35, 0.05, 0.35, 19, true, 0.05));
+    res.walls.push(new wall(0.8, -0.35, 0.05, 0.4, 19, true, 0.05));
+    res.walls.push(new wall(0.1, -0.4, 0.75, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-0.2, 0.9, 0.9, 0.05, 21, true, 0.05));
+    res.walls.push(new wall(-3.15, 0.3, 2.45, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(1.5, 0.3, 0.8, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-0.05, -0.65, 0.05, 0.65, 19, true, 0.05));
+    res.walls.push(new wall(2.15, 0.05, 0.1, 0.1, 19, true, 0.1));
+    res.walls.push(new wall(1.6, -0.1, 0.2, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(1.6, -0.4, 0.65, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(2.1, -0.6, 0.15, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(1.45, -0.9, 0.65, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(2.05, -0.85, 0.05, 0.3, 20, true, 0.05));
+    res.walls.push(new wall(1.5, -0.05, 0.1, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(2.45, 1.4, 0.55, 0.05, 21, true, 0.05));
+    res.walls.push(new wall(1.45, -0.65, 0.05, 0.7, 19, true, 0.05));
+    res.walls.push(new wall(2.25, -0.65, 0.05, 0.95, 19, true, 0.05));
+    res.walls.push(new wall(-0.05, -1, 0.05, 0.35, 19, true, 0.05));
+    res.walls.push(new wall(-0.85, -0.15, 0.8, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-0.9, -0.15, 0.05, 0.45, 19, true, 0.05));
+    res.walls.push(new wall(0.55, -1.2, 0.05, 0.4, 19, true, 0.05));
+    res.walls.push(new wall(-0.05, -1.2, 0.6, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-0.05, -1.15, 0.05, 0.15, 19, true, 0.05));
+    res.walls.push(new wall(0.8, -0.65, 0.65, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(0, -0.65, 0.8, 0.05, 21, true, 0.05));
+    res.walls.push(new wall(-0.2, 0.35, 0.05, 0.05, 19, true, 0.05));
+   
+    res.backgrounds.push(new background(-2, -2, 10, 3, 2, true, 0.1));
+    res.backgrounds.push(new background(-0.75, 0.35, 0.05, 0.1, 20, true, 0.05));
+    res.backgrounds.push(new background(-2.35, 0.45, 2.1, 1.2, 20, true, 0.05));
+    res.backgrounds.push(new background(-2.35, 0.35, 1.6, 0.1, 20, true, 0.05));
+    res.backgrounds.push(new background(-0.25, 0.95, 3.65, 0.8, 20, true, 0.05));
+    res.backgrounds.push(new background(1.5, 0.35, 1.9, 0.6, 20, true, 0.05));
+    res.backgrounds.push(new background(2.3, -0.65, 1.2, 1.0, 20, true, 0.05));
+    res.backgrounds.push(new background(0.85, -0.65, 0.6, 0.7, 20, true, 0.05));
+    res.backgrounds.push(new background(0.1, -0.65, 0.75, 0.25, 20, true, 0.05));
+    res.backgrounds.push(new background(0, -0.65, 0.1, 0.65, 20, true, 0.05));
+    res.backgrounds.push(new background(-2, -1.85, 1.1, 2.15, 20, true, 0.05));
+    res.backgrounds.push(new background(-0.9, -1.85, 0.85, 1.7, 20, true, 0.05));
 
-  levels.push(new level());
-  levels[0].walls.push(new wall(0.7, 0.9, 0.8, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(1.45, 0.3, 0.05, 0.6, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.7, 0.3, 0.05, 0.6, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.2, 0.3, 0.7, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.7, 0.05, 0.8, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.9, 0.6, 0.4, 0.02, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.5, 0.7, 0.2, 0.01, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.2, 0.9, 0.4, 0.05, 21, true, 0.05));
-  levels[0].walls.push(new wall(-0.25, 0.4, 0.05, 0.55, 20, true, 0.05));
-  levels[0].walls.push(new wall(-0.7, 0.4, 0.45, 0.05, 20, true, 0.05));
-  levels[0].walls.push(new wall(-0.05, 0, 0.45, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.1, -0.35, 0.05, 0.35, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.8, -0.35, 0.05, 0.4, 19, true, 0.05));
-  levels[0].walls.push(new wall(0.1, -0.4, 0.75, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.2, 0.9, 0.9, 0.05, 21, true, 0.05));
-  levels[0].walls.push(new wall(-3.15, 0.3, 2.45, 0.05, 20, true, 0.05));
-  levels[0].walls.push(new wall(1.5, 0.3, 0.8, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.05, -0.65, 0.05, 0.65, 19, true, 0.05));
-  levels[0].walls.push(new wall(2.15, 0.05, 0.1, 0.1, 19, true, 0.1));
-  levels[0].walls.push(new wall(1.6, -0.1, 0.2, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(1.6, -0.4, 0.65, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(2.1, -0.6, 0.15, 0.05, 20, true, 0.05));
-  levels[0].walls.push(new wall(1.45, -0.9, 0.65, 0.05, 20, true, 0.05));
-  levels[0].walls.push(new wall(2.05, -0.85, 0.05, 0.3, 20, true, 0.05));
-  levels[0].walls.push(new wall(1.5, -0.05, 0.1, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(2.45, 1.4, 0.55, 0.05, 21, true, 0.05));
-  levels[0].walls.push(new wall(1.45, -0.65, 0.05, 0.7, 19, true, 0.05000000000000002));
-  levels[0].walls.push(new wall(2.25, -0.65, 0.05, 0.95, 19, true, 0.05000000000000002));
-  levels[0].walls.push(new wall(0, -0.65, 1.45, 0.05, 19, true, 0.05000000000000002));
-  levels[0].walls.push(new wall(-0.5, 0.3, 0.1, 0.05, 7, true, 0.05000000000000002));
-  levels[0].walls.push(new wall(-0.05, -1, 0.05, 0.35, 19, true, 0.05));
-  levels[0].walls.push(new wall(0, -1, 0.6, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.85, -0.15, 0.8, 0.05, 19, true, 0.05));
-  levels[0].walls.push(new wall(-0.9, -0.15, 0.05, 0.45, 19, true, 0.05));
-  
-  levels[0].backgrounds.push(new background(-2, -2, 10, 3, 2, true, 0.1));
-  levels[0].backgrounds.push(new background(-2.5, -0.15, 0.5, 0.5, 0, false, 0));
-  levels[0].backgrounds.push(new background(-0.2, 0.35, 0.05, 0.05, 19, true, 0.05));
-  levels[0].backgrounds.push(new background(-0.75, 0.35, 0.05, 0.1, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(-2.35, 0.45, 2.1, 1.2, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(-2.35, 0.35, 1.6, 0.1, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(-0.25, 0.95, 3.65, 0.8, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(1.5, 0.35, 1.9, 0.6, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(2.3, -0.65, 1.2, 1.0, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(0.85, -0.65, 0.6, 0.7, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(0.1, -0.65, 0.75, 0.25, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(0, -0.65, 0.1, 0.65, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(-2, -1.85, 1.1, 2.15, 20, true, 0.05));
-  levels[0].backgrounds.push(new background(-0.9, -1.85, 0.85, 1.7, 20, true, 0.05));
+    res.crates.push(new crate(0.2, -0.2, 0.1, 0.1));
+    res.crates.push(new crate(1.1, 0.3, 0.1, 0.1));
+    res.crates.push(new crate(1.7, -0.6, 0.1, 0.1));
+    res.crates.push(new crate(2.61, 1.25, 0.1, 0.1));
+    res.crates.push(new crate(2.73, 1.25, 0.1, 0.1));
+    res.crates.push(new crate(2.67, 1.1, 0.1, 0.1));
 
-  levels[0].crates.push(new crate(0.2, -0.2, 0.1, 0.1));
-  levels[0].crates.push(new crate(1.1, 0.3, 0.1, 0.1));
-  levels[0].crates.push(new crate(1.7, -0.55, 0.1, 0.1));
-  levels[0].crates.push(new crate(2.61, 1.25, 0.1, 0.1));
-  levels[0].crates.push(new crate(2.73, 1.25, 0.1, 0.1));
-  levels[0].crates.push(new crate(2.67, 1.1, 0.1, 0.1));
+    res.buttons.push(new button(0.6, 0.885, 0));
+    res.buttons.push(new button(0.75, 0.885, 0));
+    res.buttons.push(new button(0.3, 0.885, 1));
+    res.buttons.push(new button(2.15, 0.285, 2));
+    res.buttons.push(new button(0.6, -0.665, 3));
 
-  levels[0].buttons.push(new button(0.6, 0.885, 0));
-  levels[0].buttons.push(new button(0.75, 0.885, 0));
-  levels[0].buttons.push(new button(0.3, 0.885, 1));
-  levels[0].buttons.push(new button(2.15, 0.285, 2));
+    res.doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
+    res.doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
+    res.doors.push(new door(1.45, -0.85, 0.05, 0.2, 2));
+    res.doors.push(new door(2.05, -0.55, 0.05, 0.15, 2));
+    res.doors.push(new door(0.55, -0.8, 0.05, 0.15, 3));
 
-  levels[0].doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
-  levels[0].doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
-  levels[0].doors.push(new door(1.45, -0.85, 0.05, 0.2, 2));
-  levels[0].doors.push(new door(2.05, -0.55, 0.05, 0.15, 2));
+    res.npcs.push(new npc(1, 0.25, 0));
+    res.npcs.push(new npc(0.25, 0.5, 1));
+    res.npcs.push(new npc(2.125, -0.525, 1));
 
-  levels[0].npcs.push(new npc(1, 0.25, 0));
-  levels[0].npcs.push(new npc(0.25, 0.5, 1));
-  levels[0].npcs.push(new npc(2.125, -0.525, 1));
+    res.deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 27, true, 0.05));
+    res.deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
+    res.deaths.push(new death(1.5, -0.1, 0.1, 0.05, 13, true, 0.05));
 
-  levels[0].deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 27, true, 0.05));
-  levels[0].deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
-  levels[0].deaths.push(new death(1.5, -0.1, 0.1, 0.05, 13, true, 0.05));
-  
-  levels[0].foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
-  levels[0].foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
-  levels[0].foregrounds.push(new foreground(1.9, -0.35, 0.03, 0.38, 14, true, 0.04));
-  levels[0].foregrounds.push(new foreground(1.88, 0.03, 0.07, 0.07, 15, true, 0.07));
+    res.foregrounds.push(new foreground(0, 0.05, 0.03 * (4 / 6), 0.15, 14, true, 0.03));
+    res.foregrounds.push(new foreground(0.1, 0.25, 0.05, 0.05, 15, false, 0));
+    res.foregrounds.push(new foreground(1.9, -0.35, 0.03, 0.38, 14, true, 0.04));
+    res.foregrounds.push(new foreground(1.88, 0.03, 0.07, 0.07, 15, true, 0.07));
 
-  var func = function() {
-    return {x: 0, y: -1};
+    var func = function() {
+      return {x: 0, y: -1};
+    }
+    res.particleEmitters.push(new particleEmitter(-0.7, 0.375, func, 0.05, 0.05, 0.5, 0, 90, 29, 0.025));
+    res.particleEmitters.push(new particleEmitter(2.6, 1.3, func, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
+
+    res.pickups.push(new pickup(-0.1, 0.8, 26, () => {player.hp = 100}));
+    res.pickups.push(new pickup(-0.8, 0.15, 33, () => {keys++}));
+    res.pickups.push(new pickup(1.1, 0.8, 39, () => {player.speed += 0.005 * c.height}));
+
+    break;
+    
+  case 1:
+    res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
+    res.end = {x: 0 * c.height, y: 2 * c.height};
+    
+    res.walls.push(new wall(-0.4, 0.1, 0.1, 2, 38, true, 0.1));
+    res.walls.push(new wall(0.3, 0.1, 0.1, 2, 38, true, 0.1));
+    res.walls.push(new wall(-0.4, 0, 0.8, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(0.2, 0.95, 0.1, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.2, 1.05, 0.5, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.3, 0.4, 0.5, 0.1, 38, true, 0.1));
+    
+    res.backgrounds.push(new background(-1.4, -1, 2.9, 5.1, 2, true, 0.09999999999999999));
+
+    res.deaths.push(new death(0.2, 0.9, 0.1, 0.05, 13, true, 0.05));
+    
+    res.npcs.push(new npc(-0.1, 0.8, 1));
+    
+    break;
+    
+  default:
+    res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
+    res.end = {x: 0.675 * c.height, y: 0 * c.height};
+    
+    res.walls.push(new wall(-0.3, -0.3, 1.4, 0.1, 2, true, 0.1));
+    res.walls.push(new wall(-0.3, 0.3, 1.4, 0.1, 2, true, 0.1));
+    res.walls.push(new wall(-0.3, -0.2, 0.1, 0.5, 2, true, 0.1));
+    res.walls.push(new wall(1, -0.2, 0.1, 0.5, 2, true, 0.1));
+    
+    res.backgrounds.push(new background(-0.2, -0.2, 1.2, 0.5, 20, true, 0.1));
+    
+    break;
   }
-  levels[0].particleEmitters.push(new particleEmitter(-0.7, 0.375, func, 0.05, 0.05, 0.5, 0, 90, 29, 0.025));
-  levels[0].particleEmitters.push(new particleEmitter(2.6, 1.3, func, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
-  
-  levels[0].pickups.push(new pickup(-0.1, 0.8, 26, () => {player.hp = 100}));
-  levels[0].pickups.push(new pickup(-0.8, 0.15, 33, () => {keys++}));
   
   var x = 0;
-  for(var i = 0; i < levels[0].buttons.length; i++) {
-    if(levels[0].buttons[i].id > x) {
-      x = levels[0].buttons[i].id;
+  for(var i = 0; i < res.buttons.length; i++) {
+    if(res.buttons[i].id > x) {
+      x = res.buttons[i].id;
     }
   }
   for(var i = 0; i < x + 1; i++) {
-    levels[0].signals.push(false);
+    res.signals.push(false);
   }
+  
+  return res;
 }
 
-function level() {
-  this.spawnPoint = {x: 0.3 * c.height, y: 0.15 * c.height};
-  this.end = {x: 0 * c.height, y: 0.15 * c.height};
+function level_() {
+  this.spawnPoint = undefined;
+  this.end = undefined;
   this.walls = [];
   this.backgrounds = [];
   this.foregrounds = [];
@@ -208,7 +251,7 @@ function projectile(x, y, width, height, xVel, yVel, texture, canHurtPlayer) {
     }
     
     for(var i = 0; i < this.collisions.length; i++) {
-      this.objects = eval("levels[0]." + this.collisions[i]);
+      this.objects = eval("level." + this.collisions[i]);
       for(var j = 0; j < this.objects.length; j++) {
         if(checkCollision(this, this.objects[j])) {
           this.delete = true;
@@ -243,7 +286,7 @@ function door(x, y, width, height, id) {
   
   this.update = function() {
     if(!editMode || !cheatMode) {
-      if(levels[0].signals[this.id]) {
+      if(level.signals[this.id]) {
         if(this.origPos.y - this.size.y < this.pos.y) {
           this.pos.y -= c.height * 0.025;
         }
@@ -337,10 +380,10 @@ function npc(x, y, type) {
     if(this.type == 1 && !cheatMode) {
       var distX = Math.abs((this.pos.x + this.size.x / 2) - (player.pos.x + player.size.x / 2));
       var distY = Math.abs((this.pos.y + this.size.y / 2) - (player.pos.y + player.size.y / 2));
-      if(player.pos.x > this.pos.x + this.size.x && distX < 500 && distY < 300) {
+      if(player.pos.x > this.pos.x + this.size.x && distX < 500 && distX > 100 && distY < 300) {
         this.vel.x += this.speed;
       }
-      if(player.pos.x + player.size.x < this.pos.x && distX < 500 && distY < 300) {
+      if(player.pos.x + player.size.x < this.pos.x && distX < 500 && distX > 100 && distY < 300) {
         this.vel.x += -this.speed;
       }
       if(distX < 200 && distY < 200 && this.fireCooldown <= 0) {
@@ -369,9 +412,9 @@ function npc(x, y, type) {
       if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
         this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
         if(this.textureFlipped) {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));
+          level.projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));
         } else {
-          levels[0].projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, -0.025, 0, 25, true));
+          level.projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, -0.025, 0, 25, true));
         }
         this.fireCooldown = this.fireSpeed;
       }
@@ -386,7 +429,7 @@ function npc(x, y, type) {
     this.next.pos.x += this.vel.x;
     this.next.pos.y += this.vel.y;
     for(var i = 0; i < this.collisions.length; i++) {
-      this.objects = eval("levels[0]." + this.collisions[i]);
+      this.objects = eval("level." + this.collisions[i]);
       for(var j = 0; j < this.objects.length; j++) {
         if(checkCollision(this.next, this.objects[j])) {
           // Get closest side
@@ -421,9 +464,9 @@ function npc(x, y, type) {
       }
     }
     
-    for(var i = 0; i < levels[0].projectiles.length; i++) {
-      if(checkCollision(this, levels[0].projectiles[i]) && !levels[0].projectiles[i].canHurtPlayer) {
-        levels[0].projectiles.splice(i, 1);
+    for(var i = 0; i < level.projectiles.length; i++) {
+      if(checkCollision(this, level.projectiles[i]) && !level.projectiles[i].canHurtPlayer) {
+        level.projectiles.splice(i, 1);
         this.damage(50);
       }
     }
@@ -545,7 +588,7 @@ function crate(x, y, width, height) {
     }
     
     for(var j = 0; j < this.collisions.length; j++) {
-      this.objects = eval("levels[0]." + this.collisions[j]);
+      this.objects = eval("level." + this.collisions[j]);
       for(var i = 0; i < this.objects.length; i++) {
         if(this.objects[i] != this) {
           var xVel = this.vel.x;
@@ -590,9 +633,9 @@ function crate(x, y, width, height) {
       }
     }
     
-    for(var i = 0; i < levels[0].buttons.length; i++) {
-      if(checkCollision(levels[0].buttons[i], this)) {
-        levels[0].buttons[i].pressed = true;
+    for(var i = 0; i < level.buttons.length; i++) {
+      if(checkCollision(level.buttons[i], this)) {
+        level.buttons[i].pressed = true;
       }
     }
     

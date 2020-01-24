@@ -4,17 +4,18 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal"];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed"];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
   textures[i].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-loadLevels();
+var levelId = 0;
+var level = loadLevel(levelId);
 
 var player = {
-  pos: JSON.parse(JSON.stringify(levels[0].spawnPoint)),
+  pos: JSON.parse(JSON.stringify(level.spawnPoint)),
   size: {x: c.height * 0.06, y: c.height * 0.1},
   vel: new vec2(0, 0),
   acc: new vec2(0, 0),
@@ -53,14 +54,14 @@ var player = {
     this.texture = this.anims[x][this.currentAnimFrame].texture;
   },
   die: function() {
-    this.pos = JSON.parse(JSON.stringify(levels[0].spawnPoint));
+    this.pos = JSON.parse(JSON.stringify(level.spawnPoint));
     this.vel = new vec2(0, 0);
     this.onGround = false;
     this.hp = 100;
     this.invulnerableTimer = 0;
     this.spawnTimer = 30;
     keys = 0;
-    loadLevels();
+    level = loadLevel(levelId);
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) {
@@ -68,8 +69,8 @@ var player = {
         return {x: Math.random() * 10 - 5, y: Math.random() * 10};
       }
       this.bloodTime = 5;
-      levels[0].particleEmitters.push(new particleEmitter((this.pos.x + player.size.x / 2) / c.height, (this.pos.y + player.size.y / 2) / c.height, this.func, 0.005 + n * 0.00025, 0.005 + n * 0.00025, 0, 0, 10, 26, n / 50));
-      this.bloodParticle = levels[0].particleEmitters.length - 1;
+      level.particleEmitters.push(new particleEmitter((this.pos.x + player.size.x / 2) / c.height, (this.pos.y + player.size.y / 2) / c.height, this.func, 0.005 + n * 0.00025, 0.005 + n * 0.00025, 0, 0, 10, 26, n / 50));
+      this.bloodParticle = level.particleEmitters.length - 1;
       this.hp -= n;
       this.invulnerableTimer = 15;
       if(this.hp <= 0) {
@@ -116,7 +117,7 @@ var score = 0;
 var highScore = parseInt(document.cookie.substring(10));
 if(!highScore) {
   document.cookie = "highScore=0";
-  highScore = 0;
+  highScore = undefined;
 }
 
 window.onbeforeunload = function() {
@@ -146,16 +147,13 @@ function update() {
   time = window.performance.now();
   
   score = time;
-  if(score > highScore) {
-    highScore = score;
-  }
-  
-  if(player.shootTimer <= 0 && player.shooting) {
+
+  if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
     player.shootTimer = 15;
     if(!player.textureFlipped) {
-      levels[0].projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
+      level.projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
     } else {
-      levels[0].projectiles.push(new projectile((player.pos.x - player.size.x / 2) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, -0.025, 0, 36, false));
+      level.projectiles.push(new projectile((player.pos.x - player.size.x / 2) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, -0.025, 0, 36, false));
     }
   }
   
@@ -170,9 +168,9 @@ function update() {
   }
   
   if(player.bloodTime <= 0 && player.bloodParticle != -1) {
-    levels[0].particleEmitters[player.bloodParticle].enabled = false;
-    if(levels[0].particleEmitters[player.bloodParticle].particles.length == 0) {
-      levels[0].particleEmitters.splice(player.bloodParticle, 1);
+    level.particleEmitters[player.bloodParticle].enabled = false;
+    if(level.particleEmitters[player.bloodParticle].particles.length == 0) {
+      level.particleEmitters.splice(player.bloodParticle, 1);
       player.bloodParticle = -1;
     }
   }
@@ -194,47 +192,45 @@ function update() {
   }
   
   // Buttons
-  for(var i = 0; i < levels[0].buttons.length; i++) {
-    levels[0].buttons[i].pressed = false;
+  for(var i = 0; i < level.buttons.length; i++) {
+    level.buttons[i].pressed = false;
   }
   
   // Crates
-  for(var i = 0; i < levels[0].crates.length; i++) {
-    levels[0].crates[i].update();
+  for(var i = 0; i < level.crates.length; i++) {
+    level.crates[i].update();
   }
 
   // Collisions
-  for(var i = 0; i < levels.length; i++) {
-    for(var j = 0; j < objectNames.length; j++) {
-      collideObjects(eval("levels[i]." + objectNames[j]), objectColliders[j]);
-    }
+  for(var j = 0; j < objectNames.length; j++) {
+    collideObjects(eval("level." + objectNames[j]), objectColliders[j]);
   }
   
   // Buttons
-  for(var i = 0; i < levels[0].signals.length; i++) {
-    levels[0].signals[i] = false;
+  for(var i = 0; i < level.signals.length; i++) {
+    level.signals[i] = false;
   }
   
-  for(var i = 0; i < levels[0].buttons.length; i++) {
-    if(levels[0].buttons[i].pressed) {
-      levels[0].buttons[i].texture = 12;
+  for(var i = 0; i < level.buttons.length; i++) {
+    if(level.buttons[i].pressed) {
+      level.buttons[i].texture = 12;
     } else {
-      levels[0].buttons[i].texture = 11;
+      level.buttons[i].texture = 11;
     }
     
-    if(levels[0].buttons[i].pressed) {
-      levels[0].signals[levels[0].buttons[i].id] = true;
+    if(level.buttons[i].pressed) {
+      level.signals[level.buttons[i].id] = true;
     }
   }
   
   // Doors
-  for(var i = 0; i < levels[0].doors.length; i++) {
-    levels[0].doors[i].update();
+  for(var i = 0; i < level.doors.length; i++) {
+    level.doors[i].update();
   }
   
   // Pickups
-  for(var i = 0; i < levels[0].pickups.length; i++) {
-    levels[0].pickups[i].update();
+  for(var i = 0; i < level.pickups.length; i++) {
+    level.pickups[i].update();
   }
   
   // Animations
@@ -311,13 +307,37 @@ function update() {
     player.texture = player.anims[player.currentAnim][player.currentAnimFrame].texture;
   }
   
-  var distEnd = Math.sqrt(2);
+  var dX = (player.pos.x + player.size.x / 2) - (level.end.x + 0.075 * c.height);
+  var dY = (player.pos.y + player.size.y / 2) - (level.end.y + 0.075 * c.height);
+  var distEnd = Math.sqrt(Math.abs(dX) ** 2 + Math.abs(dY) ** 2);
+  if(distEnd < 200 && !cheatMode) {
+    player.vel.x += -dX / distEnd * 3;
+    player.vel.y += -dY / distEnd * 3;
+  }
+  if(distEnd < 25 && !cheatMode) {
+    levelId++;
+    level = loadLevel(levelId);
+    player.pos.x = level.spawnPoint.x;
+    player.pos.y = level.spawnPoint.y;
+    player.onGround = false;
+    player.spawnTimer = 30;
+    player.vel = new vec2(0, 0);
+    player.hp = 100;
+    player.invulnerableTimer = 0;
+    player.bloodParticle = -1;
+    player.bloodTime = 0;
+    keys = 0;
+    
+    if(score < highScore || highScore == undefined) {
+      highScore = score;
+    }
+  }
   
   // Npcs
-  for(var i = 0; i < levels[0].npcs.length; i++) {
-    levels[0].npcs[i].update();
-    if(levels[0].npcs[i].delete) {
-      levels[0].npcs.splice(i, 1);
+  for(var i = 0; i < level.npcs.length; i++) {
+    level.npcs[i].update();
+    if(level.npcs[i].delete) {
+      level.npcs.splice(i, 1);
       i--;
       continue;
     }
@@ -397,88 +417,86 @@ function draw() {
     cameraOffset.x += Math.random() * 50 * t - 25 * t;
     cameraOffset.y += Math.random() * 50 * t - 25 * t;
   }
-  for(var i = 0; i < levels.length; i++) {
-    for(var j = 0; j < objectNames.length; j++) {
-      var objects = eval("levels[i]." + objectNames[j]);
-      if(objects.length != 0 && objects[0].constructor.name == "foreground") {
-        if(cheatMode) {
+  for(var j = 0; j < objectNames.length; j++) {
+    var objects = eval("level." + objectNames[j]);
+    if(objectNames[j] == "foregrounds") {
+      ctx.drawImage(textures[37], level.end.x - cameraOffset.x, level.end.y - cameraOffset.y, 0.15 * c.height, 0.15 * c.height);
+  
+      if(cheatMode) {
+        ctx.globalCompositeOperation = "destination-out";
+        drawPlayer();
+        ctx.globalCompositeOperation = "destination-over";
+        ctx.fillStyle = "rgb(255, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, c.width, c.height);
+        drawPlayer();
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        if(player.invulnerableTimer > 0) {
+          var t = Math.min(player.invulnerableTimer / 15, 0.75);
           ctx.globalCompositeOperation = "destination-out";
           drawPlayer();
           ctx.globalCompositeOperation = "destination-over";
-          ctx.fillStyle = "rgb(255, 0, 0, 0.5)";
+          ctx.fillStyle = "rgb(255, 255, 255, " + t + ")";
           ctx.fillRect(0, 0, c.width, c.height);
           drawPlayer();
           ctx.globalCompositeOperation = "source-over";
         } else {
-          if(player.invulnerableTimer > 0) {
-            var t = Math.min(player.invulnerableTimer / 15, 0.75);
-            ctx.globalCompositeOperation = "destination-out";
-            drawPlayer();
-            ctx.globalCompositeOperation = "destination-over";
-            ctx.fillStyle = "rgb(255, 255, 255, " + t + ")";
-            ctx.fillRect(0, 0, c.width, c.height);
-            drawPlayer();
-            ctx.globalCompositeOperation = "source-over";
-          } else {
-            drawPlayer();
-          }
+          drawPlayer();
         }
       }
-      for(var k = 0; k < objects.length; k++) {
-        if(objects[k].repeating) {
-          var pattern = ctx.createPattern(textures[objects[k].texture], "repeat");
-          ctx.fillStyle = pattern;
+    }
+    for(var k = 0; k < objects.length; k++) {
+      if(objects[k].repeating) {
+        var pattern = ctx.createPattern(textures[objects[k].texture], "repeat");
+        ctx.fillStyle = pattern;
+        ctx.save();
+        ctx.translate(objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y);
+        // Scale to fit entire screen and then scale down to right size
+        var s = c.height / textures[objects[k].texture].height;
+        var repeatSize = objects[k].repeatSize;
+        ctx.scale(s, s);
+        ctx.scale(repeatSize, repeatSize);
+        ctx.fillRect(0, 0, objects[k].size.x / s / repeatSize, objects[k].size.y / s / repeatSize);
+        ctx.restore();
+      } else {
+        if(objects[k].textureFlipped) {
           ctx.save();
-          ctx.translate(objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y);
-          // Scale to fit entire screen and then scale down to right size
-          var s = c.height / textures[objects[k].texture].height;
-          var repeatSize = objects[k].repeatSize;
-          ctx.scale(s, s);
-          ctx.scale(repeatSize, repeatSize);
-          ctx.fillRect(0, 0, objects[k].size.x / s / repeatSize, objects[k].size.y / s / repeatSize);
+          ctx.scale(-1, 1);
+          ctx.drawImage(textures[objects[k].texture], -objects[k].pos.x + cameraOffset.x - objects[k].size.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
           ctx.restore();
         } else {
-          if(objects[k].textureFlipped) {
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(textures[objects[k].texture], -objects[k].pos.x + cameraOffset.x - objects[k].size.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
-            ctx.restore();
-          } else {
             ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
-          }
         }
+      }
         
-        if(objects[k].constructor.name == "button") {
-          ctx.fillStyle = "hsl(" + objects[k].id * (360 / levels[0].signals.length) + ", 100%, 50%)";
-          if(!objects[k].pressed) {
-            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
-          } else {
-            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y + objects[k].size.y / 2, 0.02 * c.height, 0.005 * c.height);
-          }
-        }
-        
-        if(objects[k].constructor.name == "door") {
-          ctx.fillStyle = "hsl(" + objects[k].id * (360 / levels[0].signals.length) + ", 100%, 50%)";
+      if(objects[k].constructor.name == "button") {
+        ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
+        if(!objects[k].pressed) {
           ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
+        } else {
+          ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y + objects[k].size.y / 2, 0.02 * c.height, 0.005 * c.height);
         }
+      }
+       
+      if(objects[k].constructor.name == "door") {
+        ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
+        ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
       }
     }
   }
   
-  ctx.drawImage(textures[37], levels[0].end.x - cameraOffset.x, levels[0].end.y - cameraOffset.y, 0.15 * c.height, 0.15 * c.height);
-  
-  for(var i = 0; i < levels[0].particleEmitters.length; i++) {
-    levels[0].particleEmitters[i].update();
-    for(var j = 0; j < levels[0].particleEmitters[i].particles.length; j++) {
-      var p = levels[0].particleEmitters[i].particles[j];
+  for(var i = 0; i < level.particleEmitters.length; i++) {
+    level.particleEmitters[i].update();
+    for(var j = 0; j < level.particleEmitters[i].particles.length; j++) {
+      var p = level.particleEmitters[i].particles[j];
       ctx.globalAlpha = p.opacity;
       ctx.drawImage(textures[p.texture], p.pos.x - cameraOffset.x, p.pos.y - cameraOffset.y, p.size.x, p.size.y);
       ctx.globalAlpha = 1;
     }
   }
   
-  for(var i = 0; i < levels[0].projectiles.length; i++) {
-    var p = levels[0].projectiles[i];
+  for(var i = 0; i < level.projectiles.length; i++) {
+    var p = level.projectiles[i];
     p.update();
     if(p.textureFlipped) {
       ctx.save();
@@ -489,7 +507,7 @@ function draw() {
       ctx.drawImage(textures[p.texture], p.pos.x - cameraOffset.x, p.pos.y - cameraOffset.y, p.size.x, p.size.y);
     }
     if(p.delete) {
-      levels[0].projectiles.splice(i, 1);
+      level.projectiles.splice(i, 1);
       i--;
       continue;
     }
@@ -534,7 +552,9 @@ function draw() {
   ctx.font = "600 " + c.height * 0.05 + "px Arial";
   ctx.fillStyle = "rgb(255, 255, 255)";
   ctx.fontWidth = 1000;
+  ctx.globalCompositeOperation = "difference";
   ctx.fillText(keys, 0.06 * c.height, 0.115 * c.height);
+  ctx.globalCompositeOperation = "source-over";
   
   var offset = 0.1 * c.height;
   
@@ -612,10 +632,7 @@ function draw() {
   ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01 + xOff, c.height * 0.06);
   ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01 + xOff, c.height * 0.09);
   ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01 + xOff, c.height * 0.12);
-  
-  ctx.fillStyle = "hsl(" + time / 5 + ", 100%, 50%)";
-  ctx.font = "1000 " + c.height * 0.1 + "px Arial";
-  ctx.fillText("HEJ", -2.6 * c.height - cameraOffset.x, 0 - cameraOffset.y);
+  ctx.fillText("level: " + levelId, c.height * 0.01 + xOff, c.height * 0.15);
   
   if(player.hp <= 0) {
     ctx.fillStyle = "rgb(0, 0, 0, " + (1 - player.invulnerableTimer / 30) + ")";
@@ -727,53 +744,54 @@ window.onmousedown = function(e) {
         pos.y /= c.height;
         switch(objectNames[selectedType]) {
         case "walls":
-          levels[0].walls.push(new wall(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          level.walls.push(new wall(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
           building = true;
           break;
 
         case "backgrounds":
-          levels[0].backgrounds.push(new background(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          level.backgrounds.push(new background(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
           building = true;
           break;
 
         case "crates":
-          levels[0].crates.push(new crate(pos.x, pos.y, 0.1, 0.1));
-          console.log("levels[0].crates.push(new crate(" + pos.x + ", " + pos.y + ", " + 0.1 + ", " + 0.1 + ");");
+          level.crates.push(new crate(pos.x, pos.y, 0.1, 0.1));
+          console.log("res.crates.push(new crate(" + pos.x + ", " + pos.y + ", " + 0.1 + ", " + 0.1 + "));");
           break;
           
         case "doors":
-          levels[0].doors.push(new door(pos.x, pos.y, 0.1, 0.1, editId));
+          level.doors.push(new door(pos.x, pos.y, 0.1, 0.1, editId));
           building = true;
           
-          levels[0].signals = [];
+          level.signals = [];
           var x = 0;
-          for(var i = 0; i < levels[0].doors.length; i++) {
-            if(levels[0].doors[i].id > x) {
-              x = levels[0].doors[i].id;
+          for(var i = 0; i < level.doors.length; i++) {
+            if(level.doors[i].id > x) {
+              x = level.doors[i].id;
             }
           }
           for(var i = 0; i < x + 1; i++) {
-            levels[0].signals.push(false);
+            level.signals.push(false);
           }
           break;
         case "buttons":
-          levels[0].buttons.push(new button(pos.x, pos.y, editId));
-          console.log("levels[0].buttons.push(new button(" + pos.x + ", " + pos.y + ", " + editId + "));");
+          level.buttons.push(new button(pos.x, pos.y, editId));
+          console.log("res.buttons.push(new button(" + pos.x + ", " + pos.y + ", " + editId + "));");
           break;
         case "npcs":
-          levels[0].npcs.push(new npc(pos.x, pos.y, editId));
-          console.log("levels[0].npcs.push(new npc(" + pos.x + ", " + pos.y + ", " + editId + "));");
+          level.npcs.push(new npc(pos.x, pos.y, editId));
+          console.log("res.npcs.push(new npc(" + pos.x + ", " + pos.y + ", " + editId + "));");
           break;
         case "deaths":
-          levels[0].deaths.push(new death(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          level.deaths.push(new death(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
           building = true;
           break;
         case "foregrounds":
-          levels[0].foregrounds.push(new foreground(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
+          level.foregrounds.push(new foreground(pos.x, pos.y, 0.1, 0.1, selectedTexture, editRepeating, editRepeatSize));
           building = true;
           break;
         case "pickups":
-          levels[0].pickups.push(new pickup(pos.x, pos.y, selectedTexture, () => {}));
+          level.pickups.push(new pickup(pos.x, pos.y, selectedTexture, () => {}));
+          console.log("res.pickups.push(new pickup(" + pos.x + ", " + pos.y + ", " + selectedTexture + ", () => {}));");
           break;
         }
         return;
@@ -781,7 +799,7 @@ window.onmousedown = function(e) {
         var o;
         var j_ = 0;
         for(var i = 0; i < objectNames.length; i++) {
-          var objects = eval("levels[0]." + objectNames[i]);
+          var objects = eval("level." + objectNames[i]);
           for(var j = 0; j < objects.length; j++) {
             if(checkCollision(objects[j], {pos: {x: e.clientX + cameraOffset.x, y: e.clientY + cameraOffset.y}, size: {x: 0, y: 0}})) {
               o = objects;
@@ -795,7 +813,7 @@ window.onmousedown = function(e) {
     }
     if(building) {
       building = false;
-      var o_ = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");
+      var o_ = eval("level." + objectNames[selectedType] + "[level." + objectNames[selectedType] + ".length - 1]");
       if(o_.pos.x > o_.pos.x + o_.size.x) {
         o_.pos.x += o_.size.x;
         o_.size.x = Math.abs(o_.size.x);
@@ -811,7 +829,7 @@ window.onmousedown = function(e) {
       o.size.y = Math.round(o.size.y / c.height * 10000) / 10000;
       switch(o_.constructor.name) {
       case "wall":
-        console.log("levels[0].walls.push(new wall(" + 
+        console.log("res.walls.push(new wall(" + 
                     o.pos.x + ", " + 
                     o.pos.y + ", " + 
                     o.size.x + ", " + 
@@ -822,7 +840,7 @@ window.onmousedown = function(e) {
         break;
         
       case "background":
-        console.log("levels[0].backgrounds.push(new background(" + 
+        console.log("res.backgrounds.push(new background(" + 
                     o.pos.x + ", " + 
                     o.pos.y + ", " + 
                     o.size.x + ", " + 
@@ -833,12 +851,34 @@ window.onmousedown = function(e) {
         break;
         
       case "door":
-        console.log("levels[0].doors.push(new door(" + 
+        console.log("res.doors.push(new door(" + 
                     o.pos.x + ", " + 
                     o.pos.y + ", " + 
                     o.size.x + ", " + 
                     o.size.y + ", " + 
                     editId + "));");
+        break;
+        
+      case "death":
+        console.log("res.deaths.push(new death(" + 
+                    o.pos.x + ", " + 
+                    o.pos.y + ", " + 
+                    o.size.x + ", " + 
+                    o.size.y + ", " + 
+                    o.texture + ", " + 
+                    editRepeating + ", " + 
+                    editRepeatSize + "));");
+        break;
+        
+      case "foreground":
+        console.log("res.foregrounds.push(new foreground(" + 
+                    o.pos.x + ", " + 
+                    o.pos.y + ", " + 
+                    o.size.x + ", " + 
+                    o.size.y + ", " + 
+                    o.texture + ", " + 
+                    editRepeating + ", " + 
+                    editRepeatSize + "));");
         break;
       }
       return;
@@ -851,7 +891,7 @@ window.onmousemove = function(e) {
   mousePos.y = e.clientY;
   if(cheatMode && building) {
     var pos = {x: Math.round((mousePos.x + cameraOffset.x) / (editSnap * c.height)) * (editSnap * c.height), y: Math.round((mousePos.y + cameraOffset.y) / (editSnap * c.height)) * (editSnap * c.height)};
-    var o = eval("levels[0]." + objectNames[selectedType] + "[levels[0]." + objectNames[selectedType] + ".length - 1]");;
+    var o = eval("level." + objectNames[selectedType] + "[level." + objectNames[selectedType] + ".length - 1]");;
     o.size.x = pos.x - o.pos.x;
     o.size.y = pos.y - o.pos.y;
   }
