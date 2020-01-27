@@ -146,6 +146,7 @@ var buttons = [
 function start() {
   editMode = false;
   cheatMode = false;
+  levelId = 0;
   player.die(); 
   player.spawnTimer = 15;
   if(challengeMode) {
@@ -153,7 +154,6 @@ function start() {
   }
   paused = false;
   menu = 1;
-  level = 0;
 }
 
 // The object arrays are in order of rendering
