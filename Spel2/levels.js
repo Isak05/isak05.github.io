@@ -21,7 +21,7 @@ function loadLevel(id) {
     res.walls.push(new wall(0.8, -0.35, 0.05, 0.4, 19, true, 0.05));
     res.walls.push(new wall(0.1, -0.4, 0.75, 0.05, 19, true, 0.05));
     res.walls.push(new wall(-0.2, 0.9, 0.9, 0.05, 21, true, 0.05));
-    res.walls.push(new wall(-3.15, 0.3, 2.45, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-3.15, 0.3, 2.55, 0.05, 20, true, 0.05));
     res.walls.push(new wall(1.5, 0.3, 0.8, 0.05, 19, true, 0.05));
     res.walls.push(new wall(-0.05, -0.65, 0.05, 0.65, 19, true, 0.05));
     res.walls.push(new wall(2.15, 0.05, 0.1, 0.1, 19, true, 0.1));
@@ -43,11 +43,13 @@ function loadLevel(id) {
     res.walls.push(new wall(0.8, -0.65, 0.65, 0.05, 19, true, 0.05));
     res.walls.push(new wall(0, -0.65, 0.8, 0.05, 21, true, 0.05));
     res.walls.push(new wall(-0.2, 0.35, 0.05, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(0.6, -1, 0.9, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(1.45, -0.95, 0.05, 0.05, 19, true, 0.05));
    
     res.backgrounds.push(new background(-2, -2, 10, 3, 2, true, 0.1));
     res.backgrounds.push(new background(-0.75, 0.35, 0.05, 0.1, 20, true, 0.05));
     res.backgrounds.push(new background(-2.35, 0.45, 2.1, 1.2, 20, true, 0.05));
-    res.backgrounds.push(new background(-2.35, 0.35, 1.6, 0.1, 20, true, 0.05));
+    res.backgrounds.push(new background(-2.35, 0.35, 1.75, 0.1, 20, true, 0.05));
     res.backgrounds.push(new background(-0.25, 0.95, 3.65, 0.8, 20, true, 0.05));
     res.backgrounds.push(new background(1.5, 0.35, 1.9, 0.6, 20, true, 0.05));
     res.backgrounds.push(new background(2.3, -0.65, 1.2, 1.0, 20, true, 0.05));
@@ -80,7 +82,7 @@ function loadLevel(id) {
     res.npcs.push(new npc(0.25, 0.5, 1));
     res.npcs.push(new npc(2.125, -0.525, 1));
 
-    res.deaths.push(new death(-0.7, 0.35, 0.5, 0.05, 27, true, 0.05));
+    res.deaths.push(new death(-0.6, 0.35, 0.4, 0.05, 27, true, 0.05));
     res.deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
     res.deaths.push(new death(1.5, -0.1, 0.1, 0.05, 13, true, 0.05));
 
@@ -92,7 +94,7 @@ function loadLevel(id) {
     var func = function() {
       return {x: 0, y: -1};
     }
-    res.particleEmitters.push(new particleEmitter(-0.7, 0.375, func, 0.05, 0.05, 0.5, 0, 90, 29, 0.025));
+    res.particleEmitters.push(new particleEmitter(-0.6, 0.375, func, 0.05, 0.05, 0.4, 0, 90, 29, 0.025));
     res.particleEmitters.push(new particleEmitter(2.6, 1.3, func, 0.025, 0.025, 0.25, 0, 60, 7, 0.05));
 
     res.pickups.push(new pickup(-0.1, 0.8, 26, () => {player.hp = 100}));
@@ -103,20 +105,46 @@ function loadLevel(id) {
     
   case 1:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.end = {x: 0 * c.height, y: 2 * c.height};
+    res.end = {x: 1.15 * c.height, y: 1.55 * c.height};
     
-    res.walls.push(new wall(-0.4, 0.1, 0.1, 2, 38, true, 0.1));
-    res.walls.push(new wall(0.3, 0.1, 0.1, 2, 38, true, 0.1));
     res.walls.push(new wall(-0.4, 0, 0.8, 0.1, 38, true, 0.1));
     res.walls.push(new wall(0.2, 0.95, 0.1, 0.1, 38, true, 0.1));
     res.walls.push(new wall(-0.2, 1.05, 0.5, 0.1, 38, true, 0.1));
     res.walls.push(new wall(-0.3, 0.4, 0.5, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.3, 1.4, 0.35, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(0.4, 0.7, 0.4, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(0.3, 0.1, 0.1, 0.4, 38, true, 0.1));
+    res.walls.push(new wall(0.8, 0.4, 0.1, 0.4, 38, true, 0.1));
+    res.walls.push(new wall(0.4, 0.3, 0.5, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.3, 1.7, 1.4, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(0.3, 0.7, 0.1, 0.8, 38, true, 0.1));
+    res.walls.push(new wall(0.4, 1.4, 0.7, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.8, 1.7, 0.5, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.8, 1.4, 0.1, 0.3, 38, true, 0.1));
+    res.walls.push(new wall(-0.7, 1.4, 0.3, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(-0.4, 0.1, 0.1, 1.4, 38, true, 0.1));
+    res.walls.push(new wall(0.5, 1.5, 0.2, 0.05, 38, true, 0.1));
+
+    res.crates.push(new crate(-0.5, 1.5, 0.1, 0.1));
+    res.crates.push(new crate(0.5, 0.6, 0.1, 0.1));
+    res.crates.push(new crate(0.7, 1.55, 0.1, 0.1));
     
-    res.backgrounds.push(new background(-1.4, -1, 2.9, 5.1, 2, true, 0.09999999999999999));
+    res.backgrounds.push(new background(-1.4, -1, 2.9, 5.1, 2, true, 0.1));
 
     res.deaths.push(new death(0.2, 0.9, 0.1, 0.05, 13, true, 0.05));
     
     res.npcs.push(new npc(-0.1, 0.8, 1));
+    
+    res.doors.push(new door(0, 1.15, 0.05, 0.25, 0));
+    res.doors.push(new door(0.3, 1.7, 0.05, 0.2, 1));
+    res.doors.push(new door(-0.35, 1.5, 0.05, 0.2, 1));
+    res.doors.push(new door(0.9, 1.5, 0.05, 0.2, 1));
+    res.doors.push(new door(0.95, 1.5, 0.05, 0.2, 2));
+    
+    res.buttons.push(new button(-0.3, 1.385, 0));
+    res.buttons.push(new button(0, 1.685, 1));
+    res.buttons.push(new button(-0.7, 1.685, 2));
+    res.buttons.push(new button(0.55, 1.685, 1));
     
     break;
     
@@ -128,6 +156,7 @@ function loadLevel(id) {
     res.walls.push(new wall(-0.3, 0.3, 1.4, 0.1, 2, true, 0.1));
     res.walls.push(new wall(-0.3, -0.2, 0.1, 0.5, 2, true, 0.1));
     res.walls.push(new wall(1, -0.2, 0.1, 0.5, 2, true, 0.1));
+    res.doors.push(new door(0, 1.15, 0.05, 0.25, 0));
     
     res.backgrounds.push(new background(-0.2, -0.2, 1.2, 0.5, 20, true, 0.1));
     

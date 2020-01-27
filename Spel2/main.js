@@ -46,6 +46,7 @@ var player = {
   invulnerableTimer: 0,
   spawnTimer: 15,
   shootTimer: 0,
+  shootSpeed: 15,
   shooting: false,
   setAnim: function(x) {
     this.animTimer = 0;
@@ -58,8 +59,15 @@ var player = {
     this.vel = new vec2(0, 0);
     this.onGround = false;
     this.hp = 100;
+    if(challengeMode) {
+      this.hp = 1;
+    }
     this.invulnerableTimer = 0;
     this.spawnTimer = 30;
+    this.speed = c.height * 0.01,
+    this.jumpStrength = c.height * 0.035;
+    this.bloodParticle = -1;
+    this.bloodTime = 0;
     keys = 0;
     level = loadLevel(levelId);
   }, 
@@ -108,10 +116,48 @@ var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(player.pos.x - c.width / 2, player.pos.y - c.height * 1);
 var godMode = false;
 var keys = 0;
+var paused = true;
+var challengeMode = false;
+var menu = 0;
+var buttons = [
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Error 404", menu: -1, onClick: () => {}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: -1, onClick: () => {menu = 0}},
+
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = -1}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {highScore = 0}},
+
+{x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
+{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
+{x: 0.4 * c.width, y: 0.3 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Powerups", menu: 1, onClick: () => {menu = 3}}, 
+{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Main Menu", menu: 1, onClick: () => {menu = 0}}, 
+
+{x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Heal", menu: 2, onClick: () => {player.hp = 100}}, 
+{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Damage", menu: 2, onClick: () => {player.hp = 1}},
+{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 1}},
+
+{x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Speed", menu: 3, onClick: () => {player.speed += 0.005 * c.height}}, 
+{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Jump", menu: 3, onClick: () => {player.jumpStrength += 0.005 * c.height}},
+{x: 0.4 * c.width, y: 0.3 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Shoot Speed", menu: 3, onClick: () => {player.shootSpeed -= 3}},
+{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 1}}
+];
+
+function start() {
+  editMode = false;
+  cheatMode = false;
+  player.die(); 
+  player.spawnTimer = 15;
+  if(challengeMode) {
+    player.hp = 1;
+  }
+  paused = false;
+  menu = 1;
+}
 
 // The object arrays are in order of rendering
 var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds", "pickups"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "object.onPickup(); objects.splice(i, 1); i--"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
 
 var score = 0;
 var highScore = parseInt(document.cookie.substring(10));
@@ -144,12 +190,16 @@ var avgSize = 1;
 
 var loop = setInterval(update, 1000 / fps);
 function update() {
+if(menu == 0) {
+  player.spawnTimer = 15;
+}
+if(!paused) {
   time = window.performance.now();
   
   score = time;
 
   if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
-    player.shootTimer = 15;
+    player.shootTimer = player.shootSpeed;
     if(!player.textureFlipped) {
       level.projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
     } else {
@@ -323,6 +373,9 @@ function update() {
     player.spawnTimer = 30;
     player.vel = new vec2(0, 0);
     player.hp = 100;
+    if(challengeMode) {
+      player.hp = 1;
+    }
     player.invulnerableTimer = 0;
     player.bloodParticle = -1;
     player.bloodTime = 0;
@@ -404,6 +457,39 @@ function update() {
     avgSize++;
   }
   prevTime = time;
+} else {
+  // Paused
+  draw();
+  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+  ctx.fillRect(0, 0, c.width, c.height);
+  drawMenu();
+}
+}
+
+function drawMenu() {
+  if(menu == 0) {
+    var pattern = ctx.createPattern(textures[2], "repeat");
+    ctx.fillStyle = pattern;
+    ctx.save();
+    ctx.scale(c.height / textures[2].height, c.height / textures[2].height);
+    ctx.scale(0.2, 0.2);
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.restore();
+  }
+  for(var i = 0; i < buttons.length; i++) {
+    if(buttons[i].menu == menu) {
+      ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+      if(buttons[i].text == "Challenge Mode") {
+        ctx.fillStyle = "rgb(255, 100, 100, 0.75)";
+      }
+      ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
+      var s = 0.05 * c.height;
+      var off = 0.025 * c.height;
+      ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+      ctx.font = s + "px Arial";
+      ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+    }
+  }
 }
 
 function draw() {
@@ -412,7 +498,7 @@ function draw() {
   ctx.fillRect(0, 0, c.width, c.height);
   
   // Objects
-  if(player.invulnerableTimer > 0) {
+  if(player.invulnerableTimer > 0 && !paused) {
     var t = Math.min(player.invulnerableTimer / 15, 0.75);
     cameraOffset.x += Math.random() * 50 * t - 25 * t;
     cameraOffset.y += Math.random() * 50 * t - 25 * t;
@@ -444,6 +530,9 @@ function draw() {
           drawPlayer();
         }
       }
+    }
+    if(challengeMode && objectNames[j] == "pickups") {
+      break;
     }
     for(var k = 0; k < objects.length; k++) {
       if(objects[k].repeating) {
@@ -486,7 +575,9 @@ function draw() {
   }
   
   for(var i = 0; i < level.particleEmitters.length; i++) {
-    level.particleEmitters[i].update();
+    if(!paused) {
+      level.particleEmitters[i].update();
+    }
     for(var j = 0; j < level.particleEmitters[i].particles.length; j++) {
       var p = level.particleEmitters[i].particles[j];
       ctx.globalAlpha = p.opacity;
@@ -497,7 +588,9 @@ function draw() {
   
   for(var i = 0; i < level.projectiles.length; i++) {
     var p = level.projectiles[i];
-    p.update();
+    if(!paused) {
+      p.update();
+    }
     if(p.textureFlipped) {
       ctx.save();
       ctx.scale(-1, 1);
@@ -523,7 +616,9 @@ function draw() {
   } else {
     ctx.globalAlpha = 0;
   }
-  ctx.drawImage(vignette, 0, 0, c.width, c.height);
+  if(!challengeMode) {
+    ctx.drawImage(vignette, 0, 0, c.width, c.height);
+  }
   ctx.globalAlpha = 1;
   
   // Hp
@@ -736,6 +831,18 @@ function checkCollision(colliderA, colliderB) {
 }
 
 window.onmousedown = function(e) {
+  if(paused) {
+    for(var i = 0; i < buttons.length; i++) {
+      if(buttons[i].menu == menu) {
+        var m = {pos: {x: e.clientX, y: e.clientY}, size: {x: 0, y: 0}};
+        var b = {pos: {x: buttons[i].x, y: buttons[i].y}, size: {x: buttons[i].w, y: buttons[i].h}};
+        if(checkCollision(m, b)) {
+          buttons[i].onClick();
+          break;
+        }
+      }
+    }
+  } else {
   if(cheatMode && editMode) {
     if(!building) {
       if(!deleting) {
@@ -884,9 +991,11 @@ window.onmousedown = function(e) {
       return;
     }
   }
+  }
 }
 
 window.onmousemove = function(e) {
+if(!paused) {
   mousePos.x = e.clientX;
   mousePos.y = e.clientY;
   if(cheatMode && building) {
@@ -896,8 +1005,10 @@ window.onmousemove = function(e) {
     o.size.y = pos.y - o.pos.y;
   }
 }
+}
 
 window.onkeydown = function(e) {
+if(!paused) {
 if(player.hp > 0) {
   if(e.keyCode == 37 && cheatMode && editMode) {
     if(cheatMode && editMode) {
@@ -1049,6 +1160,13 @@ if(player.hp > 0) {
       player.shooting = true;
       break;
     }
+  }
+}
+}
+if(e.keyCode == 27) {
+  if(menu != 0) {
+    paused = !paused;
+    menu = 1;
   }
 }
 }
