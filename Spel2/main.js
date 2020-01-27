@@ -153,6 +153,7 @@ function start() {
   }
   paused = false;
   menu = 1;
+  level = 0;
 }
 
 // The object arrays are in order of rendering
