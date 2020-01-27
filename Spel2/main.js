@@ -126,7 +126,7 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = -1}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {highScore = 0}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {highScore = undefined}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
