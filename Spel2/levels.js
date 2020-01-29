@@ -357,7 +357,7 @@ function npc(x, y, type) {
   this.collisions = ["walls", "doors", "crates", "deaths"];
   this.textureFlipped = false;
   this.fireCooldown = 0;
-  this.fireSpeed = 30;
+  this.fireSpeed = 60;
   this.setAnim = function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
