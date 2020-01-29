@@ -504,7 +504,7 @@ function setCookie(name, value) {
 }
 
 function getCookie(name) {
-  var cookies = document.cookie.split(";");
+  var cookies = document.cookie.split("; ");
   for(var i = 0; i < cookies.length; i++) {
     if(cookies[i].search(name) == 0) {
       return cookies[i].substr(cookies[i].search("=") + 1);
