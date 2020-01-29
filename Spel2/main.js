@@ -391,12 +391,12 @@ if(!paused) {
   }
   if(distEnd < 25 && !cheatMode) {
     if(!challengeMode) {
-      if((score < highscores[levelId].normal || highscores[levelId].normal == "undefined") && levelId < levels) {
+      if((score < highscores[levelId].normal || highscores[levelId].normal == undefined) && levelId < levels) {
         highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
       }
     }
     if(challengeMode) {
-      if((score < highscores[levelId].challenge || highscores[levelId].challenge == "undefined") && levelId < levels) {
+      if((score < highscores[levelId].challenge || highscores[levelId].challenge == undefined) && levelId < levels) {
         highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
       }
     }
@@ -507,7 +507,10 @@ function getCookie(name) {
   var cookies = document.cookie.split("; ");
   for(var i = 0; i < cookies.length; i++) {
     if(cookies[i].search(name) == 0) {
-      return cookies[i].substr(cookies[i].search("=") + 1);
+      var res = cookies[i].substr(cookies[i].search("=") + 1);
+      if(res != "undefined") {
+        return res;
+      }
     }
   }
   return undefined;
