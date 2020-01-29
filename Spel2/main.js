@@ -4,7 +4,8 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed"];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37];
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
@@ -13,6 +14,7 @@ for(var i = 0; i < textureFiles.length; i++) {
 
 var levelId = 0;
 var level = loadLevel(levelId);
+var levels = 2;
 
 var player = {
   pos: JSON.parse(JSON.stringify(level.spawnPoint)),
@@ -70,6 +72,8 @@ var player = {
     this.bloodTime = 0;
     keys = 0;
     level = loadLevel(levelId);
+    startTime = time;
+    score = 0;
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) {
@@ -102,7 +106,7 @@ var cheatMode = false;
 var building = false;
 var editMode = false;
 var mousePos = {x: 0, y: 0};
-var selectedTexture = 0;
+var selectedTexture = 1;
 var selectedType = 0;
 var editRepeating = true;
 var editRepeatSize = 0.05;
@@ -125,8 +129,8 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
-{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = -1}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {highScore = undefined}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {resetScore()}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
@@ -140,7 +144,15 @@ var buttons = [
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Speed", menu: 3, onClick: () => {player.speed += 0.005 * c.height}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Jump", menu: 3, onClick: () => {player.jumpStrength += 0.005 * c.height}},
 {x: 0.4 * c.width, y: 0.3 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Shoot Speed", menu: 3, onClick: () => {player.shootSpeed -= 3}},
-{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 1}}
+{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 1}},
+
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 4, onClick: () => {menu = 6}},
+
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 5, onClick: () => {menu = 6}},
+
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Normal", menu: 6, onClick: () => {menu = 4}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 6, onClick: () => {menu = 5}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 6, onClick: () => {menu = 0}}
 ];
 
 function start() {
@@ -154,21 +166,33 @@ function start() {
   }
   paused = false;
   menu = 1;
+  startTime = time;
+  score = 0;
+}
+
+function resetScore() {
+  for(var i = 0; i < highscores.length; i++) {
+    highscores[i].normal = undefined;
+    highscores[i].challenge = undefined;
+  }
 }
 
 // The object arrays are in order of rendering
 var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds", "pickups"];
 var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
 
+var startTime = 0;
 var score = 0;
-var highScore = parseInt(document.cookie.substring(10));
-if(!highScore) {
-  document.cookie = "highScore=0";
-  highScore = undefined;
+var highscores = [];
+for(var i = 0; i < levels; i++) {
+  highscores.push({normal: getCookie("highscore" + i), challenge: getCookie("challengeHighscore" + i)});
 }
 
 window.onbeforeunload = function() {
-  document.cookie = "highScore=" + highScore;
+  for(var i = 0; i < highscores.length; i++) {
+    setCookie("highscore" + i, highscores[i].normal);
+    setCookie("challengeHighscore" + i, highscores[i].challenge);
+  }
 }
 
 var cv = document.createElement("canvas");
@@ -197,7 +221,7 @@ if(menu == 0) {
 if(!paused) {
   time = window.performance.now();
   
-  score = time;
+  score++;
 
   if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
     player.shootTimer = player.shootSpeed;
@@ -366,6 +390,17 @@ if(!paused) {
     player.vel.y += -dY / distEnd * 3;
   }
   if(distEnd < 25 && !cheatMode) {
+    if(!challengeMode) {
+      if((score < highscores[levelId].normal || highscores[levelId].normal == undefined) && levelId < levels) {
+        highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
+      }
+    }
+    if(challengeMode) {
+      if((score < highscores[levelId].challenge || highscores[levelId].challenge == undefined) && levelId < levels) {
+        highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
+      }
+    }
+    startTime = time;
     levelId++;
     level = loadLevel(levelId);
     player.pos.x = level.spawnPoint.x;
@@ -381,10 +416,7 @@ if(!paused) {
     player.bloodParticle = -1;
     player.bloodTime = 0;
     keys = 0;
-    
-    if(score < highScore || highScore == undefined) {
-      highScore = score;
-    }
+    score = 0;
   }
   
   // Npcs
@@ -467,8 +499,22 @@ if(!paused) {
 }
 }
 
+function setCookie(name, value) {
+  document.cookie = name + "=" + value;
+}
+
+function getCookie(name) {
+  var cookies = document.cookie.split(";");
+  for(var i = 0; i < cookies.length; i++) {
+    if(cookies[i].search(name) == 0) {
+      return cookies[i].substr(cookies[i].search("=") + 1);
+    }
+  }
+  return undefined;
+}
+
 function drawMenu() {
-  if(menu == 0) {
+  if(menu == 0 || menu == 4 || menu == 5 || menu == 6) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -476,6 +522,24 @@ function drawMenu() {
     ctx.scale(0.2, 0.2);
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.restore();
+  }
+  if(menu == 4 || menu == 5) {
+    if(menu == 4) {
+      ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+    } else if(menu == 5) {
+      ctx.fillStyle = "rgb(255, 100, 100, 0.75)";
+    }
+    ctx.fillRect(0.3 * c.width, 0.05 * c.height, 0.4 * c.width, 0.7 * c.height);
+    ctx.font = 0.04 * c.height + "px Arial";
+    for(var i = 0; i < levels; i++) {
+      if(menu == 4) {
+        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+        ctx.fillText("Level " + i + ": " + highscores[i].normal, 0.31 * c.width, (0.1 + 0.05 * i) * c.height);
+      } else if(menu == 5) {
+        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+        ctx.fillText("Level " + i + ": " + highscores[i].challenge, 0.31 * c.width, (0.1 + 0.05 * i) * c.height);
+      }
+    }
   }
   for(var i = 0; i < buttons.length; i++) {
     if(buttons[i].menu == menu) {
@@ -664,18 +728,35 @@ function draw() {
   
     ctx.fillStyle = "rgb(255, 255, 255, 0.5)";
     
+    var textures_ = [];
     for(var i = 0; i < textures.length; i++) {
-      if(selectedTexture == i) {
+      var add = true;
+      for(var j = 0; j < hiddenTextures.length; j++) {
+        if(i == hiddenTextures[j]) {
+          add = false;
+          break;
+        }
+      }
+      if(add) {
+        textures_.push(i);
+      }
+    }
+    for(var i = 0; i < textures_.length; i++) {
+      if(selectedTexture == textures_[i]) {
         ctx.fillStyle = "rgb(0, 255, 0)";
         ctx.fillRect((i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
       } else {
         ctx.fillStyle = "rgb(255, 255, 255, 0.5)";
         ctx.fillRect((i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
       }
-      if(textures[i].height <= textures[i].width) {
-        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, textures[i].height * ((0.1 * c.height) / textures[i].width));
+      if(textures[i].height <= textures[textures_[i]].width) {
+        ctx.drawImage(textures[textures_[i]], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, textures[textures_[i]].height * ((0.1 * c.height) / textures[textures_[i]].width));
       } else {
-        ctx.drawImage(textures[i], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, textures[i].width * ((0.1 * c.height) / textures[i].height), 0.1 * c.height);
+        ctx.drawImage(textures[textures_[i]], (i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, textures[textures_[i]].width * ((0.1 * c.height) / textures[textures_[i]].height), 0.1 * c.height);
+      }
+      if(selectedTexture == textures_[i]) {
+        ctx.fillStyle = "rgb(0, 255, 0, 0.1)";
+        ctx.fillRect((i % 16) * 0.1 * c.height, Math.floor(i / 16) * 0.1 * c.height, 0.1 * c.height, 0.1 * c.height);
       }
     }
     
@@ -726,8 +807,8 @@ function draw() {
   ctx.font = c.height * 0.02 + "px Arial";
   ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01 + xOff, c.height * 0.03);
   ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01 + xOff, c.height * 0.06);
-  ctx.fillText("score: " + Math.round(score / 100) / 10, c.height * 0.01 + xOff, c.height * 0.09);
-  ctx.fillText("highscore: " + Math.round(highScore / 100) / 10, c.height * 0.01 + xOff, c.height * 0.12);
+  ctx.fillText("score: " + score / fps, c.height * 0.01 + xOff, c.height * 0.09);
+  ctx.fillText("highscore: " + Math.round(highscores[levelId] / 100) / 10, c.height * 0.01 + xOff, c.height * 0.12);
   ctx.fillText("level: " + levelId, c.height * 0.01 + xOff, c.height * 0.15);
   
   if(player.hp <= 0) {
@@ -1015,12 +1096,46 @@ if(player.hp > 0) {
     if(cheatMode && editMode) {
       if(selectedTexture > 0) {
         selectedTexture--;
+        var run = true;
+        var len = 0;
+        while(run) {
+          run = false;
+          for(var i = 0; i < hiddenTextures.length; i++) {
+            if(selectedTexture + len == hiddenTextures[i]) {
+              run = true;
+              len--;
+            }
+          }
+          if(selectedTexture + len >= textures.length || selectedTexture + len <= hiddenTextures[0]) {
+            len = 0;
+            selectedTexture++;
+            break;
+          }
+        }
+        selectedTexture += len;
       }
     }
   } else if(e.keyCode == 39 && cheatMode && editMode) {
     if(cheatMode && editMode) {
       if(selectedTexture < textures.length - 1) {
         selectedTexture++;
+        var run = true;
+        var len = 0;
+        while(run) {
+          run = false;
+          for(var i = 0; i < hiddenTextures.length; i++) {
+            if(selectedTexture + len == hiddenTextures[i]) {
+              run = true;
+              len++;
+            }
+          }
+          if(selectedTexture + len >= textures.length) {
+            len = 0;
+            selectedTexture--;
+            break;
+          }
+        }
+        selectedTexture += len;
       }
     }
   } else if(e.keyCode == 38 && cheatMode && editMode) {
@@ -1165,7 +1280,7 @@ if(player.hp > 0) {
 }
 }
 if(e.keyCode == 27) {
-  if(menu != 0) {
+  if(menu != 0 && menu != 4 && menu != 5 && menu != 6) {
     paused = !paused;
     menu = 1;
   }

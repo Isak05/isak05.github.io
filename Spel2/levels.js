@@ -146,6 +146,8 @@ function loadLevel(id) {
     res.buttons.push(new button(-0.7, 1.685, 2));
     res.buttons.push(new button(0.55, 1.685, 1));
     
+    res.pickups.push(new pickup(-0.675, 1.525, 40, () => {player.jumpStrength += 0.0075 * c.height}));
+    
     break;
     
   default:
@@ -357,7 +359,7 @@ function npc(x, y, type) {
   this.collisions = ["walls", "doors", "crates", "deaths"];
   this.textureFlipped = false;
   this.fireCooldown = 0;
-  this.fireSpeed = 60;
+  this.fireSpeed = 30;
   this.setAnim = function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
