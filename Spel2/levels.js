@@ -370,7 +370,9 @@ function npc(x, y, type) {
   this.textureFlipped = false;
   this.fireCooldown = 0;
   this.fireSpeed = 30;
-  this.fireSpeed = Math.sqrt(3600)
+  if(getCookie("isMarkus") == "yes") {
+    this.fireSpeed = 60;
+  }
   this.setAnim = function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
