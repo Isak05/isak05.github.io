@@ -101,6 +101,8 @@ function loadLevel(id) {
     res.pickups.push(new pickup(-0.8, 0.15, 33, () => {keys++}));
     res.pickups.push(new pickup(1.1, 0.8, 39, () => {player.speed += 0.005 * c.height}));
 
+    res.chests.push(new chest(-0.2, 0.2, new pickup(0, 0, 26, () => {player.hp = 100})));
+
     break;
     
   case 1:
@@ -158,7 +160,6 @@ function loadLevel(id) {
     res.walls.push(new wall(-0.3, 0.3, 1.4, 0.1, 2, true, 0.1));
     res.walls.push(new wall(-0.3, -0.2, 0.1, 0.5, 2, true, 0.1));
     res.walls.push(new wall(1, -0.2, 0.1, 0.5, 2, true, 0.1));
-    res.doors.push(new door(0, 1.15, 0.05, 0.25, 0));
     
     res.backgrounds.push(new background(-0.2, -0.2, 1.2, 0.5, 20, true, 0.1));
     
@@ -191,9 +192,18 @@ function level_() {
   this.npcs = [];
   this.deaths = [];
   this.pickups = [];
+  this.chests = [];
   
   this.projectiles = [];
   this.particleEmitters = [];
+}
+
+function chest(x, y, item) {
+  this.pos = {x: x * c.height, y: y * c.height};
+  this.size = {x: 0.1 * c.height, y: 0.1 * c.height};
+  this.texture = 32;
+  this.item = item;
+  this.opened = false;
 }
 
 function pickup(x, y, texture, onPickup) {
@@ -360,6 +370,7 @@ function npc(x, y, type) {
   this.textureFlipped = false;
   this.fireCooldown = 0;
   this.fireSpeed = 30;
+  this.fireSpeed = Math.sqrt(3600)
   this.setAnim = function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
