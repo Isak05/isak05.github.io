@@ -426,12 +426,12 @@ if(!paused) {
   if(distEnd < 25 && !cheatMode) {
     if(levelId < levels) {
       if(!challengeMode) {
-        if((score < highscores[levelId].normal || highscores[levelId].normal == NaN) && levelId < levels) {
+        if((score < highscores[levelId].normal || isNaN(highscores[levelId].normal)) && levelId < levels) {
           highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
         }
       }
       if(challengeMode) {
-        if((score < highscores[levelId].challenge || highscores[levelId].challenge == NaN) && levelId < levels) {
+        if((score < highscores[levelId].challenge || isNaN(highscores[levelId].challenge)) && levelId < levels) {
           highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
         }
       }
