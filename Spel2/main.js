@@ -193,7 +193,7 @@ var startTime = 0;
 var score = 0;
 var highscores = [];
 for(var i = 0; i < levels; i++) {
-  highscores.push({normal: parseInt(getCookie("highscore" + i)), challenge: parseInt(getCookie("challengeHighscore" + i))});
+  highscores.push({normal: parseFloat(getCookie("highscore" + i)), challenge: parseFloat(getCookie("challengeHighscore" + i))});
 }
 
 window.onbeforeunload = function() {
