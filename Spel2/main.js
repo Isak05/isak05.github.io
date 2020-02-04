@@ -193,7 +193,7 @@ var startTime = 0;
 var score = 0;
 var highscores = [];
 for(var i = 0; i < levels; i++) {
-  highscores.push({normal: getCookie("highscore" + i), challenge: getCookie("challengeHighscore" + i)});
+  highscores.push({normal: parseInt(getCookie("highscore" + i)), challenge: parseInt(getCookie("challengeHighscore" + i))});
 }
 
 window.onbeforeunload = function() {
@@ -426,12 +426,12 @@ if(!paused) {
   if(distEnd < 25 && !cheatMode) {
     if(levelId < levels) {
       if(!challengeMode) {
-        if((score < highscores[levelId].normal || highscores[levelId].normal == undefined) && levelId < levels) {
+        if((score < highscores[levelId].normal || highscores[levelId].normal == NaN) && levelId < levels) {
           highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
         }
       }
       if(challengeMode) {
-        if((score < highscores[levelId].challenge || highscores[levelId].challenge == undefined) && levelId < levels) {
+        if((score < highscores[levelId].challenge || highscores[levelId].challenge == NaN) && levelId < levels) {
           highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
         }
       }
