@@ -50,6 +50,7 @@ var player = {
   shootTimer: 0,
   shootSpeed: 15,
   shooting: false,
+  e: false,
   setAnim: function(x) {
     this.animTimer = 0;
     this.currentAnimFrame = 0;
@@ -123,6 +124,9 @@ var keys = 0;
 var paused = true;
 var challengeMode = false;
 var menu = 0;
+var achievements = [
+{name: "Test"}
+];
 var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Error 404", menu: -1, onClick: () => {}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: -1, onClick: () => {menu = 0}},
@@ -130,7 +134,8 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {resetScore()}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
+{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {resetScore()}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
@@ -152,7 +157,10 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Normal", menu: 6, onClick: () => {menu = 4}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 6, onClick: () => {menu = 5}},
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 6, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 6, onClick: () => {menu = 0}},
+
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 7, onClick: () => {menu = 0}}
+
 ];
 
 function start() {
@@ -178,8 +186,8 @@ function resetScore() {
 }
 
 // The object arrays are in order of rendering
-var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "foregrounds", "pickups"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
+var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "chests", "foregrounds", "pickups"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
 
 var startTime = 0;
 var score = 0;
@@ -308,6 +316,32 @@ if(!paused) {
     level.pickups[i].update();
   }
   
+  // Chests
+  for(var i = 0; i < level.chests.length; i++) {
+    var chestPos = {x: level.chests[i].pos.x + level.chests[i].size.x / 2, y: level.chests[i].pos.y + level.chests[i].size.y / 2};
+    var playerPos = {x: player.pos.x + player.size.x / 2, y: player.pos.y + player.size.y / 2};
+    var dist = Math.sqrt(Math.abs(chestPos.x - playerPos.x) ** 2 + Math.abs(chestPos.y - playerPos.y) ** 2);
+    if(dist < 100 && !cheatMode && player.e) {
+      if(keys > 0 && !level.chests[i].opened) {
+        level.chests[i].opened = true;
+        keys--;
+        level.chests[i].openTimer = 15;
+      }
+    }
+    if(level.chests[i].opened && level.chests[i].texture != 35) {
+      level.chests[i].texture = 35;
+    }
+    if(level.chests[i].openTimer > 0) {
+      level.chests[i].openTimer--;
+    } else if(level.chests[i].opened && level.chests[i].openTimer == 0 && level.chests[i].gotItem) {
+      var item = Object.assign({}, level.chests[i].item);
+      item.pos.x = level.chests[i].pos.x + level.chests[i].size.x / 2 - item.size.x / 2;
+      item.pos.y = level.chests[i].pos.y + level.chests[i].size.y / 2 - item.size.y / 2 - 0.075 * c.height;
+      level.pickups.push(item);
+      level.chests[i].gotItem = false;
+    }
+  }
+  
   // Animations
   if(player.acc.x != 0 && (player.currentAnim != 0 || player.acc.x != player.prevAcc.x) && player.onGround && !player.onCrate) {
     player.setAnim(0);
@@ -390,19 +424,23 @@ if(!paused) {
     player.vel.y += -dY / distEnd * 3;
   }
   if(distEnd < 25 && !cheatMode) {
-    if(!challengeMode) {
-      if((score < highscores[levelId].normal || highscores[levelId].normal == undefined) && levelId < levels) {
-        highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
+    if(levelId < levels) {
+      if(!challengeMode) {
+        if((score < highscores[levelId].normal || highscores[levelId].normal == undefined) && levelId < levels) {
+          highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
+        }
       }
-    }
-    if(challengeMode) {
-      if((score < highscores[levelId].challenge || highscores[levelId].challenge == undefined) && levelId < levels) {
-        highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
+      if(challengeMode) {
+        if((score < highscores[levelId].challenge || highscores[levelId].challenge == undefined) && levelId < levels) {
+          highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
+        }
       }
     }
     startTime = time;
     levelId++;
     level = loadLevel(levelId);
+    player.speed = c.height * 0.01,
+    player.jumpStrength = c.height * 0.035;
     player.pos.x = level.spawnPoint.x;
     player.pos.y = level.spawnPoint.y;
     player.onGround = false;
@@ -517,7 +555,7 @@ function getCookie(name) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 4 || menu == 5 || menu == 6) {
+  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -556,6 +594,25 @@ function drawMenu() {
       ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
       ctx.font = s + "px Arial";
       ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+    }
+  }
+  if(menu == 7) {
+    for(var i = 0; i < achievements.length; i++) {
+      var x = 0.35 * c.width;
+      var y = (0.1 + 0.25 * i) * c.height;
+      ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+      ctx.fillRect(x, y, 0.2 * c.height, 0.2 * c.height);
+      
+      var m = {pos: {x: mousePos.x, y: mousePos.y}, size: {x: 0, y: 0}};
+      var a = {pos: {x: x, y: y}, size: {x: 0.2 * c.height, y: 0.2 * c.height}};
+      if(checkCollision(m, a)) {
+        ctx.fillStyle = "rgb(150, 150, 150, 0.8)";
+        ctx.fillRect(mousePos.x, mousePos.y, 0.2 * c.height, 0.1 * c.height);
+        
+        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+        ctx.font = 0.05 * c.height + "px Arial";
+        ctx.fillText(achievements[i].name, mousePos.x + 0.025 * c.height, mousePos.y + 0.06 * c.height);
+      }
     }
   }
 }
@@ -671,6 +728,23 @@ function draw() {
       level.projectiles.splice(i, 1);
       i--;
       continue;
+    }
+  }
+  
+  // Chest interact
+  for(var i = 0; i < level.chests.length; i++) {
+    var chestPos = {x: level.chests[i].pos.x + level.chests[i].size.x / 2, y: level.chests[i].pos.y + level.chests[i].size.y / 2};
+    var playerPos = {x: player.pos.x + player.size.x / 2, y: player.pos.y + player.size.y / 2};
+    var dist = Math.sqrt(Math.abs(chestPos.x - playerPos.x) ** 2 + Math.abs(chestPos.y - playerPos.y) ** 2);
+    if(dist < 100 && !cheatMode) {
+      if(!level.chests[i].opened) {
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.font = 0.025 * c.height + "px Arial";
+        ctx.fillText("Press 'E' to open", level.chests[i].pos.x - cameraOffset.x - 0.05 * c.height, level.chests[i].pos.y - cameraOffset.y - 0.02 * c.height - Math.sin(time / 250) * 3);
+      }
+    }
+    if(level.chests[i].opened && level.chests[i].openTimer > 0) {
+      ctx.drawImage(textures[level.chests[i].item.texture], level.chests[i].pos.x + level.chests[i].size.x / 2 - level.chests[i].item.size.x / 2 - cameraOffset.x, level.chests[i].pos.y + level.chests[i].openTimer * 2 - 0.05 * c.height - cameraOffset.y, level.chests[i].item.size.x, level.chests[i].item.size.x);
     }
   }
   
@@ -985,6 +1059,10 @@ window.onmousedown = function(e) {
           level.pickups.push(new pickup(pos.x, pos.y, selectedTexture, () => {}));
           console.log("res.pickups.push(new pickup(" + pos.x + ", " + pos.y + ", " + selectedTexture + ", () => {}));");
           break;
+        case "chests":
+          level.chests.push(new chest(pos.x, pos.y, new pickup(0, 0, 10, () => {})));
+          console.log("res.chests.push(new chest(" + pos.x + ", " + pos.y + ", new pickup(0, 0, " + selectedTexture + ", () => {}));");
+          break;
         }
         return;
       } else {
@@ -1080,9 +1158,9 @@ window.onmousedown = function(e) {
 }
 
 window.onmousemove = function(e) {
+mousePos.x = e.clientX;
+mousePos.y = e.clientY;
 if(!paused) {
-  mousePos.x = e.clientX;
-  mousePos.y = e.clientY;
   if(cheatMode && building) {
     var pos = {x: Math.round((mousePos.x + cameraOffset.x) / (editSnap * c.height)) * (editSnap * c.height), y: Math.round((mousePos.y + cameraOffset.y) / (editSnap * c.height)) * (editSnap * c.height)};
     var o = eval("level." + objectNames[selectedType] + "[level." + objectNames[selectedType] + ".length - 1]");;
@@ -1241,6 +1319,7 @@ if(player.hp > 0) {
       if(cheatMode) {
         editMode = !editMode;
       }
+      player.e = true;
       break;
       
     case 82:
@@ -1334,6 +1413,10 @@ window.onkeyup = function(e) {
     
   case 16:
       player.shooting = false;
+      break;
+      
+  case 69:
+      player.e = false;
       break;
   }
 }
