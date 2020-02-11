@@ -4,17 +4,20 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump"];
-var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48];
+// Uncomment to show all textures
+// hiddenTextures = [];
+
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
   textures[i].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-var levelId = 0;
+var levelId = 1;
 var level = loadLevel(levelId);
-var levels = 2;
+var levels = 3;
 
 var player = {
   pos: JSON.parse(JSON.stringify(level.spawnPoint)),
@@ -75,6 +78,7 @@ var player = {
     level = loadLevel(levelId);
     startTime = time;
     score = 0;
+    deaths++;
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) {
@@ -124,8 +128,15 @@ var keys = 0;
 var paused = true;
 var challengeMode = false;
 var menu = 0;
+var deaths = getCookie("deaths");
+if(deaths == undefined) {
+  deaths = 0;
+}
+var notification = {texture: 0, text: "", description: "", timer: 0};
 var achievements = [
-{name: "Test"}
+{name: "Pro Gamer", description: "Finish the tutorial", texture: 41, unlocked: false}, 
+{name: "Powerup!", description: "Open a chest", texture: 32, unlocked: false},
+{name: "Commitment", description: "Die 50 times", texture: 15, unlocked: false}
 ];
 var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Error 404", menu: -1, onClick: () => {}},
@@ -133,9 +144,9 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
-{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
-{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 0, onClick: () => {resetScore()}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Tutorial", menu: 0, onClick: () => {challengeMode = false; startTutorial()}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
+{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
@@ -157,21 +168,43 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Normal", menu: 6, onClick: () => {menu = 4}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 6, onClick: () => {menu = 5}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 6, onClick: () => {resetScore()}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 6, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 7, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 7, onClick: () => {menu = 0}}
 
 ];
 
 function start() {
   editMode = false;
   cheatMode = false;
-  levelId = 0;
+  levelId = 1;
+  deaths--; // Prevent extra death count
   player.die(); 
   player.spawnTimer = 15;
   if(challengeMode) {
     player.hp = 1;
   }
+  player.pos.x = level.spawnPoint.x;
+  player.pos.y = level.spawnPoint.y;
+  paused = false;
+  menu = 1;
+  startTime = time;
+  score = 0;
+}
+
+function startTutorial() {
+  editMode = false;
+  cheatMode = false;
+  levelId = 0;
+  deaths--; // Prevent extra death count
+  player.die(); 
+  player.spawnTimer = 15;
+  if(challengeMode) {
+    player.hp = 1;
+  }
+  player.pos.x = level.spawnPoint.x;
+  player.pos.y = level.spawnPoint.y;
   paused = false;
   menu = 1;
   startTime = time;
@@ -187,7 +220,7 @@ function resetScore() {
 
 // The object arrays are in order of rendering
 var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "chests", "foregrounds", "pickups"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "if(object.type == 2) {player.damage(25)}", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
 
 var startTime = 0;
 var score = 0;
@@ -223,6 +256,9 @@ var avgSize = 1;
 
 var loop = setInterval(update, 1000 / fps);
 function update() {
+if(deaths >= 50) {
+  unlockAchievement(2);
+}
 if(menu == 0) {
   player.spawnTimer = 15;
 }
@@ -326,6 +362,7 @@ if(!paused) {
         level.chests[i].opened = true;
         keys--;
         level.chests[i].openTimer = 15;
+        unlockAchievement(1);
       }
     }
     if(level.chests[i].opened && level.chests[i].texture != 35) {
@@ -436,25 +473,33 @@ if(!paused) {
         }
       }
     }
-    startTime = time;
-    levelId++;
-    level = loadLevel(levelId);
-    player.speed = c.height * 0.01,
-    player.jumpStrength = c.height * 0.035;
-    player.pos.x = level.spawnPoint.x;
-    player.pos.y = level.spawnPoint.y;
-    player.onGround = false;
-    player.spawnTimer = 30;
-    player.vel = new vec2(0, 0);
-    player.hp = 100;
-    if(challengeMode) {
-      player.hp = 1;
+    if(levelId == 0) {
+      unlockAchievement(0);
     }
-    player.invulnerableTimer = 0;
-    player.bloodParticle = -1;
-    player.bloodTime = 0;
-    keys = 0;
-    score = 0;
+    if(levelId != 0) {
+      startTime = time;
+      levelId++;
+      level = loadLevel(levelId);
+      player.speed = c.height * 0.01,
+      player.jumpStrength = c.height * 0.035;
+      player.pos.x = level.spawnPoint.x;
+      player.pos.y = level.spawnPoint.y;
+      player.onGround = false;
+      player.spawnTimer = 30;
+      player.vel = new vec2(0, 0);
+      player.hp = 100;
+      if(challengeMode) {
+        player.hp = 1;
+      }
+      player.invulnerableTimer = 0;
+      player.bloodParticle = -1;
+      player.bloodTime = 0;
+      keys = 0;
+      score = 0;
+    } else {
+      paused = true;
+      menu = 0;
+    }
   }
   
   // Npcs
@@ -535,6 +580,24 @@ if(!paused) {
   ctx.fillRect(0, 0, c.width, c.height);
   drawMenu();
 }
+if(notification.timer > 0) {
+  var off = Math.min(10, 90 - notification.timer) / 10 * 0.1 - 0.1;
+  if(notification.timer < 10) {
+    off = notification.timer / 10 * 0.1 - 0.1;
+  }
+  ctx.fillStyle = "rgb(150, 150, 150, 0.75)";
+  ctx.fillRect(0.35 * c.width, (0 + off) * c.height, 0.3 * c.width, 0.1 * c.height);
+    
+  ctx.drawImage(textures[notification.texture], 0.36 * c.width, (0.01 + off) * c.height, 0.075 * c.height, 0.075 * c.height);
+
+  ctx.font = 0.03 * c.height + "px Arial";
+  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+  ctx.fillText(notification.text, 0.42 * c.width, (0.045 + off) * c.height);
+  ctx.font = 0.02 * c.height + "px Arial";
+  ctx.fillText(notification.description, 0.42 * c.width, (0.075 + off) * c.height);
+    
+  notification.timer--;
+}
 }
 
 function setCookie(name, value) {
@@ -552,6 +615,16 @@ function getCookie(name) {
     }
   }
   return undefined;
+}
+
+function unlockAchievement(id) {
+  if(!achievements[id].unlocked) {
+    achievements[id].unlocked = true;
+    notification.texture = achievements[id].texture;
+    notification.text = "Achievement unlocked!";
+    notification.description = achievements[id].description;
+    notification.timer = 90;
+  }
 }
 
 function drawMenu() {
@@ -598,20 +671,46 @@ function drawMenu() {
   }
   if(menu == 7) {
     for(var i = 0; i < achievements.length; i++) {
-      var x = 0.35 * c.width;
-      var y = (0.1 + 0.25 * i) * c.height;
+      var x = (0.15 + 0.15 * (i % 3 + 1)) * c.width;
+      var y = (0.1 + 0.25 * Math.floor(i / 3)) * c.height;
       ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+      if(achievements[i].unlocked) {
+        ctx.fillStyle = "rgb(100, 255, 100, 0.75)";
+      }
       ctx.fillRect(x, y, 0.2 * c.height, 0.2 * c.height);
+      ctx.drawImage(textures[achievements[i].texture], x + 0.025 * c.height, y + 0.025 * c.height, 0.15 * c.height, 0.15 * c.height);
+      if(!achievements[i].unlocked) {
+        ctx.globalCompositeOperation = "saturation";
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.fillRect(x, y, 0.2 * c.height, 0.2 * c.height);
+        ctx.globalCompositeOperation = "source-over";
+      }
+    }
+    for(var i = 0; i < achievements.length; i++) {
+      var x = (0.15 + 0.15 * (i % 3 + 1)) * c.width;
+      var y = (0.1 + 0.25 * Math.floor(i / 3)) * c.height;
       
       var m = {pos: {x: mousePos.x, y: mousePos.y}, size: {x: 0, y: 0}};
       var a = {pos: {x: x, y: y}, size: {x: 0.2 * c.height, y: 0.2 * c.height}};
       if(checkCollision(m, a)) {
-        ctx.fillStyle = "rgb(150, 150, 150, 0.8)";
-        ctx.fillRect(mousePos.x, mousePos.y, 0.2 * c.height, 0.1 * c.height);
+        if(achievements[i].unlocked) {
+          ctx.fillStyle = "rgb(100, 255, 100, 0.8)";
+        } else {
+          ctx.fillStyle = "rgb(150, 150, 150, 0.8)";
+        }
+        ctx.fillRect(mousePos.x, mousePos.y, 0.4 * c.height, 0.125 * c.height);
         
         ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
         ctx.font = 0.05 * c.height + "px Arial";
-        ctx.fillText(achievements[i].name, mousePos.x + 0.025 * c.height, mousePos.y + 0.06 * c.height);
+        var name = achievements[i].name;
+        var desc = achievements[i].description;
+        if(!achievements[i].unlocked) {
+          name = "???";
+          desc = "???";
+        }
+        ctx.fillText(name, mousePos.x + 0.025 * c.height, mousePos.y + 0.06 * c.height);
+        ctx.font = 0.025 * c.height + "px Arial";
+        ctx.fillText(desc, mousePos.x + 0.025 * c.height, mousePos.y + 0.1 * c.height);
       }
     }
   }

@@ -3,6 +3,39 @@ function loadLevel(id) {
 
   switch(id) {
   case 0:
+    res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
+    res.end = {x: 3.2 * c.height, y: -0.1 * c.height};
+    
+    res.walls.push(new wall(-0.4, -0.3, 0.1, 0.5, 41, true, 0.1));
+    res.walls.push(new wall(-0.4, -0.4, 4, 0.1, 41, true, 0.1));
+    res.walls.push(new wall(-0.4, 0.2, 1, 0.9, 41, true, 0.1));
+    res.walls.push(new wall(0.6, 0.3, 0.3, 0.8, 41, true, 0.1));
+    res.walls.push(new wall(0.9, 0.2, 2.8, 0.9, 41, true, 0.1));
+    res.walls.push(new wall(1.3, -0.1, 0.1, 0.3, 41, true, 0.1));
+    res.walls.push(new wall(2.3, 0.1, 0.1, 0.1, 41, true, 0.1));
+    res.walls.push(new wall(2.9, 0.1, 0.1, 0.1, 41, true, 0.1));
+    res.walls.push(new wall(1.9, -0.3, 0.2, 0.3, 41, true, 0.1));
+    res.walls.push(new wall(3.6, -0.4, 0.1, 0.6, 41, true, 0.1));
+
+    res.deaths.push(new death(0.6, 0.25, 0.3, 0.05, 13, true, 0.05));
+    
+    res.npcs.push(new npc(2.5, 0.1, 2));
+    
+    res.crates.push(new crate(1.41, 0.05, 0.1, 0.1));
+    
+    res.buttons.push(new button(1.55, 0.185, 0));
+    
+    res.doors.push(new door(1.9, 0, 0.05, 0.2, 0));
+    
+    res.backgrounds.push(new background(-1.9, -1.7, 6.4, 3.9, 38, true, 0.075));
+    res.backgrounds.push(new background(-0.1, -0.25, 0.2, 0.2, 42, false, 0));
+    res.backgrounds.push(new background(0.4, -0.25, 0.1, 0.2, 43, false, 0));
+    res.backgrounds.push(new background(1.15, -0.1, 0.15, 0.3, 44, false, 0.1));
+    res.backgrounds.push(new background(1.5, -0.2, 0.25, 0.075, 47, false, 0));
+    res.backgrounds.push(new background(2.2, -0.2, 0.25, 0.075, 48, false, 0));
+    
+    break;
+  case 1:
     res.spawnPoint = {x: 0.3 * c.height, y: 0.15 * c.height};
     res.end = {x: 0.2 * c.height, y: -1 * c.height};
     
@@ -110,7 +143,7 @@ function loadLevel(id) {
 
     break;
     
-  case 1:
+  case 2:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
     res.end = {x: 1.15 * c.height, y: 1.55 * c.height};
     
@@ -363,6 +396,10 @@ function npc(x, y, type) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.vel = {x: 0, y: 0};
   this.size = {x: 0.1 * c.height, y: 0.1 * c.height};
+  if(type == 2) {
+    this.size.x = 0.075 * c.height;
+    this.size.y = 0.075 * c.height;
+  }
   this.anims = [];
   if(this.type == 0) {
     this.anims = [[{texture: 8, time: 5}, {texture: 9, time: 5}, {texture: 10, time: 5}]];
@@ -371,6 +408,9 @@ function npc(x, y, type) {
     this.anims = [
     [{texture: 23, time: 4}, {texture: 24, time: 4}], 
     [{texture: 22, time: 0}]];
+  }
+  if(this.type == 2) {
+    this.anims = [[{texture: 45, time: 5}, {texture: 46, time: 5}]];
   }
   this.texture = this.anims[0][0].texture;
   this.animTimer = 0;
@@ -395,6 +435,9 @@ function npc(x, y, type) {
   }
   if(this.type == 1) {
     this.speed = c.height * 0.003;
+  }
+  if(this.type == 2) {
+    this.speed = c.height * 0.0015;
   }
   
   this.hp = 100;
@@ -423,7 +466,7 @@ function npc(x, y, type) {
       this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
     }
     
-    if(this.type == 0) {
+    if(this.type == 0 || this.type == 2) {
       if(!this.textureFlipped) {
         this.vel.x += -this.speed;
       } else {
@@ -529,7 +572,7 @@ function npc(x, y, type) {
       this.die();
     }
     
-    if(this.turn && this.type == 0) {
+    if(this.turn && (this.type == 0 || this.type == 2)) {
       this.vel.x *= -1;
     }
     
