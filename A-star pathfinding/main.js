@@ -57,16 +57,14 @@ for(var i = 0; i < 15; i++) {
 
 update();
 
-//var interval = setInterval(update, 1000 / 100);
+var interval = setInterval(update, 1000 / 100);
 
 function update() {
-	var s = new Date().getTime();
-	while(!finish) {
 	for(var i = 0; i < 3; i++) {
 		for(var j = 0; j < 3; j++) {
 			if(i != 1 || j != 1) {
 				if(grid[current.x + i - 1][current.y + j - 1].col == 3) {
-					//clearInterval(interval);
+					clearInterval(interval);
 					var x = current.x;
 					var y = current.y;
 					while(!finish) {
@@ -122,9 +120,6 @@ function update() {
 	openList.splice(lowId, 1);
 	current = lowPos;
 	grid[current.x][current.y].open = false;
-	}
-	
-	console.log(new Date().getTime() - s + " ms");
 
 	for(var i = 0; i < grid.length; i++) {
 		for(var j = 0; j < grid[i].length; j++) {
