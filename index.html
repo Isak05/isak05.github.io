@@ -4,21 +4,33 @@
   </head>
   <body>
     <div id="links">
-      <a href="A-star pathfinding">A* pathfinding</a>
-      <br>
-      <a href="AI">Flappy bird machine learning</a>
-      <br>
-      <a href="Mandelbrot webGL">Mandelbrot webGL</a>
-      <br>
-      <a href="Spel">Spel</a>
-      <br>
-      <a href="Word spel">Word Spel</a>
-      <br>
-      <a href="Spel2">Spel 2</a>
-      <br>
-      <a href="Christmas 2019">Christmas Game</a>
-      <br>
-    </div>
+			<div id="container1">
+				<input class="list-button" id="list1-button" type="checkbox"/>
+				<label for="list1-button">Spel</label>
+				<div id="list1" class="lists" for="list1-button">
+					<a href="Spel2">Spel 2</a>
+          <br>
+          <a href="Christmas 2019">Christmas Game</a>
+          <br>
+          <a href="Word spel">Word Spel</a>
+          <br>
+          <a href="Spel">Spel</a>
+				</div>
+			</div>
+			
+			<div id="container2">
+				<input class="list-button" id="list2-button" type="checkbox"/>
+				<label for="list2-button">Annat</label>
+				<div id="list2" class="lists" for="list1-button">
+					<a href="A-star pathfinding">A* pathfinding</a>
+          <br>
+          <a href="AI">Flappy bird machine learning</a>
+          <br>
+          <a href="Mandelbrot webGL">Mandelbrot webGL</a>
+				</div>
+			</div>
+		</div>
+    
     <canvas id="c"></canvas>
     <script src="main.js"></script>
   <body/>
