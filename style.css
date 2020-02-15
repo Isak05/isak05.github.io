@@ -1,16 +1,31 @@
 body {
 	margin: 0px;
 	overflow: hidden;
+	background-color: black;
 }
 
-#links {
+#container1, #container2 {
 	position: absolute;
 	width: 100%;
 	margin-top: 10vh;
 	text-align: center;
 }
 
-a {
+#container1 {
+	margin-left: -20vh;
+	pointer-events: none;
+}
+
+#container2 {
+	margin-left: 20vh;
+	pointer-events: none;
+}
+
+.list-button {
+	display: none;
+}
+
+a, label {
 	color: rgb(255, 255, 255, 0.75);
 	line-height: 6vh;
 	font-size: 3.5vh;
@@ -19,9 +34,28 @@ a {
 	transition: 0.5s;
 	text-decoration: none;
 	user-select: none;
+	pointer-events: auto;
 }
 
-a:hover {
+label {
+	font-size: 5vh;
+}
+
+a:hover, label:hover {
 	color: rgb(255, 255, 255);
 	text-shadow: 0px 0px 15px rgb(255, 255, 255);
+	font-size: 4vh;
+}
+
+label:hover {
+	font-size: 5.5vh;
+}
+
+.lists {
+	opacity: 0;
+	transition: 0.25s;
+}
+
+.list-button:checked ~ .lists {
+	opacity: 1;
 }
