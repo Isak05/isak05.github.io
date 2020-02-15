@@ -52,10 +52,12 @@ label:hover {
 }
 
 .lists {
+	visibility: hidden;
 	opacity: 0;
-	transition: 0.25s;
+	transition: opacity 0.25s;
 }
 
 .list-button:checked ~ .lists {
+	visibility: visible;
 	opacity: 1;
 }
