@@ -138,7 +138,7 @@ var controls = [
 {code: 27, name: "Escape"},
 ];
 var changeControl = -1;
-var deaths = getCookie("deaths");
+var deaths = parseInt(getCookie("deaths"));
 if(deaths == undefined) {
   deaths = 0;
 }
