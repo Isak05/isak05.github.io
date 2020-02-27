@@ -128,6 +128,16 @@ var keys = 0;
 var paused = true;
 var challengeMode = false;
 var menu = 0;
+var controls = [
+{code: 65, name: "a"},
+{code: 68, name: "d"},
+{code: 87, name: "w"},
+{code: 32, name: "Space"},
+{code: 16, name: "Shift"},
+{code: 69, name: "e"},
+{code: 27, name: "Escape"},
+];
+var changeControl = -1;
 var deaths = getCookie("deaths");
 if(deaths == undefined) {
   deaths = 0;
@@ -135,18 +145,32 @@ if(deaths == undefined) {
 var notification = {texture: 0, text: "", description: "", timer: 0};
 var achievements = [
 {name: "Pro Gamer", description: "Finish the tutorial", texture: 41, unlocked: false}, 
-{name: "Powerup!", description: "Open a chest", texture: 32, unlocked: false},
-{name: "Commitment", description: "Die 50 times", texture: 15, unlocked: false}
+{name: "Powerup", description: "Open a chest", texture: 32, unlocked: false},
+{name: "You're bad", description: "Die 50 times", texture: 15, unlocked: false}
 ];
+for(var i = 0; i < achievements.length; i++) {
+  var val = getCookie("achievement" + i);
+  if(val == undefined) {
+    continue;
+  } else {
+    if(val == "true") {
+      achievements[i].unlocked = true;
+    }
+    if(val == "false") {
+      achievements[i].unlocked = false;
+    }
+  }
+}
 var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Error 404", menu: -1, onClick: () => {}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: -1, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {challengeMode = false; start()}},
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {menu = 9}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Tutorial", menu: 0, onClick: () => {challengeMode = false; startTutorial()}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
-{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
+{x: 0.35 * c.width, y: 0.6 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
@@ -171,14 +195,32 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Reset Highscores", menu: 6, onClick: () => {resetScore()}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 6, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 7, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 7, onClick: () => {menu = 0}},
 
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Left", menu: 8, onClick: () => {changeControl = 0}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Right", menu: 8, onClick: () => {changeControl = 1}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Jump", menu: 8, onClick: () => {changeControl = 2}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Grab", menu: 8, onClick: () => {changeControl = 3}},
+{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Shoot", menu: 8, onClick: () => {changeControl = 4}},
+{x: 0.35 * c.width, y: 0.6 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Interact", menu: 8, onClick: () => {changeControl = 5}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 8, onClick: () => {menu = 0}},
+
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 9, onClick: () => {menu = 0}}
 ];
+
+for(var i = 0; i < levels; i++) {
+  var text = i;
+  var w = 0.1;
+  if(i == 0) {
+    text = "Tutorial";
+    w = 0.2;
+  }
+  buttons.push({x: (0.475 - w / 1.75 + 0.075 * i) * c.width, y: 0.1 * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {challengeMode = false; start()}});
+}
 
 function start() {
   editMode = false;
   cheatMode = false;
-  levelId = 1;
   deaths--; // Prevent extra death count
   player.die(); 
   player.spawnTimer = 15;
@@ -234,6 +276,10 @@ window.onbeforeunload = function() {
     setCookie("highscore" + i, highscores[i].normal);
     setCookie("challengeHighscore" + i, highscores[i].challenge);
   }
+  for(var i = 0; i < achievements.length; i++) {
+    setCookie("achievement" + i, achievements[i].unlocked);
+  }
+  setCookie("deaths", deaths);
 }
 
 var cv = document.createElement("canvas");
@@ -261,6 +307,9 @@ if(deaths >= 50) {
 }
 if(menu == 0) {
   player.spawnTimer = 15;
+}
+if(menu != 8) {
+  changeControl = -1;
 }
 if(!paused) {
   time = window.performance.now();
@@ -628,7 +677,7 @@ function unlockAchievement(id) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7) {
+  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -652,6 +701,31 @@ function drawMenu() {
       } else if(menu == 5) {
         ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
         ctx.fillText("Level " + i + ": " + highscores[i].challenge, 0.31 * c.width, (0.1 + 0.05 * i) * c.height);
+      }
+    }
+  }
+  if(menu == 8) {
+    ctx.font = 0.05 * c.height + "px Arial";
+    for(var i = 0; i < controls.length; i++) {
+      if(controls[i].code != 27) {
+        ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+        ctx.fillRect(0.525 * c.width, (0.1 + 0.1 * i) * c.height, 0.3 * c.height, 0.075 * c.height);
+        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+        if(controls[i].code != 32) {
+          var text = controls[i].name;
+          if(i == 0) {
+            text += " or \u21E6";
+          }
+          if(i == 1) {
+            text += " or \u21E8";
+          }
+          if(i == 2) {
+            text += " or \u21E7";
+          }
+          ctx.fillText(text, 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
+        } else {
+          ctx.fillText("Space", 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
+        }
       }
     }
   }
@@ -1095,6 +1169,12 @@ window.onmousedown = function(e) {
         var m = {pos: {x: e.clientX, y: e.clientY}, size: {x: 0, y: 0}};
         var b = {pos: {x: buttons[i].x, y: buttons[i].y}, size: {x: buttons[i].w, y: buttons[i].h}};
         if(checkCollision(m, b)) {
+          if(buttons[i].menu == 9 && buttons[i].text.constructor.name == "Number") {
+            levelId = buttons[i].text;
+          }
+          if(buttons[i].text == "Tutorial") {
+            levelId = 0;
+          }
           buttons[i].onClick();
           break;
         }
@@ -1270,6 +1350,11 @@ if(!paused) {
 }
 
 window.onkeydown = function(e) {
+if(changeControl != -1) {
+  controls[changeControl].code = e.keyCode;
+  controls[changeControl].name = e.key;
+  changeControl = -1;
+} else {
 if(!paused) {
 if(player.hp > 0) {
   if(e.keyCode == 37 && cheatMode && editMode) {
@@ -1369,17 +1454,17 @@ if(player.hp > 0) {
   } else {
     switch(e.keyCode) {
     case 39: // Right
-    case 68:
+    case controls[1].code:
       player.acc.x = player.speed;
       break;
 
     case 37: // Left
-    case 65:
+    case controls[0].code:
       player.acc.x = -player.speed;
       break;
 
     case 38: // Up
-    case 87:
+    case controls[2].code:
       if(!cheatMode) {
         if(player.onGround) {
           player.vel.y = -player.jumpStrength;
@@ -1410,11 +1495,11 @@ if(player.hp > 0) {
       player.acc.y = 0;
       break;
 
-    case 32:
+    case controls[3].code:
       player.interacting = true;
       break;
 
-    case 69:
+    case controls[5].code:
       if(cheatMode) {
         editMode = !editMode;
       }
@@ -1453,25 +1538,26 @@ if(player.hp > 0) {
       }
       break;
       
-    case 16:
+    case controls[4].code:
       player.shooting = true;
       break;
     }
   }
 }
 }
-if(e.keyCode == 27) {
-  if(menu != 0 && menu != 4 && menu != 5 && menu != 6) {
+if(e.keyCode == controls[6].code) {
+  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8) {
     paused = !paused;
     menu = 1;
   }
+}
 }
 }
 
 window.onkeyup = function(e) {
   switch(e.keyCode) {
   case 39: // Right
-  case 68:
+  case controls[1].code:
     if(player.acc.x > 0) {
       player.acc.x = 0;
     }
@@ -1481,7 +1567,7 @@ window.onkeyup = function(e) {
     break;
     
   case 37: // Left
-  case 65:
+  case controls[0].code:
     if(player.acc.x < 0) {
       player.acc.x = 0;
     }
@@ -1491,7 +1577,7 @@ window.onkeyup = function(e) {
     break;
     
   case 38: // Up
-  case 87:
+  case controls[2].code:
     if(cheatMode) {
       player.acc.y = 0;
       player.vel.y = 0;
@@ -1506,15 +1592,15 @@ window.onkeyup = function(e) {
     }
     break;
     
-  case 32:
+  case controls[3].code:
     player.interacting = false;
     break;
     
-  case 16:
+  case controls[4].code:
       player.shooting = false;
       break;
       
-  case 69:
+  case controls[5].code:
       player.e = false;
       break;
   }
