@@ -4,7 +4,7 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4"];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock"];
 var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48];
 // Uncomment to show all textures
 // hiddenTextures = [];
@@ -18,6 +18,14 @@ for(var i = 0; i < textureFiles.length; i++) {
 var levelId = 1;
 var level = loadLevel(levelId);
 var levels = 3;
+var unlockedLevels = getCookie("unlockedLevels");
+if(unlockedLevels == undefined) {
+  unlockedLevels = 0;
+}
+var unlockedChallengeLevels = getCookie("unlockedChallengeLevels");
+if(unlockedChallengeLevels == undefined) {
+  unlockedChallengeLevels = 0;
+}
 
 var player = {
   pos: JSON.parse(JSON.stringify(level.spawnPoint)),
@@ -107,6 +115,12 @@ function vec2(x, y) {
 }
 
 var fps = 30;
+var cheatable = false;
+if(window.location.origin == "file://") {
+  cheatable = true;
+  unlockedLevels = levels - 1;
+  unlockedChallengeLevels = levels - 1;
+}
 var cheatMode = false;
 var building = false;
 var editMode = false;
@@ -165,12 +179,10 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Error 404", menu: -1, onClick: () => {}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: -1, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {menu = 9}},
-{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge Mode", menu: 0, onClick: () => {challengeMode = true; start()}},
-{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Tutorial", menu: 0, onClick: () => {challengeMode = false; startTutorial()}},
-{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 8}},
-{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
-{x: 0.35 * c.width, y: 0.6 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {menu = 10}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
+{x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
@@ -205,7 +217,11 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.6 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Interact", menu: 8, onClick: () => {changeControl = 5}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 8, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 9, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 9, onClick: () => {menu = 10}},
+
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Normal", menu: 10, onClick: () => {challengeMode = false; menu = 9}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 10, onClick: () => {challengeMode = true; menu = 9}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 10, onClick: () => {menu = 0}}
 ];
 
 for(var i = 0; i < levels; i++) {
@@ -215,7 +231,7 @@ for(var i = 0; i < levels; i++) {
     text = "Tutorial";
     w = 0.2;
   }
-  buttons.push({x: (0.475 - w / 1.75 + 0.075 * i) * c.width, y: 0.1 * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {challengeMode = false; start()}});
+  buttons.push({x: (0.475 - w / 1.75 + 0.075 * i) * c.width, y: 0.1 * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {start()}});
 }
 
 function start() {
@@ -280,6 +296,8 @@ window.onbeforeunload = function() {
     setCookie("achievement" + i, achievements[i].unlocked);
   }
   setCookie("deaths", deaths);
+  setCookie("unlockedLevels", unlockedLevels);
+  setCookie("unlockedChallengeLevels", unlockedChallengeLevels);
 }
 
 var cv = document.createElement("canvas");
@@ -512,11 +530,17 @@ if(!paused) {
   if(distEnd < 25 && !cheatMode) {
     if(levelId < levels) {
       if(!challengeMode) {
+        if(levelId >= unlockedLevels) {
+          unlockedLevels = levelId + 1;
+        }
         if((score / fps< highscores[levelId].normal || isNaN(highscores[levelId].normal)) && levelId < levels) {
           highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
         }
       }
       if(challengeMode) {
+        if(levelId >= unlockedChallengeLevels) {
+          unlockedChallengeLevels = levelId + 1;
+        }
         if((score / fps < highscores[levelId].challenge || isNaN(highscores[levelId].challenge)) && levelId < levels) {
           highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
         }
@@ -677,7 +701,7 @@ function unlockAchievement(id) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9) {
+  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -706,33 +730,31 @@ function drawMenu() {
   }
   if(menu == 8) {
     ctx.font = 0.05 * c.height + "px Arial";
-    for(var i = 0; i < controls.length; i++) {
-      if(controls[i].code != 27) {
-        ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-        ctx.fillRect(0.525 * c.width, (0.1 + 0.1 * i) * c.height, 0.3 * c.height, 0.075 * c.height);
-        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-        if(controls[i].code != 32) {
-          var text = controls[i].name;
-          if(i == 0) {
-            text += " or \u21E6";
-          }
-          if(i == 1) {
-            text += " or \u21E8";
-          }
-          if(i == 2) {
-            text += " or \u21E7";
-          }
-          ctx.fillText(text, 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
-        } else {
-          ctx.fillText("Space", 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
+    for(var i = 0; i < controls.length - 1; i++) {
+      ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+      ctx.fillRect(0.525 * c.width, (0.1 + 0.1 * i) * c.height, 0.3 * c.height, 0.075 * c.height);
+      ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+      if(controls[i].code != 32) {
+        var text = controls[i].name;
+        if(i == 0) {
+          text += " or \u21E6";
         }
+        if(i == 1) {
+          text += " or \u21E8";
+        }
+        if(i == 2) {
+          text += " or \u21E7";
+        }
+        ctx.fillText(text, 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
+      } else {
+        ctx.fillText("Space", 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
       }
     }
   }
   for(var i = 0; i < buttons.length; i++) {
     if(buttons[i].menu == menu) {
       ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-      if(buttons[i].text == "Challenge Mode") {
+      if(buttons[i].text == "Challenge") {
         ctx.fillStyle = "rgb(255, 100, 100, 0.75)";
       }
       ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
@@ -740,7 +762,22 @@ function drawMenu() {
       var off = 0.025 * c.height;
       ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
       ctx.font = s + "px Arial";
-      ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+      
+      if(menu == 9) {
+        if(buttons[i].text.constructor.name == "Number") {
+          if(parseInt(buttons[i].text) > unlockedLevels && !challengeMode) {
+            ctx.drawImage(textures[49], buttons[i].x + 0.005 * c.height, buttons[i].y + 0.0075 * c.height, buttons[i].h * 0.9, buttons[i].h * 0.9);
+          } else if(parseInt(buttons[i].text) > unlockedChallengeLevels && challengeMode) {
+            ctx.drawImage(textures[49], buttons[i].x + 0.005 * c.height, buttons[i].y + 0.0075 * c.height, buttons[i].h * 0.9, buttons[i].h * 0.9);
+          } else {
+            ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+          }
+        } else {
+          ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+        }
+      } else {
+        ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+      }
     }
   }
   if(menu == 7) {
@@ -913,7 +950,13 @@ function draw() {
       if(!level.chests[i].opened) {
         ctx.fillStyle = "rgb(255, 255, 255)";
         ctx.font = 0.025 * c.height + "px Arial";
-        ctx.fillText("Press 'E' to open", level.chests[i].pos.x - cameraOffset.x - 0.05 * c.height, level.chests[i].pos.y - cameraOffset.y - 0.02 * c.height - Math.sin(time / 250) * 3);
+        ctx.textAlign = "center";
+        var text = "Press 'E' to open";
+        if(keys == 0) {
+          text = "It's locked";
+        }
+        ctx.fillText(text, level.chests[i].pos.x - cameraOffset.x + level.chests[i].size.x / 2, level.chests[i].pos.y - cameraOffset.y - 0.02 * c.height - Math.sin(time / 250) * 3);
+        ctx.textAlign = "left";
       }
     }
     if(level.chests[i].opened && level.chests[i].openTimer > 0) {
@@ -1049,17 +1092,11 @@ function draw() {
     ctx.fillText("snap: " + editSnap, 0.005 * c.height, c.height * 0.365 + offset);
   }
   
-  var xOff = 1 * c.width - 0.15 * c.height;
-  ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-  ctx.fillRect(xOff, 0, c.height * 0.15, c.height * 0.2);
-  
-  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-  ctx.font = c.height * 0.02 + "px Arial";
-  ctx.fillText("fps: " + Math.round(actualFps * 10) / 10, c.height * 0.01 + xOff, c.height * 0.03);
-  ctx.fillText("avg. fps: " + Math.round(avgFps * 10) / 10, c.height * 0.01 + xOff, c.height * 0.06);
-  ctx.fillText("score: " + score / fps, c.height * 0.01 + xOff, c.height * 0.09);
-  ctx.fillText("highscore: " + Math.round(highscores[levelId] / 100) / 10, c.height * 0.01 + xOff, c.height * 0.12);
-  ctx.fillText("level: " + levelId, c.height * 0.01 + xOff, c.height * 0.15);
+  ctx.font = "200 " + c.height * 0.03 + "px Arial";
+  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.globalCompositeOperation = "difference";
+  ctx.fillText(Math.round(actualFps), 0.975 * c.width, 0.03 * c.height);
+  ctx.globalCompositeOperation = "source-over";
   
   if(player.hp <= 0) {
     ctx.fillStyle = "rgb(0, 0, 0, " + (1 - player.invulnerableTimer / 30) + ")";
@@ -1169,13 +1206,28 @@ window.onmousedown = function(e) {
         var m = {pos: {x: e.clientX, y: e.clientY}, size: {x: 0, y: 0}};
         var b = {pos: {x: buttons[i].x, y: buttons[i].y}, size: {x: buttons[i].w, y: buttons[i].h}};
         if(checkCollision(m, b)) {
-          if(buttons[i].menu == 9 && buttons[i].text.constructor.name == "Number") {
-            levelId = buttons[i].text;
+          if(buttons[i].menu == 9) {
+            if(buttons[i].text.constructor.name == "Number") {
+              if(challengeMode) {
+                if(buttons[i].text <= unlockedChallengeLevels) {
+                  levelId = buttons[i].text;
+                  buttons[i].onClick();
+                }
+              } else {
+                if(buttons[i].text <= unlockedLevels) {
+                  levelId = buttons[i].text;
+                  buttons[i].onClick();
+                }
+              }
+            } else if(buttons[i].text == "Tutorial") {
+              levelId = 0;
+              buttons[i].onClick();
+            } else {
+              buttons[i].onClick();
+            }
+          } else {
+            buttons[i].onClick();
           }
-          if(buttons[i].text == "Tutorial") {
-            levelId = 0;
-          }
-          buttons[i].onClick();
           break;
         }
       }
@@ -1239,7 +1291,7 @@ window.onmousedown = function(e) {
           console.log("res.pickups.push(new pickup(" + pos.x + ", " + pos.y + ", " + selectedTexture + ", () => {}));");
           break;
         case "chests":
-          level.chests.push(new chest(pos.x, pos.y, new pickup(0, 0, 10, () => {})));
+          level.chests.push(new chest(pos.x, pos.y, new pickup(0, 0, selectedTexture, () => {})));
           console.log("res.chests.push(new chest(" + pos.x + ", " + pos.y + ", new pickup(0, 0, " + selectedTexture + ", () => {}));");
           break;
         }
@@ -1488,11 +1540,13 @@ if(player.hp > 0) {
       break;
 
     case 8:
-      cheatMode = !cheatMode;
-      player.vel.x = 0;
-      player.vel.y = 0;
-      player.acc.x = 0;
-      player.acc.y = 0;
+      if(cheatable) {
+        cheatMode = !cheatMode;
+        player.vel.x = 0;
+        player.vel.y = 0;
+        player.acc.x = 0;
+        player.acc.y = 0;
+      }
       break;
 
     case controls[3].code:
@@ -1546,7 +1600,7 @@ if(player.hp > 0) {
 }
 }
 if(e.keyCode == controls[6].code) {
-  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8) {
+  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10) {
     paused = !paused;
     menu = 1;
   }
