@@ -522,7 +522,7 @@ function npc(x, y, type) {
       }
       if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
         this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
-        audio[1].play(1);
+        audio[1].play(1 * volume);
         if(this.textureFlipped) {
           level.projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));
         } else {

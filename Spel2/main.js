@@ -93,7 +93,7 @@ var player = {
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) { 
-      audio[2].play(1);
+      audio[2].play(1 * volume);
       this.func = function() {
         return {x: Math.random() * 10 - 5, y: Math.random() * 10};
       }
@@ -144,6 +144,7 @@ var keys = 0;
 var paused = true;
 var challengeMode = false;
 var menu = 0;
+var volume = 0;
 var controls = [
 {code: 65, name: "a"},
 {code: 68, name: "d"},
@@ -155,7 +156,7 @@ var controls = [
 ];
 var changeControl = -1;
 var deaths = parseInt(getCookie("deaths"));
-if(deaths == undefined) {
+if(deaths == NaN) {
   deaths = 0;
 }
 var notification = {texture: 0, text: "", description: "", timer: 0};
@@ -349,7 +350,7 @@ if(!paused) {
 
   if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
     player.shootTimer = player.shootSpeed;
-    audio[0].play(1);
+    audio[0].play(1 * volume);
     if(!player.textureFlipped) {
       level.projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
     } else {
