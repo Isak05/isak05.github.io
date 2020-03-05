@@ -145,7 +145,7 @@ function loadLevel(id) {
     
   case 2:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.end = {x: 1.15 * c.height, y: 1.55 * c.height};
+    res.end = {x: 0.6 * c.height, y: 1.1 * c.height};
     
     res.walls.push(new wall(-0.4, 0, 0.8, 0.1, 38, true, 0.1));
     res.walls.push(new wall(0.2, 0.95, 0.1, 0.1, 38, true, 0.1));
@@ -164,14 +164,33 @@ function loadLevel(id) {
     res.walls.push(new wall(-0.7, 1.4, 0.3, 0.1, 38, true, 0.1));
     res.walls.push(new wall(-0.4, 0.1, 0.1, 1.4, 38, true, 0.1));
     res.walls.push(new wall(0.5, 1.5, 0.2, 0.05, 38, true, 0.1));
+    res.walls.push(new wall(1.5, 1.5, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(1.1, 1.7, 0.8, 0.1, 38, true, 0.1));
+    res.walls.push(new wall(1.8, 0.3, 0.1, 1.4, 38, true, 0.1));
+    res.walls.push(new wall(1.2, 1.35, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(1.55, 1.15, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(1.45, 0.8, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(1, 0.7, 0.1, 0.7, 38, true, 0.1));
+    res.walls.push(new wall(1.1, 0.7, 0.2, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(1, 0.2, 0.9, 0.1, 38, true, 0.1));
 
     res.crates.push(new crate(-0.5, 1.5, 0.1, 0.1));
     res.crates.push(new crate(0.5, 0.6, 0.1, 0.1));
     res.crates.push(new crate(0.7, 1.55, 0.1, 0.1));
     
-    res.backgrounds.push(new background(-1.4, -1, 2.9, 5.1, 2, true, 0.1));
+    res.backgrounds.push(new background(-1.4, -1, 5, 5.1, 2, true, 0.1));
+
+    res.foregrounds.push(new foreground(0.8, 0.2, 0.2, 0.1, 38, true, 0.1));
 
     res.deaths.push(new death(0.2, 0.9, 0.1, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.15, 1.35, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.3, 1.35, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.45, 1.5, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.6, 1.5, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.5, 1.15, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.65, 1.15, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.4, 0.8, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.55, 0.8, 0.05, 0.05, 13, true, 0.05));
     
     res.npcs.push(new npc(-0.1, 0.8, 1));
     
@@ -234,6 +253,7 @@ function level_() {
   
   this.projectiles = [];
   this.particleEmitters = [];
+  this.particles = [];
 }
 
 function chest(x, y, item) {
@@ -290,17 +310,11 @@ function particleEmitter(x, y, velFunc, sizeX, sizeY, rangeX, rangeY, life, text
   this.life = life;
   this.opacityCurve = function(time) {return Math.tanh((Math.sin(time*Math.PI*2-Math.PI/2) * 0.5 + 0.5)*3)};
   this.update = function() {
-    for(var i = 0; i < this.particles.length; i++) {
-      this.particles[i].update();
-      if(this.particles[i].delete) {
-        this.particles.splice(i, 1);
-      }
-    }
     if(Math.random() < this.rate && this.enabled) {
       this.w = this.size.x / c.height;
       this.h = this.size.y / c.height;
       this.vel = velFunc();
-      this.particles.push(new particle((this.pos.x + (this.range.x - this.w * c.height) * Math.random()) / c.height, (this.pos.y + (this.range.y - this.h * c.height) * Math.random()) / c.height, this.vel.x, this.vel.y, this.w, this.h, this.life, this.opacityCurve, this.texture));
+      level.particles.push(new particle((this.pos.x + (this.range.x - this.w * c.height) * Math.random()) / c.height, (this.pos.y + (this.range.y - this.h * c.height) * Math.random()) / c.height, this.vel.x, this.vel.y, this.w, this.h, this.life, this.opacityCurve, this.texture));
     }
   };
 }
@@ -508,6 +522,7 @@ function npc(x, y, type) {
       }
       if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
         this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
+        audio[1].play(1);
         if(this.textureFlipped) {
           level.projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));
         } else {

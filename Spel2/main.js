@@ -4,10 +4,12 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock"];
-var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50];
 // Uncomment to show all textures
 // hiddenTextures = [];
+
+var audioFiles = ["shot", "audio", "hurt"];
 
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
@@ -15,7 +17,10 @@ for(var i = 0; i < textureFiles.length; i++) {
   textures[i].src = "Textures/" + textureFiles[i] + ".png";
 }
 
-var levelId = 1;
+var actx;
+var audio = [];
+
+var levelId = 0;
 var level = loadLevel(levelId);
 var levels = 3;
 var unlockedLevels = getCookie("unlockedLevels");
@@ -80,8 +85,6 @@ var player = {
     this.spawnTimer = 30;
     this.speed = c.height * 0.01,
     this.jumpStrength = c.height * 0.035;
-    this.bloodParticle = -1;
-    this.bloodTime = 0;
     keys = 0;
     level = loadLevel(levelId);
     startTime = time;
@@ -89,13 +92,14 @@ var player = {
     deaths++;
   }, 
   damage: function(n) {
-    if(this.invulnerableTimer <= 0) {
+    if(this.invulnerableTimer <= 0) { 
+      audio[2].play(1);
       this.func = function() {
         return {x: Math.random() * 10 - 5, y: Math.random() * 10};
       }
-      this.bloodTime = 5;
-      level.particleEmitters.push(new particleEmitter((this.pos.x + player.size.x / 2) / c.height, (this.pos.y + player.size.y / 2) / c.height, this.func, 0.005 + n * 0.00025, 0.005 + n * 0.00025, 0, 0, 10, 26, n / 50));
-      this.bloodParticle = level.particleEmitters.length - 1;
+      for(var i = 0; i < 3; i++) {
+        level.particles.push(new particle((this.pos.x + this.size.x / 2) / c.height - 0.01, (this.pos.y + this.size.y / 2) / c.height - 0.01, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, 0.015, 0.015, 8, (time) => {return Math.tanh((Math.sin(time*Math.PI*2-Math.PI/2) * 0.5 + 0.5)*3);}, 26));
+      }
       this.hp -= n;
       this.invulnerableTimer = 15;
       if(this.hp <= 0) {
@@ -104,9 +108,7 @@ var player = {
       }
     }
   },
-  hp: 100,
-  bloodParticle: -1,
-  bloodTime: 0
+  hp: 100
 };
 
 function vec2(x, y) {
@@ -160,7 +162,8 @@ var notification = {texture: 0, text: "", description: "", timer: 0};
 var achievements = [
 {name: "Pro Gamer", description: "Finish the tutorial", texture: 41, unlocked: false}, 
 {name: "Powerup", description: "Open a chest", texture: 32, unlocked: false},
-{name: "You're bad", description: "Die 50 times", texture: 15, unlocked: false}
+{name: "You're bad", description: "Die 50 times", texture: 15, unlocked: false},
+{name: "Secret", description: "Find a secret", texture: 50, unlocked: false}
 ];
 for(var i = 0; i < achievements.length; i++) {
   var val = getCookie("achievement" + i);
@@ -180,7 +183,7 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: -1, onClick: () => {menu = 0}},
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Play", menu: 0, onClick: () => {menu = 10}},
-{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 11}},
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
 {x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
 
@@ -215,13 +218,18 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.4 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Grab", menu: 8, onClick: () => {changeControl = 3}},
 {x: 0.35 * c.width, y: 0.5 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Shoot", menu: 8, onClick: () => {changeControl = 4}},
 {x: 0.35 * c.width, y: 0.6 * c.height, w: 0.15 * c.width, h: 0.075 * c.height, text: "Interact", menu: 8, onClick: () => {changeControl = 5}},
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 8, onClick: () => {menu = 0}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 8, onClick: () => {menu = 11}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 9, onClick: () => {menu = 10}},
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Normal", menu: 10, onClick: () => {challengeMode = false; menu = 9}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 10, onClick: () => {challengeMode = true; menu = 9}},
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 10, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 10, onClick: () => {menu = 0}},
+
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Sound", menu: 11, onClick: () => {menu = -1}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Controls", menu: 11, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 11, onClick: () => {menu = 0}}
+
 ];
 
 for(var i = 0; i < levels; i++) {
@@ -333,9 +341,15 @@ if(!paused) {
   time = window.performance.now();
   
   score++;
+  
+  var area = {pos: {x: 0.4 * c.height, y: 0 * c.height}, size: {x: 0.4 * c.height, y: 0.3 * c.height}};
+  if(checkCollision(player, area) && levelId == 2) {
+    unlockAchievement(3);
+  }
 
   if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
     player.shootTimer = player.shootSpeed;
+    audio[0].play(1);
     if(!player.textureFlipped) {
       level.projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
     } else {
@@ -347,18 +361,6 @@ if(!paused) {
     player.hp = Infinity;
   } else if(player.hp > 100) {
     player.hp = 100;
-  }
-  
-  if(player.bloodTime > 0) {
-    player.bloodTime--;
-  }
-  
-  if(player.bloodTime <= 0 && player.bloodParticle != -1) {
-    level.particleEmitters[player.bloodParticle].enabled = false;
-    if(level.particleEmitters[player.bloodParticle].particles.length == 0) {
-      level.particleEmitters.splice(player.bloodParticle, 1);
-      player.bloodParticle = -1;
-    }
   }
   
   // Movement
@@ -565,8 +567,6 @@ if(!paused) {
         player.hp = 1;
       }
       player.invulnerableTimer = 0;
-      player.bloodParticle = -1;
-      player.bloodTime = 0;
       keys = 0;
       score = 0;
     } else {
@@ -674,7 +674,9 @@ if(notification.timer > 0) {
 }
 
 function setCookie(name, value) {
-  document.cookie = name + "=" + value;
+  var d = new Date();
+  d.setFullYear(d.getFullYear() + 5);
+  document.cookie = name + "=" + value + "; expires=" + d.toGMTString();
 }
 
 function getCookie(name) {
@@ -701,7 +703,7 @@ function unlockAchievement(id) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10) {
+  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10 || menu == 11) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -913,11 +915,17 @@ function draw() {
     if(!paused) {
       level.particleEmitters[i].update();
     }
-    for(var j = 0; j < level.particleEmitters[i].particles.length; j++) {
-      var p = level.particleEmitters[i].particles[j];
-      ctx.globalAlpha = p.opacity;
-      ctx.drawImage(textures[p.texture], p.pos.x - cameraOffset.x, p.pos.y - cameraOffset.y, p.size.x, p.size.y);
-      ctx.globalAlpha = 1;
+  }
+  for(var i = 0; i < level.particles.length; i++) {
+    var p = level.particles[i];
+    ctx.globalAlpha = p.opacity;
+    ctx.drawImage(textures[p.texture], p.pos.x - cameraOffset.x, p.pos.y - cameraOffset.y, p.size.x, p.size.y);
+    ctx.globalAlpha = 1;
+    p.update();
+    if(p.delete) {
+      level.particles.splice(i, 1);
+      i--;
+      continue;
     }
   }
   
@@ -1199,7 +1207,31 @@ function checkCollision(colliderA, colliderB) {
   }
 }
 
+function sound(file) {
+  this.file = file;
+  this.audio = new Audio();
+  this.audio.src = this.file;
+  this.source = actx.createMediaElementSource(this.audio);
+  this.gain = actx.createGain();
+  this.source.connect(this.gain);
+  this.gain.connect(actx.destination);
+  this.play = function(volume) {
+    this.gain.gain.value = volume;
+    this.audio.play();
+  }
+}
+
+function activateAudio() {
+  if(!actx) {
+    actx = new AudioContext();
+    for(var i = 0; i < audioFiles.length; i++) {
+      audio.push(new sound("Audio/" + audioFiles[i] + ".wav"));
+    }
+  }
+}
+
 window.onmousedown = function(e) {
+  activateAudio();
   if(paused) {
     for(var i = 0; i < buttons.length; i++) {
       if(buttons[i].menu == menu) {
@@ -1402,6 +1434,7 @@ if(!paused) {
 }
 
 window.onkeydown = function(e) {
+activateAudio();
 if(changeControl != -1) {
   controls[changeControl].code = e.keyCode;
   controls[changeControl].name = e.key;
@@ -1600,7 +1633,7 @@ if(player.hp > 0) {
 }
 }
 if(e.keyCode == controls[6].code) {
-  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10) {
+  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10 && menu != 11) {
     paused = !paused;
     menu = 1;
   }
