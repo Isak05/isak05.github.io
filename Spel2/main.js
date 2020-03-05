@@ -156,7 +156,7 @@ var controls = [
 ];
 var changeControl = -1;
 var deaths = parseInt(getCookie("deaths"));
-if(deaths == NaN) {
+if(isNaN(deaths)) {
   deaths = 0;
 }
 var notification = {texture: 0, text: "", description: "", timer: 0};
