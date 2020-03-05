@@ -491,13 +491,13 @@ function npc(x, y, type) {
     if(this.type == 1 && !cheatMode) {
       var distX = Math.abs((this.pos.x + this.size.x / 2) - (player.pos.x + player.size.x / 2));
       var distY = Math.abs((this.pos.y + this.size.y / 2) - (player.pos.y + player.size.y / 2));
-      if(player.pos.x > this.pos.x + this.size.x && distX < 500 && distX > 100 && distY < 300) {
+      if(player.pos.x > this.pos.x + this.size.x && distX < 0.65 * c.height && distX > 0.13 * c.height && distY < 0.39 * c.height) {
         this.vel.x += this.speed;
       }
-      if(player.pos.x + player.size.x < this.pos.x && distX < 500 && distX > 100 && distY < 300) {
+      if(player.pos.x + player.size.x < this.pos.x && distX < 0.65 * c.height && distX > 0.13 * c.height && distY < 0.39 * c.height) {
         this.vel.x += -this.speed;
       }
-      if(distX < 200 && distY < 200 && this.fireCooldown <= 0) {
+      if(distX < 0.26 * c.height && distY < 0.26 * c.height && this.fireCooldown <= 0) {
         if(this.onGround && this.pos.y > player.pos.y + player.size.y) {
           this.vel.y = -this.jumpStrength;
           this.onGround = false;
@@ -521,7 +521,7 @@ function npc(x, y, type) {
         this.fireCooldown--;
       }
       if(this.fireCooldown <= 0 && this.pos.y + 0.05 * c.height > player.pos.y && this.pos.y + 0.05 * c.height < player.pos.y + player.size.y && 
-        this.pos.x + 400 > player.pos.x && this.pos.x - 400 < player.pos.x) {
+        this.pos.x + 0.52 * c.height > player.pos.x && this.pos.x - 0.52 * c.height < player.pos.x) {
         audio[1].play(1 * volume);
         if(this.textureFlipped) {
           level.projectiles.push(new projectile(this.pos.x / c.height, this.pos.y / c.height + 0.05, 0.045, 0.02, 0.025, 0, 25, true));

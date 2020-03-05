@@ -427,7 +427,7 @@ if(!paused) {
     var chestPos = {x: level.chests[i].pos.x + level.chests[i].size.x / 2, y: level.chests[i].pos.y + level.chests[i].size.y / 2};
     var playerPos = {x: player.pos.x + player.size.x / 2, y: player.pos.y + player.size.y / 2};
     var dist = Math.sqrt(Math.abs(chestPos.x - playerPos.x) ** 2 + Math.abs(chestPos.y - playerPos.y) ** 2);
-    if(dist < 100 && !cheatMode && player.e) {
+    if(dist < 0.13 * c.height && !cheatMode && player.e) {
       if(keys > 0 && !level.chests[i].opened) {
         level.chests[i].opened = true;
         keys--;
@@ -526,11 +526,11 @@ if(!paused) {
   var dX = (player.pos.x + player.size.x / 2) - (level.end.x + 0.075 * c.height);
   var dY = (player.pos.y + player.size.y / 2) - (level.end.y + 0.075 * c.height);
   var distEnd = Math.sqrt(Math.abs(dX) ** 2 + Math.abs(dY) ** 2);
-  if(distEnd < 200 && !cheatMode) {
+  if(distEnd < 0.26 * c.height && !cheatMode) {
     player.vel.x += -dX / distEnd * 3;
     player.vel.y += -dY / distEnd * 3;
   }
-  if(distEnd < 25 && !cheatMode) {
+  if(distEnd < 0.033 * c.height && !cheatMode) {
     if(levelId < levels) {
       if(!challengeMode) {
         if(levelId >= unlockedLevels) {
@@ -955,7 +955,7 @@ function draw() {
     var chestPos = {x: level.chests[i].pos.x + level.chests[i].size.x / 2, y: level.chests[i].pos.y + level.chests[i].size.y / 2};
     var playerPos = {x: player.pos.x + player.size.x / 2, y: player.pos.y + player.size.y / 2};
     var dist = Math.sqrt(Math.abs(chestPos.x - playerPos.x) ** 2 + Math.abs(chestPos.y - playerPos.y) ** 2);
-    if(dist < 100 && !cheatMode) {
+    if(dist < 0.13 * c.height && !cheatMode) {
       if(!level.chests[i].opened) {
         ctx.fillStyle = "rgb(255, 255, 255)";
         ctx.font = 0.025 * c.height + "px Arial";
