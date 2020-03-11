@@ -4,12 +4,12 @@ c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "crate", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question"];
-var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "brick2", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question", "crown"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
 // Uncomment to show all textures
 // hiddenTextures = [];
 
-var audioFiles = ["shot", "audio", "hurt"];
+var audioFiles = ["shot", "audio", "hurt", "music"];
 
 var textures = [];
 for(var i = 0; i < textureFiles.length; i++) {
@@ -93,7 +93,7 @@ var player = {
   }, 
   damage: function(n) {
     if(this.invulnerableTimer <= 0) { 
-      audio[2].play(1 * volume);
+      audio[2].play(1 * soundVolume, false);
       this.func = function() {
         return {x: Math.random() * 10 - 5, y: Math.random() * 10};
       }
@@ -127,6 +127,9 @@ var cheatMode = false;
 var building = false;
 var editMode = false;
 var mousePos = {x: 0, y: 0};
+var mousePressed = false;
+var selectedSlider = -1;
+var prevMousePressed = mousePressed;
 var selectedTexture = 1;
 var selectedType = 0;
 var editRepeating = true;
@@ -144,7 +147,9 @@ var keys = 0;
 var paused = true;
 var challengeMode = false;
 var menu = 0;
-var volume = 0;
+var musicVolume = 0.1;
+var prevMusicVolume = musicVolume;
+var soundVolume = 0.1;
 var controls = [
 {code: 65, name: "a"},
 {code: 68, name: "d"},
@@ -161,7 +166,7 @@ if(isNaN(deaths)) {
 }
 var notification = {texture: 0, text: "", description: "", timer: 0};
 var achievements = [
-{name: "Pro Gamer", description: "Finish the tutorial", texture: 41, unlocked: false}, 
+{name: "Pro Gamer", description: "Finish the tutorial", texture: 51, unlocked: false}, 
 {name: "Powerup", description: "Open a chest", texture: 32, unlocked: false},
 {name: "You're bad", description: "Die 50 times", texture: 15, unlocked: false},
 {name: "Secret", description: "Find a secret", texture: 50, unlocked: false}
@@ -187,20 +192,12 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Settings", menu: 0, onClick: () => {menu = 11}},
 {x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Highscores", menu: 0, onClick: () => {menu = 6}},
 {x: 0.35 * c.width, y: 0.4 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Achievements", menu: 0, onClick: () => {menu = 7}},
+{x: 0.35 * c.width, y: 0.5 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Credits", menu: 0, onClick: () => {menu = 2}},
 
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
-{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Stuff", menu: 1, onClick: () => {menu = 2}}, 
-{x: 0.4 * c.width, y: 0.3 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Powerups", menu: 1, onClick: () => {menu = 3}}, 
 {x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Main Menu", menu: 1, onClick: () => {menu = 0}}, 
 
-{x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Heal", menu: 2, onClick: () => {player.hp = 100}}, 
-{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Damage", menu: 2, onClick: () => {player.hp = 1}},
-{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 1}},
-
-{x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Speed", menu: 3, onClick: () => {player.speed += 0.005 * c.height}}, 
-{x: 0.4 * c.width, y: 0.2 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Jump", menu: 3, onClick: () => {player.jumpStrength += 0.005 * c.height}},
-{x: 0.4 * c.width, y: 0.3 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Shoot Speed", menu: 3, onClick: () => {player.shootSpeed -= 3}},
-{x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 1}},
+{x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 0}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 4, onClick: () => {menu = 6}},
 
@@ -227,10 +224,22 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Challenge", menu: 10, onClick: () => {challengeMode = true; menu = 9}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 10, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Sound", menu: 11, onClick: () => {menu = -1}},
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Sound", menu: 11, onClick: () => {menu = 12}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Controls", menu: 11, onClick: () => {menu = 8}},
-{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 11, onClick: () => {menu = 0}}
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 11, onClick: () => {menu = 0}},
 
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 12, onClick: () => {menu = 11}}
+
+];
+
+var sliders = [
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, min: 0, max: 1, value: 0.1, menu: 12},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, min: 0, max: 1, value: 0.1, menu: 12}
+];
+
+var texts = [
+{x: 0.23 * c.width, y: 0.125 * c.height, size: 0.05 * c.height, menu: 12, text: "Music"},
+{x: 0.23 * c.width, y: 0.225 * c.height, size: 0.05 * c.height, menu: 12, text: "Sound"}
 ];
 
 for(var i = 0; i < levels; i++) {
@@ -338,6 +347,14 @@ if(menu == 0) {
 if(menu != 8) {
   changeControl = -1;
 }
+prevMusicVolume = musicVolume;
+prevMousePressed = mousePressed;
+musicVolume = sliders[0].value;
+soundVolume = sliders[1].value;
+if(prevMusicVolume != musicVolume) {
+  audio[3].stop();
+  audio[3].play(musicVolume, true);
+}
 if(!paused) {
   time = window.performance.now();
   
@@ -350,7 +367,7 @@ if(!paused) {
 
   if(player.shootTimer <= 0 && player.shooting && !cheatMode) {
     player.shootTimer = player.shootSpeed;
-    audio[0].play(1 * volume);
+    audio[0].play(1 * soundVolume, false);
     if(!player.textureFlipped) {
       level.projectiles.push(new projectile((player.pos.x - player.size.x - 0.075) / c.height, (player.pos.y + player.size.y * 0.5) / c.height, 0.075, 0.075, 0.025, 0, 36, false));
     } else {
@@ -704,7 +721,7 @@ function unlockAchievement(id) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10 || menu == 11) {
+  if(menu == 0 || menu == 2 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10 || menu == 11 || menu == 12) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -731,6 +748,10 @@ function drawMenu() {
       }
     }
   }
+  if(menu == 12) {
+    ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+    ctx.fillRect(0.4 * c.height, 0.075 * c.height, 0.2 * c.height, 0.5 * c.height);
+  }
   if(menu == 8) {
     ctx.font = 0.05 * c.height + "px Arial";
     for(var i = 0; i < controls.length - 1; i++) {
@@ -753,6 +774,38 @@ function drawMenu() {
         ctx.fillText("Space", 0.535 * c.width, (0.15 + 0.1 * i) * c.height);
       }
     }
+  }
+  if(menu == 2) {
+    ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+    ctx.fillRect(0.375 * c.width, 0.05 * c.height, 0.25 * c.width, 0.75 * c.height);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.font = 0.06 * c.height + "px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Credits", 0.5 * c.width, 0.1 * c.height);
+    
+    ctx.font = 0.045 * c.height + "px Arial";
+    ctx.fillText("Art", 0.5 * c.width, 0.15 * c.height);
+    ctx.font = 0.03 * c.height + "px Arial";
+    ctx.fillText("Anton", 0.5 * c.width, 0.2 * c.height);
+    ctx.fillText("Isak", 0.5 * c.width, 0.25 * c.height);
+    ctx.fillText("Markus", 0.5 * c.width, 0.3 * c.height);
+    
+    ctx.font = 0.045 * c.height + "px Arial";
+    ctx.fillText("Music & Sound", 0.5 * c.width, 0.4 * c.height);
+    ctx.font = 0.03 * c.height + "px Arial";
+    ctx.fillText("Isak", 0.5 * c.width, 0.45 * c.height);
+    
+    ctx.font = 0.045 * c.height + "px Arial";
+    ctx.fillText("Programming", 0.5 * c.width, 0.55 * c.height);
+    ctx.font = 0.03 * c.height + "px Arial";
+    ctx.fillText("Isak", 0.5 * c.width, 0.6 * c.height);
+    
+    ctx.font = 0.045 * c.height + "px Arial";
+    ctx.fillText('"Det mesta"', 0.5 * c.width, 0.7 * c.height);
+    ctx.font = 0.03 * c.height + "px Arial";
+    ctx.fillText("Love", 0.5 * c.width, 0.75 * c.height);
+    
+    ctx.textAlign = "left";
   }
   for(var i = 0; i < buttons.length; i++) {
     if(buttons[i].menu == menu) {
@@ -781,6 +834,24 @@ function drawMenu() {
       } else {
         ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
       }
+    }
+  }
+  for(var i = 0; i < sliders.length; i++) {
+    if(sliders[i].menu == menu) {
+      ctx.fillStyle = "rgb(150, 150, 150, 1)";
+      ctx.fillRect(sliders[i].x, sliders[i].y, sliders[i].w, 0.02 * c.height);
+      ctx.beginPath();
+      ctx.ellipse(sliders[i].x + (sliders[i].value - sliders[i].min) / (sliders[i].max - sliders[i].min) * sliders[i].w, sliders[i].y + 0.01 * c.height, 0.025 * c.height, 0.025 * c.height, 0, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fillStyle = "rgb(255, 255, 255, 1)";
+      ctx.fill();
+    }
+  }
+  for(var i = 0; i < texts.length; i++) {
+    if(texts[i].menu == menu) {
+      ctx.fillStyle = "#000000";
+      ctx.font = texts[i].size + "px Arial";
+      ctx.fillText(texts[i].text, texts[i].x, texts[i].y);
     }
   }
   if(menu == 7) {
@@ -1216,9 +1287,16 @@ function sound(file) {
   this.gain = actx.createGain();
   this.source.connect(this.gain);
   this.gain.connect(actx.destination);
-  this.play = function(volume) {
+  this.play = function(volume, loop) {
     this.gain.gain.value = volume;
+    if(loop) {
+      this.audio.loop = true;
+    }
     this.audio.play();
+  }
+  this.stop = function() {
+    this.audio.pause();
+    this.audio.currentTime = 0;
   }
 }
 
@@ -1228,12 +1306,35 @@ function activateAudio() {
     for(var i = 0; i < audioFiles.length; i++) {
       audio.push(new sound("Audio/" + audioFiles[i] + ".wav"));
     }
+    audio[3].play(1 * musicVolume, true);
   }
+}
+
+function setSliderFromMousePos(s, x) {
+  if(s >= 0) {
+    sliders[s].value = Math.min(sliders[s].max, Math.max(sliders[s].min, (x - sliders[s].x) / sliders[s].w * (sliders[s].max - sliders[s].min) + sliders[s].min));
+  }
+}
+
+window.onmouseup = function(e) {
+  mousePressed = false;
+  selectedSlider = -1;
 }
 
 window.onmousedown = function(e) {
   activateAudio();
+  mousePressed = true;
   if(paused) {
+    for(var i = 0; i < sliders.length; i++) {
+      if(sliders[i].menu == menu) {
+        var m = {pos: {x: e.clientX, y: e.clientY}, size: {x: 0, y: 0}};
+        var b = {pos: {x: sliders[i].x, y: sliders[i].y}, size: {x: sliders[i].w, y: 0.02 * c.height}};
+        if(checkCollision(m, b)) {
+          selectedSlider = i;
+          setSliderFromMousePos(selectedSlider, e.clientX);
+        }
+      }
+    }
     for(var i = 0; i < buttons.length; i++) {
       if(buttons[i].menu == menu) {
         var m = {pos: {x: e.clientX, y: e.clientY}, size: {x: 0, y: 0}};
@@ -1424,6 +1525,9 @@ window.onmousedown = function(e) {
 window.onmousemove = function(e) {
 mousePos.x = e.clientX;
 mousePos.y = e.clientY;
+if(mousePressed) {
+  setSliderFromMousePos(selectedSlider, e.clientX);
+}
 if(!paused) {
   if(cheatMode && building) {
     var pos = {x: Math.round((mousePos.x + cameraOffset.x) / (editSnap * c.height)) * (editSnap * c.height), y: Math.round((mousePos.y + cameraOffset.y) / (editSnap * c.height)) * (editSnap * c.height)};
@@ -1634,7 +1738,7 @@ if(player.hp > 0) {
 }
 }
 if(e.keyCode == controls[6].code) {
-  if(menu != 0 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10 && menu != 11) {
+  if(menu != 0 && menu != 2 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10 && menu != 11 && menu != 12) {
     paused = !paused;
     menu = 1;
   }
