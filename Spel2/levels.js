@@ -4,7 +4,7 @@ function loadLevel(id) {
   switch(id) {
   case 0:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.end = {x: 3.2 * c.height, y: -0.1 * c.height};
+    res.portals.push(new portal(3.2 * c.height, -0.1 * c.height, id + 1));
     
     res.walls.push(new wall(-0.4, -0.3, 0.1, 0.5, 41, true, 0.1));
     res.walls.push(new wall(-0.4, -0.4, 4, 0.1, 41, true, 0.1));
@@ -37,7 +37,7 @@ function loadLevel(id) {
     break;
   case 1:
     res.spawnPoint = {x: 0.3 * c.height, y: 0.15 * c.height};
-    res.end = {x: 0.2 * c.height, y: -1 * c.height};
+    res.portals.push(new portal(0.2 * c.height, -1 * c.height, id + 1));
     
     res.walls.push(new wall(0.7, 0.9, 0.8, 0.05, 19, true, 0.05));
     res.walls.push(new wall(1.45, 0.3, 0.05, 0.6, 19, true, 0.05));
@@ -51,7 +51,6 @@ function loadLevel(id) {
     res.walls.push(new wall(-0.7, 0.4, 0.45, 0.05, 20, true, 0.05));
     res.walls.push(new wall(-0.05, 0, 0.45, 0.05, 19, true, 0.05));
     res.walls.push(new wall(0.1, -0.35, 0.05, 0.35, 19, true, 0.05));
-    //res.walls.push(new wall(0.8, -0.35, 0.05, 0.4, 19, true, 0.05));
     res.walls.push(new wall(0.1, -0.4, 0.75, 0.05, 19, true, 0.05));
     res.walls.push(new wall(-0.2, 0.9, 0.9, 0.05, 21, true, 0.05));
     res.walls.push(new wall(-3.15, 0.3, 2.55, 0.05, 20, true, 0.05));
@@ -107,20 +106,20 @@ function loadLevel(id) {
     res.buttons.push(new button(0.6, 0.885, 0));
     res.buttons.push(new button(0.75, 0.885, 0));
     res.buttons.push(new button(0.3, 0.885, 1));
-    res.buttons.push(new button(2.15, 0.285, 2));
+    res.buttons.push(new button(2.15, 0.285, 4));
     res.buttons.push(new button(0.6, -0.665, 3));
     res.buttons.push(new button(-0.1, 0.285, 2));
     
     res.doors.push(new door(0.85, -0.1, 0.05, 0.15, 2));
     res.doors.push(new door(0.7, 0.1, 0.05, 0.2, 0));
     res.doors.push(new door(1.45, 0.1, 0.05, 0.2, 1));
-    res.doors.push(new door(1.45, -0.85, 0.05, 0.2, 2));
-    res.doors.push(new door(2.05, -0.55, 0.05, 0.15, 2));
+    res.doors.push(new door(1.45, -0.85, 0.05, 0.2, 4));
+    res.doors.push(new door(2.05, -0.55, 0.05, 0.15, 4));
     res.doors.push(new door(0.55, -0.8, 0.05, 0.15, 3));
 
     res.npcs.push(new npc(1, 0.25, 0));
     res.npcs.push(new npc(0.25, 0.5, 1));
-    res.npcs.push(new npc(2.125, -0.525, 1));
+    res.npcs.push(new npc(2.125, -0.525, 2));
 
     res.deaths.push(new death(-0.6, 0.35, 0.4, 0.05, 27, true, 0.05));
     res.deaths.push(new death(-5, 5, 10, 0.2, 13, true, 0.2));
@@ -145,7 +144,7 @@ function loadLevel(id) {
     
   case 2:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.end = {x: 0.6 * c.height, y: 1.1 * c.height};
+    res.portals.push(new portal(0.6 * c.height, 1.1 * c.height, id + 1));
     
     res.walls.push(new wall(-0.4, 0, 0.8, 0.1, 38, true, 0.1));
     res.walls.push(new wall(0.2, 0.95, 0.1, 0.1, 38, true, 0.1));
@@ -208,10 +207,161 @@ function loadLevel(id) {
     res.pickups.push(new pickup(-0.675, 1.525, 40, () => {player.jumpStrength += 0.0075 * c.height}));
     
     break;
+  
+  case 3:
+    res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
+    res.portals.push(new portal(3 * c.height, -0.35 * c.height, id + 1));
+    res.portals.push(new portal(-0.75 * c.height, 0.8 * c.height, -1));
+    res.portals[1].texture = 62;
+    
+    res.walls.push(new wall(-0.4, 0.15, 5, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-1.85, -0.3, 0.015, 0.45, 14, true, 0.02));
+    res.walls.push(new wall(-0.65, 0.15, 0.25, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-0.5, -0.1, 0.15, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(-0.4, -0.15, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(-0.35, -0.2, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(-0.3, -0.25, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(-0.25, -0.3, 3, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(0.8, -0.9, 0.05, 0.45, 38, true, 0.05));
+    res.walls.push(new wall(1, -0.9, 0.05, 0.6, 38, true, 0.05));
+    res.walls.push(new wall(0.8491, -0.5307, 0.0117, 0.0091, 38, false, 0.05));
+    res.walls.push(new wall(0.9911, -0.7234, 0.0104, 0.0065, 38, false, 0.05));
+    res.walls.push(new wall(1.05, -0.9, 0.2, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(1.2, -0.85, 0.05, 0.15, 20, true, 0.05));
+    res.walls.push(new wall(1.25, -0.75, 0.95, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(2.2, -1.1, 0.05, 0.4, 20, true, 0.05));
+    res.walls.push(new wall(2.25, -1.1, 0.5, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-1.2, 0.15, 0.05, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(-1.35, 0, 0.05, 0.15, 20, true, 0.05));
+    res.walls.push(new wall(-1.4, 0, 0.05, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-1.35, -0.05, 0.25, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-1.3, -0.1, 0.15, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-1.15, 0, 0.05, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-1.1, 0, 0.05, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-1.22, 0.15, 0.05, 0.55, 38, true, 0.05));
+    res.walls.push(new wall(-1.35, 0.15, 0.05, 0.55, 38, true, 0.05));
+    res.walls.push(new wall(-3, 0.15, 1.65, 0.05, 21, true, 0.1));
+    res.walls.push(new wall(-1.15, 0.15, 0.5, 0.05, 21, true, 0.1));
+    res.walls.push(new wall(1.5, -0.95, 0.05, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(1.75, -0.85, 0.1, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(2, -0.95, 0.1, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(2.7, -1.35, 0.05, 0.25, 20, true, 0.05));
+    res.walls.push(new wall(0.5, -1.35, 2.2, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(1, 0, 0.05, 0.15, 38, true, 0.05));
+    res.walls.push(new wall(1.15, -0.25, 0.05, 0.2, 38, true, 0.05));
+    res.walls.push(new wall(1.3, 0, 0.05, 0.15, 38, true, 0.05));
+    res.walls.push(new wall(1.7, 0.15, 0, 0, 27, true, 0.05));
+    res.walls.push(new wall(1.65, -0.05, 0.05, 0.2, 38, true, 0.05));
+    res.walls.push(new wall(3, -0.05, 0.15, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-1.35, 1.15, 0.8, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-0.6, 0.7, 0.05, 0.45, 20, true, 0.05));
+    res.walls.push(new wall(-1.2, 0.7, 0.6, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-1.35, 0.7, 0.05, 0.45, 20, true, 0.05));
+    res.walls.push(new wall(3.7, -0.15, 0.05, 0.3, 20, true, 0.05));
+    res.walls.push(new wall(3.75, -0.15, 0.1, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(3.65, -0.2, 0.15, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(3.55, -0.25, 0.15, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(3.55, -0.55, 0.05, 0.3, 38, true, 0.05));
+    res.walls.push(new wall(2.7, -0.6, 0.9, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(2.7, -0.55, 0.05, 0.25, 38, true, 0.05));
+    res.walls.push(new wall(3.4486, -0.2712, 0.1068, 0.0091, 20, false, 0.05));
+    res.walls.push(new wall(1.7, 0.1, 0.2, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(2.15, 0.1, 0.15, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(2.55, 0.1, 0.15, 0.05, 38, true, 0.05));
+    res.walls.push(new wall(0.5, -0.9, 0.3, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(0.5, -1.35, 0.05, 0.45, 20, true, 0.05));
+
+    res.backgrounds.push(new background(-3, 0.2, 8, 1.6, 63, true, 0.1));
+    res.backgrounds.push(new background(-1.8512, -0.3, 0.0182, 0.4492, 20, false, 0.05));
+    res.backgrounds.push(new background(-1.3, 0, 0.2, 0.2, 2, true, 0.1));
+    res.backgrounds.push(new background(-0.25, -0.25, 3.95, 0.4, 2, true, 0.1));
+    res.backgrounds.push(new background(-0.35, -0.15, 0.1, 0.3, 2, true, 0.1));
+    res.backgrounds.push(new background(-1.3, 0.2, 0.1, 0.55, 2, true, 0.1));
+    res.backgrounds.push(new background(0.55, -1.3, 1.65, 0.4, 2, true, 0.1));
+    res.backgrounds.push(new background(1.25, -0.9, 0.95, 0.15, 2, true, 0.1));
+    res.backgrounds.push(new background(2.2, -1.3, 0.5, 0.2, 2, true, 0.1));
+    res.backgrounds.push(new background(0.85, -0.9, 0.15, 0.6, 2, true, 0.1));
+    res.backgrounds.push(new background(1.35, -1.2, 0.1, 0.05, 6, true, 0.1));
+    res.backgrounds.push(new background(1.85, -1.1, 0.1, 0.1, 6, true, 0.1));
+    res.backgrounds.push(new background(2.25, -1.25, 0.05, 0.05, 6, true, 0.1));
+    res.backgrounds.push(new background(0.9, -1.05, 0.05, 0.1, 6, true, 0.1));
+    res.backgrounds.push(new background(1.85, -1, 0.05, 0.05, 6, true, 0.1));
+    res.backgrounds.push(new background(-1.3, 0.75, 0.7, 0.4, 2, true, 0.1));
+    res.backgrounds.push(new background(-1.15, 0.9, 0.05, 0.1, 6, true, 0.1));
+    res.backgrounds.push(new background(-0.75, 0.8, 0.1, 0.05, 6, true, 0.1));
+    res.backgrounds.push(new background(-0.85, 1, 0.05, 0.05, 6, true, 0.1));
+    res.backgrounds.push(new background(-1.25, 0.45, 0.05, 0.1, 6, true, 0.1));
+    res.backgrounds.push(new background(2.75, -0.55, 0.8, 0.35, 2, true, 0.1));
+    
+    res.foregrounds.push(new foreground(-1.1, 1, 0.1, 0.15, 61, true, 0.1));
+    res.foregrounds.push(new foreground(-0.9, 1.1, 0.1, 0.05, 61, true, 0.1));
+    res.foregrounds.push(new foreground(3.45, -0.36, 0.1, 0.09, 61, false, 0.05));
+    res.foregrounds.push(new foreground(3.4916, -0.3741, 0.0208, 0.0195, 7, false, 0.05));
+
+    res.deaths.push(new death(-1.86, -0.34, 0.04, 0.04, 13, false, 0.02));
+    res.deaths.push(new death(1.25, -0.8, 0.95, 0.05, 27, true, 0.05));
+    res.deaths.push(new death(1, -0.05, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.25, 0.1, 0.05, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(1.35, 0.1, 0.3, 0.05, 27, true, 0.05));
+    res.deaths.push(new death(1.9, 0.1, 0.25, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(2.3, 0.1, 0.25, 0.05, 13, true, 0.05));
+    res.deaths.push(new death(-4.2, 3, 8.95, 0.1, 21, true, 0.2));
+    
+    res.crates.push(new crate(2.6, -1.3, 0.1, 0.1));
+    res.crates.push(new crate(3.45, 0, 0.1, 0.1));
+    res.crates.push(new crate(-1.3, 0.9, 0.1, 0.1));
+    
+    res.buttons.push(new button(2.4, -1.115, 1));
+    res.buttons.push(new button(3.6, 0.135, 0));
+    
+    res.doors.push(new door(-0.4, -0.05, 0.05, 0.2, 0));
+    res.doors.push(new door(-1.15, 0.05, 0.05, 0.1, 1));
+    
+    res.chests.push(new chest(0.55, -1, new pickup(0, 0, 26, () => {player.hp = 100;})));
+    
+    res.pickups.push(new pickup(3.6, -0.1, 33, () => {keys++;}));
+    
+    break;
+    
+  case -1:
+    unlockAchievement(4);
+    
+    res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
+    res.portals.push(new portal(0.6 * c.height, 1.1 * c.height, 3));
+    
+    res.walls.push(new wall(-0.45, 0.2, 1, 0.05, 20, true, 0.05));
+    res.walls.push(new wall(-0.3, -0.4, 0.05, 0.3, 7, true, 0.05));
+    res.walls.push(new wall(-0.15, -0.4, 0.05, 0.3, 7, true, 0.05));
+    res.walls.push(new wall(-0.1, -0.3, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(-0.05, -0.35, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0, -0.4, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(-0.05, -0.25, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0, -0.2, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.05, -0.15, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.15, -0.4, 0.05, 0.3, 7, true, 0.05));
+    res.walls.push(new wall(0.2, -0.4, 0.15, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.2, -0.3, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.2, -0.15, 0.15, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.4, -0.25, 0.05, 0.15, 7, true, 0.05));
+    res.walls.push(new wall(0.45, -0.35, 0.05, 0.1, 7, true, 0.05));
+    res.walls.push(new wall(0.5, -0.4, 0.05, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(0.55, -0.35, 0.05, 0.1, 7, true, 0.05));
+    res.walls.push(new wall(0.6, -0.25, 0.05, 0.15, 7, true, 0.05));
+    res.walls.push(new wall(0.45, -0.25, 0.15, 0.05, 7, true, 0.05));
+    res.walls.push(new wall(-0.5, 0.15, 0.05, 0.1, 19, true, 0.05));
+    res.walls.push(new wall(0.55, 0.15, 0.05, 0.1, 19, true, 0.05));
+    res.walls.push(new wall(-0.0125, 0.15, 0.075, 0.05, 19, true, 0.05));
+    
+    res.npcs.push(new npc(-0.35, 0.05, 3));
+    res.npcs.push(new npc(0.1, 0.1, 3));
+    
+    res.pickups.push(new pickup(0.45, 0.1, 66, () => {ikeaUnlocked = true; setCostume(1);}, true));
+    
+    break;
     
   default:
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.end = {x: 0.675 * c.height, y: 0 * c.height};
+    res.portals.push(new portal(0.675 * c.height, 0 * c.height, id + 1));
     
     res.walls.push(new wall(-0.3, -0.3, 1.4, 0.1, 2, true, 0.1));
     res.walls.push(new wall(-0.3, 0.3, 1.4, 0.1, 2, true, 0.1));
@@ -238,7 +388,7 @@ function loadLevel(id) {
 
 function level_() {
   this.spawnPoint = undefined;
-  this.end = undefined;
+  this.portals = [];
   this.walls = [];
   this.backgrounds = [];
   this.foregrounds = [];
@@ -256,6 +406,13 @@ function level_() {
   this.particles = [];
 }
 
+function portal(x, y, dest) {
+  this.x = x;
+  this.y = y;
+  this.dest = dest;
+  this.texture = 37;
+}
+
 function chest(x, y, item) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.size = {x: 0.1 * c.height, y: 0.1 * c.height};
@@ -266,12 +423,16 @@ function chest(x, y, item) {
   this.gotItem = true;
 }
 
-function pickup(x, y, texture, onPickup) {
+function pickup(x, y, texture, onPickup, inChallengeMode) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.time = 0;
   this.size = {x: 0.05 * c.height, y: 0.05 * c.height};
   this.texture = texture;
   this.onPickup = onPickup;
+  this.inChallengeMode = inChallengeMode;
+  if(this.inChallengeMode == undefined) {
+    this.inChallengeMode = false;
+  }
   this.update = function() {
     this.time++;
     this.pos.y += Math.sin(this.time / 10) * 0.6;
@@ -410,7 +571,7 @@ function npc(x, y, type) {
   this.pos = {x: x * c.height, y: y * c.height};
   this.vel = {x: 0, y: 0};
   this.size = {x: 0.1 * c.height, y: 0.1 * c.height};
-  if(type == 2) {
+  if(type == 2 || type == 3) {
     this.size.x = 0.075 * c.height;
     this.size.y = 0.075 * c.height;
   }
@@ -425,6 +586,9 @@ function npc(x, y, type) {
   }
   if(this.type == 2) {
     this.anims = [[{texture: 45, time: 5}, {texture: 46, time: 5}]];
+  }
+  if(this.type == 3) {
+    this.anims = [[{texture: 70, time: 2}, {texture: 71, time: 2}]];
   }
   this.texture = this.anims[0][0].texture;
   this.animTimer = 0;
@@ -453,10 +617,21 @@ function npc(x, y, type) {
   if(this.type == 2) {
     this.speed = c.height * 0.0015;
   }
+  if(this.type == 3) {
+    this.speed = c.height * 0.0075;
+  }
   
   this.hp = 100;
+  if(this.type == 3) {
+    this.hp = Infinity;
+  }
   this.damage = function(hp) {
     this.hp -= hp;
+    if(type == 1) {
+      for(var i = 0; i < ((100 - this.hp) * 0.02) ** 1.5; i++) {
+        level.particles.push(new particle((this.pos.x + this.size.x / 2 - 0.0125) / c.height, (this.pos.y + this.size.y / 2 - 0.0125) / c.height, ((Math.random() - 0.5) * 0.03) * c.height, (Math.random() * 0.025 - 0.00125) * c.height, 0.025, 0.025, 5, (time) => {return Math.max(0, 1 - time * 0.25 + 0.75)}, 67 + Math.round(Math.random() * 2)));
+      }
+    }
   }
   this.delete = false;
   this.die = function() {
@@ -480,7 +655,7 @@ function npc(x, y, type) {
       this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
     }
     
-    if(this.type == 0 || this.type == 2) {
+    if(this.type == 0 || this.type == 2 || this.type == 3) {
       if(!this.textureFlipped) {
         this.vel.x += -this.speed;
       } else {
@@ -587,7 +762,7 @@ function npc(x, y, type) {
       this.die();
     }
     
-    if(this.turn && (this.type == 0 || this.type == 2)) {
+    if(this.turn && (this.type == 0 || this.type == 2 || this.type == 3)) {
       this.vel.x *= -1;
     }
     

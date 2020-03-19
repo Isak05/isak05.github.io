@@ -3,9 +3,10 @@ c.width = screen.width;
 c.height = screen.height;
 var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
+var zoom = 1;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "brick2", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question", "crown"];
-var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "brick2", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question", "crown", "Player/ikea/Main Character (IKEA)-1", "Player/ikea/Main Character (IKEA)-2", "Player/ikea/Main Character (IKEA)-3", "Player/ikea/Main Character (IKEA)-4", "Player/ikea/Main Character (IKEA)-5", "Player/ikea/Main Character (IKEA)-6", "Player/ikea/Main Character (IKEA)-7", "Player/ikea/Main Character (IKEA)-8", "Player/ikea/Main Character (IKEA)-9", "shelf", "ikeaportal", "dirt", "buttongui", "information", "ikeaclothes", "robotfrag1", "robotfrag2", "robotfrag3", "saw1", "saw2"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59, 60, 62, 64, 65, 66, 67, 68, 69, 70, 71];
 // Uncomment to show all textures
 // hiddenTextures = [];
 
@@ -22,7 +23,7 @@ var audio = [];
 
 var levelId = 0;
 var level = loadLevel(levelId);
-var levels = 3;
+var levels = 4;
 var unlockedLevels = getCookie("unlockedLevels");
 if(unlockedLevels == undefined) {
   unlockedLevels = 0;
@@ -49,13 +50,7 @@ var player = {
   wallJumped: false,
   wallJumpStrength: c.height * 0.02,
   jumpStrength: c.height * 0.035,
-  anims: [[{texture: 0, time: 4}, {texture: 3, time: 4}],
-          [{texture: 0, time: 0}],
-          [{texture: 4, time: 0}],
-          [{texture: 5, time: 0}], 
-          [{texture: 16, time: 5}, {texture: 17, time: 5}],
-          [{texture: 16, time: 5}, {texture: 17, time: 5}], 
-          [{texture: 16, time: 0}]],
+  anims: [],
   animTimer: 0,
   currentAnimFrame: 0,
   currentAnim: 1,
@@ -111,6 +106,38 @@ var player = {
   hp: 100
 };
 
+var costume = 0;
+var ikeaUnlocked = getCookie("ikeaUnlocked");
+if(ikeaUnlocked == undefined) {
+  ikeaUnlocked = false;
+}
+setCostume(costume);
+function setCostume(id) {
+  if(id == 1 && ikeaUnlocked || id != 1) {
+    costume = id;
+    switch(id) {
+    case 0:
+      player.anims = [[{texture: 0, time: 4}, {texture: 3, time: 4}],
+                      [{texture: 0, time: 0}],
+                      [{texture: 4, time: 0}],
+                      [{texture: 5, time: 0}], 
+                      [{texture: 16, time: 5}, {texture: 17, time: 5}],
+                      [{texture: 16, time: 5}, {texture: 17, time: 5}], 
+                      [{texture: 16, time: 0}]];
+      break;
+    case 1:
+      player.anims = [[{texture: 52, time: 4}, {texture: 53, time: 4}],
+                      [{texture: 52, time: 0}],
+                      [{texture: 58, time: 0}],
+                      [{texture: 59, time: 0}], 
+                      [{texture: 55, time: 5}, {texture: 56, time: 5}],
+                      [{texture: 55, time: 5}, {texture: 56, time: 5}], 
+                      [{texture: 55, time: 0}]];
+      break;
+    }
+  }
+}
+
 function vec2(x, y) {
   this.x = x;
   this.y = y;
@@ -140,6 +167,7 @@ var selectedSetting = -1;
 var settingLength = 5;
 var setting = -1;
 var deleting = false;
+var consoleOpen = false;
 var gravity = c.height * 0.0025;
 var cameraOffset = new vec2(player.pos.x - c.width / 2, player.pos.y - c.height * 1);
 var godMode = false;
@@ -150,6 +178,9 @@ var menu = 0;
 var musicVolume = 0.1;
 var prevMusicVolume = musicVolume;
 var soundVolume = 0.1;
+var currentConsoleText = "";
+var consoleStack = [];
+var consoleCursorPos = 0;
 var controls = [
 {code: 65, name: "a"},
 {code: 68, name: "d"},
@@ -169,7 +200,8 @@ var achievements = [
 {name: "Pro Gamer", description: "Finish the tutorial", texture: 51, unlocked: false}, 
 {name: "Powerup", description: "Open a chest", texture: 32, unlocked: false},
 {name: "You're bad", description: "Die 50 times", texture: 15, unlocked: false},
-{name: "Secret", description: "Find a secret", texture: 50, unlocked: false}
+{name: "Secret", description: "Find a secret", texture: 50, unlocked: false},
+{name: "IKEA", description: "Visit IKEA", texture: 52, unlocked: false}
 ];
 for(var i = 0; i < achievements.length; i++) {
   var val = getCookie("achievement" + i);
@@ -199,6 +231,10 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 0}},
 
+{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.2 * c.height, h: 0.2 * c.height, text: "", texture: 0, menu: 3, onClick: () => {setCostume(0)}},
+{x: 0.53 * c.width, y: 0.1 * c.height, w: 0.2 * c.height, h: 0.2 * c.height, text: "", texture: 52, menu: 3, onClick: () => {setCostume(1)}},
+{x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 11}},
+
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 4, onClick: () => {menu = 6}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 5, onClick: () => {menu = 6}},
@@ -226,6 +262,7 @@ var buttons = [
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Sound", menu: 11, onClick: () => {menu = 12}},
 {x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Controls", menu: 11, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Costumes", menu: 11, onClick: () => {menu = 3}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 11, onClick: () => {menu = 0}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 12, onClick: () => {menu = 11}}
@@ -247,9 +284,22 @@ for(var i = 0; i < levels; i++) {
   var w = 0.1;
   if(i == 0) {
     text = "Tutorial";
-    w = 0.2;
+    w = 0.3375;
   }
-  buttons.push({x: (0.475 - w / 1.75 + 0.075 * i) * c.width, y: 0.1 * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {start()}});
+  if(i <= 1) {
+    buttons.push({x: (0.562 - w / 1.75 + 0.067 * (i % 2)) * c.width, y: (0.1 + 0.15 * Math.floor(i / 2)) * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {start()}});
+  } else {
+    buttons.push({x: (0.425 - w / 1.75 + 0.068 * ((i - 2) % 4)) * c.width, y: (0.1 + 0.125 * Math.floor((i - 2) / 4 + 1)) * c.height, w: w * c.height, h: 0.1 * c.height, text: text, menu: 9, onClick: () => {start()}});
+  }
+}
+
+function setZoom(z) {
+  ctx.scale(1 / zoom, 1 / zoom);
+  ctx.translate(c.width / (1 / zoom * 2) - c.width / 2, c.height / (1 / zoom * 2) - c.height / 2);
+
+  zoom = z;
+  ctx.scale(z, z);
+  ctx.translate(c.width / (z * 2) - c.width / 2, c.height / (z * 2) - c.height / 2);
 }
 
 function start() {
@@ -296,7 +346,7 @@ function resetScore() {
 
 // The object arrays are in order of rendering
 var objectNames = ["backgrounds", "crates", "walls", "doors", "buttons", "npcs", "deaths", "chests", "foregrounds", "pickups"];
-var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "if(object.type == 2) {player.damage(25)}", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "", "if(!challengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
+var objectColliders = ["", "collide(side, object)", "collide(side, object)", "collide(side, object)", "object.pressed = true", "if(object.type == 2) {player.damage(25)} if(object.type == 3) {player.damage(40)}", "collide(side, object); player.damage(50 - Math.round(Math.random() * 20))", "", "", "if(!challengeMode || object.inChallengeMode) {object.onPickup(); objects.splice(i, 1); i--}"];
 
 var startTime = 0;
 var score = 0;
@@ -316,6 +366,7 @@ window.onbeforeunload = function() {
   setCookie("deaths", deaths);
   setCookie("unlockedLevels", unlockedLevels);
   setCookie("unlockedChallengeLevels", unlockedChallengeLevels);
+  setCookie("ikeaUnlocked", ikeaUnlocked);
 }
 
 var cv = document.createElement("canvas");
@@ -335,6 +386,7 @@ var time = 0;
 var actualFps = 0;
 var avgFps = -1;
 var avgSize = 1;
+var helpTimer = 0;
 
 var loop = setInterval(update, 1000 / fps);
 function update() {
@@ -359,6 +411,59 @@ if(!paused) {
   time = window.performance.now();
   
   score++;
+  
+  if(player.pos.x < 0.05 * c.height && player.pos.x > -0.05 * c.height && levelId == 0) {
+    helpTimer++;
+    if(helpTimer > 200) {
+      helpTimer = 0;
+      notification.texture = 65;
+      notification.text = "Tip";
+      notification.description = "Press A, D, \u21E6 or \u21E8 to move";
+      notification.timer = 90;
+    }
+  } else if(player.pos.x < 0.8 * c.height && player.pos.x > 0.1 * c.height && levelId == 0) {
+    helpTimer++;
+    if(helpTimer > 200) {
+      helpTimer = 0;
+      notification.texture = 65;
+      notification.text = "Tip";
+      notification.description = "Press W or \u21E7 to jump";
+      notification.timer = 90;
+    }
+  } else if(player.pos.x < 1.3 * c.height && player.pos.x > 0.9 * c.height && levelId == 0) {
+    helpTimer++;
+    if(helpTimer > 200) {
+      helpTimer = 0;
+      notification.texture = 65;
+      notification.text = "Tip";
+      notification.description = "While gliding down the wall, jump";
+      notification.timer = 90;
+    }
+  } else if(player.pos.x < 2 * c.height && player.pos.x > 1.4 * c.height && levelId == 0) {
+    helpTimer++;
+    if(helpTimer > 200) {
+      helpTimer = 0;
+      notification.texture = 65;
+      notification.text = "Tip";
+      notification.description = "Press Space to pull the crate";
+      notification.timer = 90;
+    }
+  } else if(player.pos.x < 3 * c.height && player.pos.x > 2.2 * c.height && levelId == 0) {
+    helpTimer++;
+    if(helpTimer > 200) {
+      helpTimer = 0;
+      notification.texture = 65;
+      notification.text = "Tip";
+      notification.description = "Press Shift to shoot";
+      notification.timer = 90;
+    }
+  } else {
+    helpTimer = 0;
+  }
+  
+  if(player.jumping) {
+    
+  }
   
   var area = {pos: {x: 0.4 * c.height, y: 0 * c.height}, size: {x: 0.4 * c.height, y: 0.3 * c.height}};
   if(checkCollision(player, area) && levelId == 2) {
@@ -540,56 +645,58 @@ if(!paused) {
     player.texture = player.anims[player.currentAnim][player.currentAnimFrame].texture;
   }
   
-  var dX = (player.pos.x + player.size.x / 2) - (level.end.x + 0.075 * c.height);
-  var dY = (player.pos.y + player.size.y / 2) - (level.end.y + 0.075 * c.height);
-  var distEnd = Math.sqrt(Math.abs(dX) ** 2 + Math.abs(dY) ** 2);
-  if(distEnd < 0.26 * c.height && !cheatMode) {
-    player.vel.x += -dX / distEnd * 3;
-    player.vel.y += -dY / distEnd * 3;
-  }
-  if(distEnd < 0.033 * c.height && !cheatMode) {
-    if(levelId < levels) {
-      if(!challengeMode) {
-        if(levelId >= unlockedLevels) {
-          unlockedLevels = levelId + 1;
-        }
-        if((score / fps< highscores[levelId].normal || isNaN(highscores[levelId].normal)) && levelId < levels) {
-          highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
-        }
-      }
-      if(challengeMode) {
-        if(levelId >= unlockedChallengeLevels) {
-          unlockedChallengeLevels = levelId + 1;
-        }
-        if((score / fps < highscores[levelId].challenge || isNaN(highscores[levelId].challenge)) && levelId < levels) {
-          highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
-        }
-      }
+  for(var i = 0; i < level.portals.length; i++) {
+    var dX = (player.pos.x + player.size.x / 2) - (level.portals[i].x + 0.075 * c.height);
+    var dY = (player.pos.y + player.size.y / 2) - (level.portals[i].y + 0.075 * c.height);
+    var distEnd = Math.sqrt(Math.abs(dX) ** 2 + Math.abs(dY) ** 2);
+    if(distEnd < 0.26 * c.height && !cheatMode) {
+      player.vel.x += -dX / distEnd * 3;
+      player.vel.y += -dY / distEnd * 3;
     }
-    if(levelId == 0) {
-      unlockAchievement(0);
-    }
-    if(levelId != 0) {
-      startTime = time;
-      levelId++;
-      level = loadLevel(levelId);
-      player.speed = c.height * 0.01,
-      player.jumpStrength = c.height * 0.035;
-      player.pos.x = level.spawnPoint.x;
-      player.pos.y = level.spawnPoint.y;
-      player.onGround = false;
-      player.spawnTimer = 30;
-      player.vel = new vec2(0, 0);
-      player.hp = 100;
-      if(challengeMode) {
-        player.hp = 1;
+    if(distEnd < 0.033 * c.height && !cheatMode) {
+      if(levelId < levels && levelId >= 0) {
+        if(!challengeMode) {
+          if(levelId >= unlockedLevels) {
+            unlockedLevels = levelId + 1;
+          }
+          if((score / fps < highscores[levelId].normal || isNaN(highscores[levelId].normal)) && levelId < levels) {
+            highscores[levelId].normal = Math.round(score / fps * 1000) / 1000;
+          }
+        }
+        if(challengeMode) {
+          if(levelId >= unlockedChallengeLevels) {
+            unlockedChallengeLevels = levelId + 1;
+          }
+          if((score / fps < highscores[levelId].challenge || isNaN(highscores[levelId].challenge)) && levelId < levels) {
+            highscores[levelId].challenge = Math.round(score / fps * 1000) / 1000;
+          }
+        }
       }
-      player.invulnerableTimer = 0;
-      keys = 0;
-      score = 0;
-    } else {
-      paused = true;
-      menu = 0;
+      if(levelId == 0) {
+        unlockAchievement(0);
+      }
+      if(levelId != 0) {
+        startTime = time;
+        levelId = level.portals[i].dest;
+        level = loadLevel(levelId);
+        player.speed = c.height * 0.01,
+        player.jumpStrength = c.height * 0.035;
+        player.pos.x = level.spawnPoint.x;
+        player.pos.y = level.spawnPoint.y;
+        player.onGround = false;
+        player.spawnTimer = 30;
+        player.vel = new vec2(0, 0);
+        player.hp = 100;
+        if(challengeMode) {
+          player.hp = 1;
+        }
+        player.invulnerableTimer = 0;
+        keys = 0;
+        score = 0;
+      } else {
+        paused = true;
+        menu = 0;
+      }
     }
   }
   
@@ -681,11 +788,8 @@ if(notification.timer > 0) {
     
   ctx.drawImage(textures[notification.texture], 0.36 * c.width, (0.01 + off) * c.height, 0.075 * c.height, 0.075 * c.height);
 
-  ctx.font = 0.03 * c.height + "px Arial";
-  ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-  ctx.fillText(notification.text, 0.42 * c.width, (0.045 + off) * c.height);
-  ctx.font = 0.02 * c.height + "px Arial";
-  ctx.fillText(notification.description, 0.42 * c.width, (0.075 + off) * c.height);
+  drawText(notification.text, 0.42 * c.width, (0.045 + off) * c.height, 0.06 * c.height);
+  drawText(notification.description, 0.42 * c.width, (0.075 + off) * c.height, 0.04 * c.height);
     
   notification.timer--;
 }
@@ -721,7 +825,7 @@ function unlockAchievement(id) {
 }
 
 function drawMenu() {
-  if(menu == 0 || menu == 2 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10 || menu == 11 || menu == 12) {
+  if(menu == 0 || menu == 2 || menu == 3 || menu == 4 || menu == 5 || menu == 6 || menu == 7 || menu == 8 || menu == 9 || menu == 10 || menu == 11 || menu == 12) {
     var pattern = ctx.createPattern(textures[2], "repeat");
     ctx.fillStyle = pattern;
     ctx.save();
@@ -778,32 +882,22 @@ function drawMenu() {
   if(menu == 2) {
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
     ctx.fillRect(0.375 * c.width, 0.05 * c.height, 0.25 * c.width, 0.75 * c.height);
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.font = 0.06 * c.height + "px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("Credits", 0.5 * c.width, 0.1 * c.height);
+    drawText("Credits", 0.5 * c.width, 0.1 * c.height, 0.1 * c.height);
     
-    ctx.font = 0.045 * c.height + "px Arial";
-    ctx.fillText("Art", 0.5 * c.width, 0.15 * c.height);
-    ctx.font = 0.03 * c.height + "px Arial";
-    ctx.fillText("Anton", 0.5 * c.width, 0.2 * c.height);
-    ctx.fillText("Isak", 0.5 * c.width, 0.25 * c.height);
-    ctx.fillText("Markus", 0.5 * c.width, 0.3 * c.height);
+    drawText("Art", 0.5 * c.width, 0.15 * c.height, 0.075 * c.height);
+    drawText("Anton", 0.5 * c.width, 0.2 * c.height, 0.05 * c.height);
+    drawText("Isak", 0.5 * c.width, 0.25 * c.height, 0.05 * c.height);
+    drawText("Markus", 0.5 * c.width, 0.3 * c.height, 0.05 * c.height);
     
-    ctx.font = 0.045 * c.height + "px Arial";
-    ctx.fillText("Music & Sound", 0.5 * c.width, 0.4 * c.height);
-    ctx.font = 0.03 * c.height + "px Arial";
-    ctx.fillText("Isak", 0.5 * c.width, 0.45 * c.height);
-    
-    ctx.font = 0.045 * c.height + "px Arial";
-    ctx.fillText("Programming", 0.5 * c.width, 0.55 * c.height);
-    ctx.font = 0.03 * c.height + "px Arial";
-    ctx.fillText("Isak", 0.5 * c.width, 0.6 * c.height);
-    
-    ctx.font = 0.045 * c.height + "px Arial";
-    ctx.fillText('"Det mesta"', 0.5 * c.width, 0.7 * c.height);
-    ctx.font = 0.03 * c.height + "px Arial";
-    ctx.fillText("Love", 0.5 * c.width, 0.75 * c.height);
+    drawText("Music & Sound", 0.5 * c.width, 0.4 * c.height, 0.075 * c.height);
+    drawText("Isak", 0.5 * c.width, 0.45 * c.height, 0.05 * c.height);
+
+    drawText("Coding", 0.5 * c.width, 0.55 * c.height, 0.075 * c.height);
+    drawText("Isak", 0.5 * c.width, 0.6 * c.height, 0.05 * c.height);
+
+    drawText('"Det mesta"', 0.5 * c.width, 0.7 * c.height, 0.075 * c.height);
+    drawText("Love", 0.5 * c.width, 0.75 * c.height, 0.05 * c.height);
     
     ctx.textAlign = "left";
   }
@@ -813,12 +907,30 @@ function drawMenu() {
       if(buttons[i].text == "Challenge") {
         ctx.fillStyle = "rgb(255, 100, 100, 0.75)";
       }
+      ctx.fillStyle = "#2b1204";
       ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
-      var s = 0.05 * c.height;
+      var pattern = ctx.createPattern(textures[64], "repeat");
+      ctx.fillStyle = pattern;
+      ctx.save();
+      ctx.translate(buttons[i].x + buttons[i].h / 11, buttons[i].y);
+      var s = c.height / textures[64].height;
+      var r = buttons[i].h / c.height;
+      ctx.scale(s, s);
+      ctx.scale(r, r);
+      ctx.fillRect(0, 0, (buttons[i].w - buttons[i].h / 11 * 2) / s / r, buttons[i].h / s / r);
+      ctx.restore();
+      var s = 0.1 * c.height;
       var off = 0.025 * c.height;
-      ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-      ctx.font = s + "px Arial";
-      
+      ctx.fillStyle = "rgb(175, 125, 75)";
+      if(menu == 3) {
+        if(buttons[i].texture || buttons[i].texture == 0) {
+          if(buttons[i].texture == 0 || ikeaUnlocked) {
+            ctx.drawImage(textures[buttons[i].texture], buttons[i].x + 0.02 * c.height, buttons[i].y + 0.02 * c.height, buttons[i].w - 0.04 * c.height, buttons[i].h - 0.04 * c.height);
+          } else {
+            ctx.drawImage(textures[49], buttons[i].x + 0.02 * c.height, buttons[i].y + 0.02 * c.height, buttons[i].w - 0.04 * c.height, buttons[i].h - 0.04 * c.height);
+          }
+        }
+      }
       if(menu == 9) {
         if(buttons[i].text.constructor.name == "Number") {
           if(parseInt(buttons[i].text) > unlockedLevels && !challengeMode) {
@@ -826,13 +938,13 @@ function drawMenu() {
           } else if(parseInt(buttons[i].text) > unlockedChallengeLevels && challengeMode) {
             ctx.drawImage(textures[49], buttons[i].x + 0.005 * c.height, buttons[i].y + 0.0075 * c.height, buttons[i].h * 0.9, buttons[i].h * 0.9);
           } else {
-            ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+            drawText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 5 + buttons[i].h / 2, s);
           }
         } else {
-          ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+          drawText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 5 + buttons[i].h / 2, s);
         }
       } else {
-        ctx.fillText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 3 + buttons[i].h / 2);
+        drawText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 5 + buttons[i].h / 2, s);
       }
     }
   }
@@ -885,26 +997,32 @@ function drawMenu() {
         }
         ctx.fillRect(mousePos.x, mousePos.y, 0.4 * c.height, 0.125 * c.height);
         
-        ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
-        ctx.font = 0.05 * c.height + "px Arial";
         var name = achievements[i].name;
         var desc = achievements[i].description;
         if(!achievements[i].unlocked) {
           name = "???";
           desc = "???";
         }
-        ctx.fillText(name, mousePos.x + 0.025 * c.height, mousePos.y + 0.06 * c.height);
-        ctx.font = 0.025 * c.height + "px Arial";
-        ctx.fillText(desc, mousePos.x + 0.025 * c.height, mousePos.y + 0.1 * c.height);
+        drawText(name, mousePos.x + 0.025 * c.height, mousePos.y + 0.06 * c.height, 0.075 * c.height);
+        drawText(desc, mousePos.x + 0.025 * c.height, mousePos.y + 0.1 * c.height, 0.05 * c.height);
       }
     }
   }
 }
 
+function drawText(text, x, y, size) {
+  ctx.font = size + "px font";
+  ctx.strokeStyle = "rgb(0, 0, 0)";
+  ctx.lineWidth = size * 0.1;
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.fillText(text, x, y);
+}
+
 function draw() {
   // Clear screen
   ctx.fillStyle = "#FFFFFF";
-  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillRect(-c.width / zoom + c.width, -c.height / zoom + c.height, c.width / zoom * 2, c.height / zoom * 2);
   
   // Objects
   if(player.invulnerableTimer > 0 && !paused) {
@@ -915,7 +1033,9 @@ function draw() {
   for(var j = 0; j < objectNames.length; j++) {
     var objects = eval("level." + objectNames[j]);
     if(objectNames[j] == "foregrounds") {
-      ctx.drawImage(textures[37], level.end.x - cameraOffset.x, level.end.y - cameraOffset.y, 0.15 * c.height, 0.15 * c.height);
+      for(var i = 0; i < level.portals.length; i++) {
+        ctx.drawImage(textures[level.portals[i].texture], level.portals[i].x - cameraOffset.x, level.portals[i].y - cameraOffset.y, 0.15 * c.height, 0.15 * c.height);
+      }
   
       if(cheatMode) {
         ctx.globalCompositeOperation = "destination-out";
@@ -940,45 +1060,44 @@ function draw() {
         }
       }
     }
-    if(challengeMode && objectNames[j] == "pickups") {
-      break;
-    }
     for(var k = 0; k < objects.length; k++) {
-      if(objects[k].repeating) {
-        var pattern = ctx.createPattern(textures[objects[k].texture], "repeat");
-        ctx.fillStyle = pattern;
-        ctx.save();
-        ctx.translate(objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y);
-        // Scale to fit entire screen and then scale down to right size
-        var s = c.height / textures[objects[k].texture].height;
-        var repeatSize = objects[k].repeatSize;
-        ctx.scale(s, s);
-        ctx.scale(repeatSize, repeatSize);
-        ctx.fillRect(0, 0, objects[k].size.x / s / repeatSize, objects[k].size.y / s / repeatSize);
-        ctx.restore();
-      } else {
-        if(objects[k].textureFlipped) {
+      if((challengeMode && objects[k].inChallengeMode) || !challengeMode || objectNames[j] != "pickups") {
+        if(objects[k].repeating) {
+          var pattern = ctx.createPattern(textures[objects[k].texture], "repeat");
+          ctx.fillStyle = pattern;
           ctx.save();
-          ctx.scale(-1, 1);
-          ctx.drawImage(textures[objects[k].texture], -objects[k].pos.x + cameraOffset.x - objects[k].size.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+          ctx.translate(objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y);
+          // Scale to fit entire screen and then scale down to right size
+          var s = c.height / textures[objects[k].texture].height;
+          var repeatSize = objects[k].repeatSize;
+          ctx.scale(s, s);
+          ctx.scale(repeatSize, repeatSize);
+          ctx.fillRect(0, 0, objects[k].size.x / s / repeatSize, objects[k].size.y / s / repeatSize);
           ctx.restore();
         } else {
-            ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+          if(objects[k].textureFlipped) {
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(textures[objects[k].texture], -objects[k].pos.x + cameraOffset.x - objects[k].size.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+            ctx.restore();
+          } else {
+              ctx.drawImage(textures[objects[k].texture], objects[k].pos.x - cameraOffset.x, objects[k].pos.y - cameraOffset.y, objects[k].size.x, objects[k].size.y);
+          }
         }
-      }
-        
-      if(objects[k].constructor.name == "button") {
-        ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
-        if(!objects[k].pressed) {
+
+        if(objects[k].constructor.name == "button") {
+          ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
+          if(!objects[k].pressed) {
+            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
+          } else {
+            ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y + objects[k].size.y / 2, 0.02 * c.height, 0.005 * c.height);
+          }
+        }
+
+        if(objects[k].constructor.name == "door") {
+          ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
           ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
-        } else {
-          ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y + objects[k].size.y / 2, 0.02 * c.height, 0.005 * c.height);
         }
-      }
-       
-      if(objects[k].constructor.name == "door") {
-        ctx.fillStyle = "hsl(" + objects[k].id * (360 / level.signals.length) + ", 100%, 50%)";
-        ctx.fillRect(objects[k].pos.x - cameraOffset.x + objects[k].size.x / 2 - 0.01 * c.height, objects[k].pos.y - cameraOffset.y, 0.02 * c.height, 0.005 * c.height);
       }
     }
   }
@@ -1028,19 +1147,17 @@ function draw() {
     var dist = Math.sqrt(Math.abs(chestPos.x - playerPos.x) ** 2 + Math.abs(chestPos.y - playerPos.y) ** 2);
     if(dist < 0.13 * c.height && !cheatMode) {
       if(!level.chests[i].opened) {
-        ctx.fillStyle = "rgb(255, 255, 255)";
-        ctx.font = 0.025 * c.height + "px Arial";
-        ctx.textAlign = "center";
         var text = "Press 'E' to open";
         if(keys == 0) {
           text = "It's locked";
         }
-        ctx.fillText(text, level.chests[i].pos.x - cameraOffset.x + level.chests[i].size.x / 2, level.chests[i].pos.y - cameraOffset.y - 0.02 * c.height - Math.sin(time / 250) * 3);
+        ctx.textAlign = "center";
+        drawText(text, level.chests[i].pos.x - cameraOffset.x + level.chests[i].size.x / 2, level.chests[i].pos.y - cameraOffset.y - 0.02 * c.height - Math.sin(time / 250) * 3, 0.05 * c.height);
         ctx.textAlign = "left";
       }
     }
     if(level.chests[i].opened && level.chests[i].openTimer > 0) {
-      ctx.drawImage(textures[level.chests[i].item.texture], level.chests[i].pos.x + level.chests[i].size.x / 2 - level.chests[i].item.size.x / 2 - cameraOffset.x, level.chests[i].pos.y + level.chests[i].openTimer * 2 - 0.05 * c.height - cameraOffset.y, level.chests[i].item.size.x, level.chests[i].item.size.x);
+      ctx.drawImage(textures[level.chests[i].item.texture], level.chests[i].pos.x + level.chests[i].size.x / 2 - level.chests[i].item.size.x / 2 - cameraOffset.x, level.chests[i].pos.y + level.chests[i].openTimer * 2 - 0.025 * c.height - cameraOffset.y, level.chests[i].item.size.x, level.chests[i].item.size.x);
     }
   }
   
@@ -1082,12 +1199,7 @@ function draw() {
   
   // Keys
   ctx.drawImage(textures[33], 0.005 * c.height, 0.075 * c.height, 0.05 * c.height, 0.05 * c.height);
-  ctx.font = "600 " + c.height * 0.05 + "px Arial";
-  ctx.fillStyle = "rgb(255, 255, 255)";
-  ctx.fontWidth = 1000;
-  ctx.globalCompositeOperation = "difference";
-  ctx.fillText(keys, 0.06 * c.height, 0.115 * c.height);
-  ctx.globalCompositeOperation = "source-over";
+  drawText(keys, 0.06 * c.height, 0.115 * c.height, 0.1 * c.height);
   
   var offset = 0.1 * c.height;
   
@@ -1171,12 +1283,8 @@ function draw() {
     if(selectedSetting == 4) ctx.fillStyle = "rgb(0, 200, 0)";
     ctx.fillText("snap: " + editSnap, 0.005 * c.height, c.height * 0.365 + offset);
   }
-  
-  ctx.font = "200 " + c.height * 0.03 + "px Arial";
-  ctx.fillStyle = "rgb(255, 255, 255)";
-  ctx.globalCompositeOperation = "difference";
-  ctx.fillText(Math.round(actualFps), 0.975 * c.width, 0.03 * c.height);
-  ctx.globalCompositeOperation = "source-over";
+
+  drawText(Math.round(actualFps), 0.975 * c.width, 0.03 * c.height, 0.075 * c.height);
   
   if(player.hp <= 0) {
     ctx.fillStyle = "rgb(0, 0, 0, " + (1 - player.invulnerableTimer / 30) + ")";
@@ -1185,6 +1293,21 @@ function draw() {
   if(player.spawnTimer > 0) {
     ctx.fillStyle = "rgb(0, 0, 0, " + player.spawnTimer / 15 + ")";
     ctx.fillRect(0, 0, c.width, c.height);
+  }
+  
+  if(consoleOpen) {
+    ctx.fillStyle = "rgb(0, 0, 0, 0.75)";
+    ctx.fillRect(0.5 * c.width, 0, 0.5 * c.width, 0.3 * c.height);
+    
+    var cur = "\u00A6";
+    if(Math.round(time / 400) % 2 == 0) {
+      cur = "|"
+    }
+    
+    drawText(currentConsoleText.slice(0, consoleCursorPos) + cur + currentConsoleText.slice(consoleCursorPos), 0.51 * c.width, 0.035 * c.height, 0.05 * c.height);
+    for(var i = 0; i < Math.min(consoleStack.length, 9); i++) {
+      drawText(consoleStack[i], 0.51 * c.width, (0.06 + 0.025 * (i + 1)) * c.height, 0.05 * c.height);
+    }
   }
 }
 
@@ -1462,6 +1585,7 @@ window.onmousedown = function(e) {
       o.pos.y = Math.round(o.pos.y / c.height * 10000) / 10000;
       o.size.x = Math.round(o.size.x / c.height * 10000) / 10000;
       o.size.y = Math.round(o.size.y / c.height * 10000) / 10000;
+      repSize = Math.round(editRepeatSize * 10000) / 10000;
       switch(o_.constructor.name) {
       case "wall":
         console.log("res.walls.push(new wall(" + 
@@ -1471,7 +1595,7 @@ window.onmousedown = function(e) {
                     o.size.y + ", " +
                     o.texture + ", " + 
                     editRepeating + ", " + 
-                    editRepeatSize + "));");
+                    repSize + "));");
         break;
         
       case "background":
@@ -1482,7 +1606,7 @@ window.onmousedown = function(e) {
                     o.size.y + ", " +
                     o.texture + ", " + 
                     editRepeating + ", " + 
-                    editRepeatSize + "));");
+                    repSize + "));");
         break;
         
       case "door":
@@ -1502,7 +1626,7 @@ window.onmousedown = function(e) {
                     o.size.y + ", " + 
                     o.texture + ", " + 
                     editRepeating + ", " + 
-                    editRepeatSize + "));");
+                    repSize + "));");
         break;
         
       case "foreground":
@@ -1513,7 +1637,7 @@ window.onmousedown = function(e) {
                     o.size.y + ", " + 
                     o.texture + ", " + 
                     editRepeating + ", " + 
-                    editRepeatSize + "));");
+                    repSize + "));");
         break;
       }
       return;
@@ -1545,7 +1669,7 @@ if(changeControl != -1) {
   controls[changeControl].name = e.key;
   changeControl = -1;
 } else {
-if(!paused) {
+if(!paused && !consoleOpen) {
 if(player.hp > 0) {
   if(e.keyCode == 37 && cheatMode && editMode) {
     if(cheatMode && editMode) {
@@ -1655,6 +1779,7 @@ if(player.hp > 0) {
 
     case 38: // Up
     case controls[2].code:
+      player.jumping = true;
       if(!cheatMode) {
         if(player.onGround) {
           player.vel.y = -player.jumpStrength;
@@ -1738,11 +1863,45 @@ if(player.hp > 0) {
 }
 }
 if(e.keyCode == controls[6].code) {
-  if(menu != 0 && menu != 2 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10 && menu != 11 && menu != 12) {
-    paused = !paused;
-    menu = 1;
+  if(menu != 0 && menu != 2 && menu != 3 && menu != 4 && menu != 5 && menu != 6 && menu != 7 && menu != 8 && menu != 9 && menu != 10 && menu != 11 && menu != 12) {
+    if(!consoleOpen) {
+      paused = !paused;
+      menu = 1;
+    }
+    consoleOpen = false;
   }
 }
+}
+if(consoleOpen && e.location == 0) {
+  if(e.keyCode == 32) {
+    currentConsoleText = currentConsoleText.slice(0, consoleCursorPos) + " " + currentConsoleText.slice(consoleCursorPos);
+    consoleCursorPos++;
+  } else if(e.keyCode == 8) {
+    if(consoleCursorPos > 0) {
+      currentConsoleText = currentConsoleText.slice(0, consoleCursorPos - 1) + currentConsoleText.slice(consoleCursorPos);
+      consoleCursorPos--;
+    }
+  } else if(e.keyCode == 46) {
+    currentConsoleText = currentConsoleText.slice(0, consoleCursorPos) + currentConsoleText.slice(consoleCursorPos + 1);
+  } else if(e.keyCode == 37) {
+    consoleCursorPos = Math.max(consoleCursorPos - 1, 0);
+  } else if(e.keyCode == 39) {
+    consoleCursorPos = Math.min(consoleCursorPos + 1, currentConsoleText.length);
+  } else if(e.keyCode == 13) {
+    consoleCursorPos = 0;
+    try {
+      function set(variable, value) {return eval("window." + variable + " = " + value)}
+      function clear() {consoleStack = [];}
+      consoleStack.unshift(eval(currentConsoleText));
+    } catch {}
+    currentConsoleText = "";
+  } else {
+    currentConsoleText = currentConsoleText.slice(0, consoleCursorPos) + e.key + currentConsoleText.slice(consoleCursorPos);
+    consoleCursorPos++;
+  }
+}
+if(e.keyCode == 67 && cheatMode && e.keyCode != controls[6].code && !paused) {
+  consoleOpen = true;
 }
 }
 
@@ -1774,6 +1933,7 @@ window.onkeyup = function(e) {
       player.acc.y = 0;
       player.vel.y = 0;
     }
+    player.jumping = false;
     break;
     
   case 83:
