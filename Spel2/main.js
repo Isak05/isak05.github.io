@@ -108,8 +108,11 @@ var player = {
 
 var costume = 0;
 var ikeaUnlocked = getCookie("ikeaUnlocked");
-if(ikeaUnlocked == undefined) {
+if(ikeaUnlocked == undefined || ikeaUnlocked == "false") {
   ikeaUnlocked = false;
+}
+if(ikeaUnlocked == "true") {
+  ikeaUnlocked = true;
 }
 setCostume(costume);
 function setCostume(id) {
