@@ -32,7 +32,8 @@ var textures = [loadTexture("Textures/player.png"),
 				loadTexture("Textures/zeusHead.png"), 
 				loadTexture("Textures/cloud.png"), 
 				loadTexture("Textures/icon.png"), 
-				loadTexture("Textures/endScreen.png")];
+				loadTexture("Textures/endScreen.png"), 
+				loadTexture("Textures/sky.png")];
 var keys = [];
 for(var i = 0; i < 255; i++) {
 	keys.push(false);
@@ -83,17 +84,21 @@ var dialogue = [{icon: 16, text: ["Hey, you mortal!"]},
 				{icon: 16, text: ["Psst, kill that guy NOW!"]}, 
 				{icon: 24, text: ["I can hear you.", "Also I'm immortal, so good luck", "on killing me."]}, 
 				{icon: 24, text: [""]}, 
-				{icon: 16, text: ["HAHAHA, FINALLY HE IS DEAD.", "I'M FREE!"]}, 
-				{icon: 26, text: ["2 Years later there is not a single", "living thing left on earth."]},
+				{icon: 16, text: ["HAHAHA, HE IS FINALLY DEAD.", "I'M FREE!"]}, 
+				{icon: 26, text: ["2 Years later there is not a single", "living thing left on planet earth."]},
 				{icon: 26, text: ["Because you let that demon free."]},
 				{icon: 26, text: ["It is a vast wasteland that will", "never be what it once was."]},
 				{icon: 26, text: ["All thanks to you."]},
 				{icon: 26, text: ["THE END", "Thanks for playing!"]},
-				{icon: 26, text: ["Restart?"]}];
+				{icon: 26, text: ["Restart?"]}, 
+				{icon: 26, text: [""]}, 
+				{icon: 26, text: ["Tip: He isn't actually immortal."]}, 
+				{icon: 26, text: [""]}];
 
 var spawnTimer = 0;
 var liveAnimals = 0;
 var zeusSpawned = false;
+var zeusSpawnTime = 0;
 var zeusDead = false;
 var zeusDeadTime = 0;
 
@@ -131,16 +136,24 @@ function update() {
 			life = 100;
 		}
 		
-		if(soulsCollected >= 7 && dialogueId == 10) {
+		if(zeusSpawned && timer - zeusSpawnTime > 900 && (dialogueId == 13 || dialogueId == 14)) {
+			dialogueLine = 0;
+			dialogueTimer = 0;
+			dialogueId = 23;
+			zeusSpawnTime = timer;
+		}
+		
+		if(soulsCollected >= 8 && dialogueId == 10) {
 			dialogueId = 11;
 			dialogueTimer = 0;
 			dialogueLine = 0;
 			animals.push(new animal(player.x - 0.3, player.y - 1.5, 2));
 			zeusSpawned = true;
 			playSound("float", 0.4);
+			zeusSpawnTime = timer;
 		}
 		
-		if(zeusDead && dialogueId < 15) {
+		if(zeusDead && (dialogueId < 15 || dialogueId == 23 || dialogueId == 24)) {
 			dialogueId = 15;
 		}
 		
@@ -151,7 +164,7 @@ function update() {
 		}
 		
 		if(dialogueId >= 4 && dialogueTimer == 0 && life > 0) {
-			life -= 0.125;
+			life -= 0.2;
 		} 
 		dI = dialogueId;
 		if(life <= 0 && dI != 5 && dI != 6 && dI != 21) {
@@ -177,14 +190,14 @@ function update() {
 				if(player.onGround) {
 					player.yVel -= 0.05;
 					player.onGround = false;
-					player.wobbleY = 0.2;
-					player.wobbleX = 0.075;
+					player.wobbleY = 0.5;
+					player.wobbleX = 0.1;
 				}
 			}
 		}
 		
 		if(xAcc != 0) {
-			player.wobbleY = Math.max(0.05, player.wobbleY);
+			player.wobbleY = Math.max(0.075, player.wobbleY);
 			player.wobbleX = Math.max(0.025, player.wobbleY);
 		}
 		player.wobbleX *= 0.8;
@@ -209,8 +222,8 @@ function update() {
 		player.onGround = false;
 		if(player.y + player.yVel + player.height >= 0 && (!lost || lostTimer < 60)) {
 			if(player.yVel > 0.01) {
-				player.wobbleY = 0.25;
-				player.wobbleX = 0.125;
+				player.wobbleY = 0.4;
+				player.wobbleX = 0.2;
 			}
 			player.onGround = true;
 			player.y = -player.height;
@@ -235,8 +248,9 @@ function update() {
 		}
 		
 		// Clear / Background
-		ctx.fillStyle = "rgb(150, 175, 255)";
-		ctx.fillRect(0, 0, c.width, c.height);
+		//ctx.fillStyle = "rgb(150, 175, 255)";
+		//ctx.fillRect(0, 0, c.width, c.height);
+		ctx.drawImage(textures[28], 0, 0, c.width, c.height);
 		
 		// Ground
 		drawRepeating(1, (-10 - camera.x) * c.height, (0 - camera.y) * c.height, 20 * c.height, 0.4 * c.height, 0.5)
@@ -319,9 +333,9 @@ function update() {
 		}
 		ctx.save();
 		if(player.xVel > 0) {
-			ctx.translate(playerCenter.x + 0.14 * c.height, playerCenter.y + 0.23 * c.height);
+			ctx.translate(playerCenter.x + 0.132 * c.height, playerCenter.y + 0.23 * c.height);
 		} else {
-			ctx.translate(playerCenter.x - 0.038 * c.height, playerCenter.y + 0.03 * c.height);
+			ctx.translate(playerCenter.x - 0.03 * c.height, playerCenter.y + 0.03 * c.height);
 		}
 		if(player.xVel > 0) {
 			ctx.rotate(-player.swordRot);
@@ -389,6 +403,10 @@ function update() {
 			ctx.fillStyle = "rgb(100, 100, 255)";
 			ctx.fillRect(0.255 * c.width, 0.025 * c.height + 0.005 * c.width, 0.5 * life / 100 * c.width, 0.075 * c.height);
 			ctx.drawImage(textures[16], 0.25 * c.width - 0.075 * c.height, 0.025 * c.height, 0.075 * c.height, 0.075 * c.height);
+			
+			ctx.drawImage(textures[8], 0.025 * c.width, 0.01 * c.height, 0.075 * c.height, 0.075 * c.height);
+			ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
+			ctx.fillText(soulsCollected + " / 8", 0.075 * c.width, 0.06 * c.height);
 		}
 		
 		// End Screens
@@ -486,6 +504,7 @@ function restart() {
 	spawnTimer = 0;
     liveAnimals = 0;
     zeusSpawned = false;
+	zeusSpawnTime = 0;
 	zeusDead = false;
 	zeusDeadTime = 0;
 
@@ -690,7 +709,7 @@ window.onmousemove = function(e) {
 window.onmousedown = function(e) {
 	if(music == undefined) {
 		music = new Audio("Audio/music.wav");
-		music.volume = 0.2;
+		music.volume = 0.1;
 		music.loop = true;
 		music.play();
 	}
