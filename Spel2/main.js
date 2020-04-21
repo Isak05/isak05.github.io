@@ -5,21 +5,37 @@ var ctx = c.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 var zoom = 1;
 
-var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "brick2", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question", "crown", "Player/ikea/Main Character (IKEA)-1", "Player/ikea/Main Character (IKEA)-2", "Player/ikea/Main Character (IKEA)-3", "Player/ikea/Main Character (IKEA)-4", "Player/ikea/Main Character (IKEA)-5", "Player/ikea/Main Character (IKEA)-6", "Player/ikea/Main Character (IKEA)-7", "Player/ikea/Main Character (IKEA)-8", "Player/ikea/Main Character (IKEA)-9", "shelf", "ikeaportal", "dirt", "buttongui", "information", "ikeaclothes", "robotfrag1", "robotfrag2", "robotfrag3", "saw1", "saw2"];
-var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59, 60, 62, 64, 65, 66, 67, 68, 69, 70, 71];
-// Uncomment to show all textures
-// hiddenTextures = [];
+var textureFiles = ["Player/boi", "wall", "brick", "Player/boi2", "Player/boi3", "Player/boi4", "brick2", "crate2", "princess", "princess2", "princess3", "button", "button2", "spike", "chain", "skull", "Player/boi5", "Player/boi6", "Player/boi7", "wall2", "wall3", "wall4", "robot", "robot2", "robot3", "laser", "heart", "lava", "door", "smoke", "heart2", "heart3", "chest", "key", "gun", "chest2", "bullet", "portal", "tile", "speed", "jump", "plates", "controls", "controls2", "arrow", "spiky", "spiky2", "controls3", "controls4", "lock", "question", "crown", "Player/ikea/Main Character (IKEA)-1", "Player/ikea/Main Character (IKEA)-2", "Player/ikea/Main Character (IKEA)-3", "Player/ikea/Main Character (IKEA)-4", "Player/ikea/Main Character (IKEA)-5", "Player/ikea/Main Character (IKEA)-6", "Player/ikea/Main Character (IKEA)-7", "Player/ikea/Main Character (IKEA)-8", "Player/ikea/Main Character (IKEA)-9", "shelf", "ikeaportal", "dirt", "buttongui", "information", "ikeaclothes", "robotfrag1", "robotfrag2", "robotfrag3", "saw1", "saw2", "shelf2", "sofa", "brokenRobot", "Player/coolguy/coolguy", "Player/coolguy/coolguy2", "Player/coolguy/coolguy3", "Player/coolguy/coolguy4", "Player/coolguy/coolguy5", "Player/coolguy/coolguy6", "concrete", "brokenRobot2", "brokenRobot3", "plank", "lamp"];
+var hiddenTextures = [0, 3, 4, 5, 8, 9, 10, 11, 12, 16, 17, 18, 22, 23, 24, 25, 29, 30, 31, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 56, 57, 58, 59, 60, 62, 64, 65, 66, 67, 68, 69, 70, 71, 74, 75, 76, 77, 78, 79, 80, 82, 83];
+// Uncomment to show all textures in the editor
+//hiddenTextures = [];
 
 var audioFiles = ["shot", "audio", "hurt", "music"];
 
+var actx;
+var audio = [];
+
 var textures = [];
+var loadedItems = 0;
+var totalItems = textureFiles.length;
 for(var i = 0; i < textureFiles.length; i++) {
   textures.push(new Image());
   textures[i].src = "Textures/" + textureFiles[i] + ".png";
+  textures[i].onload = progressLoad;
 }
 
-var actx;
-var audio = [];
+for(var i = 0; i < audioFiles.length; i++) {
+  audio.push(new sound("Audio/" + audioFiles[i] + ".wav"));
+}
+
+function progressLoad() {
+  loadedItems++; 
+  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.fillRect(c.width / 2 - c.width / 5, c.height / 2 - c.height / 20, c.width / 5 * 2 * loadedItems / textureFiles.length, c.height / 20 * 2);
+  if(loadedItems == totalItems) {
+    startUpdateLoop();
+  }
+}
 
 var levelId = 0;
 var level = loadLevel(levelId);
@@ -106,41 +122,6 @@ var player = {
   hp: 100
 };
 
-var costume = 0;
-var ikeaUnlocked = getCookie("ikeaUnlocked");
-if(ikeaUnlocked == undefined || ikeaUnlocked == "false") {
-  ikeaUnlocked = false;
-}
-if(ikeaUnlocked == "true") {
-  ikeaUnlocked = true;
-}
-setCostume(costume);
-function setCostume(id) {
-  if(id == 1 && ikeaUnlocked || id != 1) {
-    costume = id;
-    switch(id) {
-    case 0:
-      player.anims = [[{texture: 0, time: 4}, {texture: 3, time: 4}],
-                      [{texture: 0, time: 0}],
-                      [{texture: 4, time: 0}],
-                      [{texture: 5, time: 0}], 
-                      [{texture: 16, time: 5}, {texture: 17, time: 5}],
-                      [{texture: 16, time: 5}, {texture: 17, time: 5}], 
-                      [{texture: 16, time: 0}]];
-      break;
-    case 1:
-      player.anims = [[{texture: 52, time: 4}, {texture: 53, time: 4}],
-                      [{texture: 52, time: 0}],
-                      [{texture: 58, time: 0}],
-                      [{texture: 59, time: 0}], 
-                      [{texture: 55, time: 5}, {texture: 56, time: 5}],
-                      [{texture: 55, time: 5}, {texture: 56, time: 5}], 
-                      [{texture: 55, time: 0}]];
-      break;
-    }
-  }
-}
-
 function vec2(x, y) {
   this.x = x;
   this.y = y;
@@ -148,11 +129,6 @@ function vec2(x, y) {
 
 var fps = 30;
 var cheatable = false;
-if(window.location.origin == "file://") {
-  cheatable = true;
-  unlockedLevels = levels - 1;
-  unlockedChallengeLevels = levels - 1;
-}
 var cheatMode = false;
 var building = false;
 var editMode = false;
@@ -232,10 +208,8 @@ var buttons = [
 {x: 0.4 * c.width, y: 0.1 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Continue", menu: 1, onClick: () => {paused = false}}, 
 {x: 0.4 * c.width, y: 0.8 * c.height, w: 0.2 * c.width, h: 0.075 * c.height, text: "Main Menu", menu: 1, onClick: () => {menu = 0}}, 
 
-{x: 0.35 * c.width, y: 0.85 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 0}},
+{x: 0.35 * c.width, y: 0.9 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 2, onClick: () => {menu = 0}},
 
-{x: 0.35 * c.width, y: 0.1 * c.height, w: 0.2 * c.height, h: 0.2 * c.height, text: "", texture: 0, menu: 3, onClick: () => {setCostume(0)}},
-{x: 0.53 * c.width, y: 0.1 * c.height, w: 0.2 * c.height, h: 0.2 * c.height, text: "", texture: 52, menu: 3, onClick: () => {setCostume(1)}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 3, onClick: () => {menu = 11}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 4, onClick: () => {menu = 6}},
@@ -264,8 +238,8 @@ var buttons = [
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 10, onClick: () => {menu = 0}},
 
 {x: 0.35 * c.width, y: 0.1 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Sound", menu: 11, onClick: () => {menu = 12}},
-{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Controls", menu: 11, onClick: () => {menu = 8}},
-{x: 0.35 * c.width, y: 0.3 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Costumes", menu: 11, onClick: () => {menu = 3}},
+//{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Controls", menu: 11, onClick: () => {menu = 8}},
+{x: 0.35 * c.width, y: 0.2 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Characters", menu: 11, onClick: () => {menu = 3}},
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 11, onClick: () => {menu = 0}},
 
 {x: 0.35 * c.width, y: 0.8 * c.height, w: 0.3 * c.width, h: 0.075 * c.height, text: "Back", menu: 12, onClick: () => {menu = 11}}
@@ -281,6 +255,67 @@ var texts = [
 {x: 0.23 * c.width, y: 0.125 * c.height, size: 0.05 * c.height, menu: 12, text: "Music"},
 {x: 0.23 * c.width, y: 0.225 * c.height, size: 0.05 * c.height, menu: 12, text: "Sound"}
 ];
+
+var costumes = [
+{anims: [[{texture: 0, time: 4}, {texture: 3, time: 4}],
+        [{texture: 0, time: 0}],
+        [{texture: 18, time: 0}],
+        [{texture: 5, time: 0}], 
+        [{texture: 16, time: 5}, {texture: 17, time: 5}],
+        [{texture: 16, time: 5}, {texture: 17, time: 5}], 
+        [{texture: 16, time: 0}]], unlocked: false},
+        
+{anims: [[{texture: 52, time: 4}, {texture: 53, time: 4}],
+        [{texture: 52, time: 0}],
+        [{texture: 57, time: 0}],
+        [{texture: 59, time: 0}],  
+        [{texture: 55, time: 5}, {texture: 56, time: 5}],
+        [{texture: 55, time: 5}, {texture: 56, time: 5}], 
+        [{texture: 56, time: 0}]], unlocked: false},
+        
+{anims: [[{texture: 75, time: 4}, {texture: 76, time: 4}],
+        [{texture: 75, time: 0}],
+        [{texture: 79, time: 0}],
+        [{texture: 80, time: 0}],  
+        [{texture: 77, time: 5}, {texture: 78, time: 5}],
+        [{texture: 77, time: 5}, {texture: 78, time: 5}], 
+        [{texture: 78, time: 0}]], unlocked: false}
+];
+
+for(var i = 0; i < costumes.length; i++) {
+  buttons.push({x: (0.3 + 0.15 * (i % 3)) * c.width, y: (0.1 + 0.275 * Math.floor(i / 3)) * c.height, w: 0.2 * c.height, h: 0.2 * c.height, text: i.toString(), texture: costumes[i].anims[1][0].texture, menu: 3, onClick: function(i) {return () => {setCostume(i)}}(i)});
+}
+
+var costume = 0;
+for(var i = 0; i < costumes.length; i++) {
+  var res = getCookie("costume" + i);
+  if(res == undefined || res == "false") {
+    costumes[i].unlocked = false;
+  }
+  if(res == "true") {
+    costumes[i].unlocked = false;
+  }
+}
+
+costumes[0].unlocked = true;
+
+setCostume(costume);
+function setCostume(id) {
+  if(costumes[id].unlocked) {
+    costume = id;
+    player.anims = costumes[costume].anims;
+  }
+}
+
+function unlockCostume(id) {
+  if(!costumes[id].unlocked) {
+    costumes[id].unlocked = true;
+    notification.timer = 90;
+    notification.texture = costumes[id].anims[1][0].texture;
+    notification.text = "Character unlocked!";
+    notification.description = "You got a new character";
+  }
+}
 
 for(var i = 0; i < levels; i++) {
   var text = i;
@@ -358,6 +393,13 @@ for(var i = 0; i < levels; i++) {
   highscores.push({normal: parseFloat(getCookie("highscore" + i)), challenge: parseFloat(getCookie("challengeHighscore" + i))});
 }
 
+///////////////////////////
+levelId = -1;
+start();
+cheatMode = true;
+godMode = true;
+///////////////////////////
+
 window.onbeforeunload = function() {
   for(var i = 0; i < highscores.length; i++) {
     setCookie("highscore" + i, highscores[i].normal);
@@ -369,7 +411,9 @@ window.onbeforeunload = function() {
   setCookie("deaths", deaths);
   setCookie("unlockedLevels", unlockedLevels);
   setCookie("unlockedChallengeLevels", unlockedChallengeLevels);
-  setCookie("ikeaUnlocked", ikeaUnlocked);
+  for(var i = 0; i < costumes.length; i++) {
+    setCookie("costume" + i, costumes[i].unlocked);
+  }
 }
 
 var cv = document.createElement("canvas");
@@ -391,7 +435,31 @@ var avgFps = -1;
 var avgSize = 1;
 var helpTimer = 0;
 
-var loop = setInterval(update, 1000 / fps);
+if(window.location.origin == "file://") {
+  cheatable = true;
+  unlockedLevels = levels - 1;
+  unlockedChallengeLevels = levels - 1;
+  for(var i = 0; i < costumes.length; i++) {
+    costumes[i].unlocked = true;
+  }
+}
+
+ctx.fillStyle = "rgb(0, 0, 0)";
+ctx.fillRect(0, 0, c.width, c.height);
+
+ctx.beginPath();
+ctx.rect(c.width / 2 - c.width / 5 - c.height * 0.01, c.height / 2 - c.height / 20 - c.height * 0.01, c.width / 5 * 2 + c.height * 0.02, c.height / 20 * 2 + c.height * 0.02);
+ctx.closePath();
+ctx.strokeStyle = "rgb(255, 255, 255)"; 
+ctx.lineWidth = c.height * 0.005;
+ctx.stroke();
+
+var loadScreenTimer = 0;
+var loop;
+function startUpdateLoop() {
+  loop = setInterval(update, 1000 / fps);
+}
+
 function update() {
 if(deaths >= 50) {
   unlockAchievement(2);
@@ -439,7 +507,7 @@ if(!paused) {
       helpTimer = 0;
       notification.texture = 65;
       notification.text = "Tip";
-      notification.description = "While gliding down the wall, jump";
+      notification.description = "While sliding down the wall, jump";
       notification.timer = 90;
     }
   } else if(player.pos.x < 2 * c.height && player.pos.x > 1.4 * c.height && levelId == 0) {
@@ -796,6 +864,12 @@ if(notification.timer > 0) {
     
   notification.timer--;
 }
+
+if(loadScreenTimer < 15) {
+  loadScreenTimer++;
+  ctx.fillStyle = "rgb(0, 0, 0," + (1 - loadScreenTimer / 15) + ")";
+  ctx.fillRect(0, 0, c.width, c.height);
+}
 }
 
 function setCookie(name, value) {
@@ -884,7 +958,7 @@ function drawMenu() {
   }
   if(menu == 2) {
     ctx.fillStyle = "rgb(255, 255, 255, 0.75)";
-    ctx.fillRect(0.375 * c.width, 0.05 * c.height, 0.25 * c.width, 0.75 * c.height);
+    ctx.fillRect(0.375 * c.width, 0.05 * c.height, 0.25 * c.width, 0.8 * c.height);
     ctx.textAlign = "center";
     drawText("Credits", 0.5 * c.width, 0.1 * c.height, 0.1 * c.height);
     
@@ -892,15 +966,17 @@ function drawMenu() {
     drawText("Anton", 0.5 * c.width, 0.2 * c.height, 0.05 * c.height);
     drawText("Isak", 0.5 * c.width, 0.25 * c.height, 0.05 * c.height);
     drawText("Markus", 0.5 * c.width, 0.3 * c.height, 0.05 * c.height);
+    drawText("Love", 0.5 * c.width, 0.35 * c.height, 0.025 * c.height);
     
-    drawText("Music & Sound", 0.5 * c.width, 0.4 * c.height, 0.075 * c.height);
-    drawText("Isak", 0.5 * c.width, 0.45 * c.height, 0.05 * c.height);
+    drawText("Music & Sound", 0.5 * c.width, 0.45 * c.height, 0.075 * c.height);
+    drawText("Isak", 0.5 * c.width, 0.5 * c.height, 0.05 * c.height);
 
-    drawText("Coding", 0.5 * c.width, 0.55 * c.height, 0.075 * c.height);
-    drawText("Isak", 0.5 * c.width, 0.6 * c.height, 0.05 * c.height);
+    drawText("Coding", 0.5 * c.width, 0.6 * c.height, 0.075 * c.height);
+    drawText("Isak", 0.5 * c.width, 0.65 * c.height, 0.05 * c.height);
 
-    drawText('"Det mesta"', 0.5 * c.width, 0.7 * c.height, 0.075 * c.height);
-    drawText("Love", 0.5 * c.width, 0.75 * c.height, 0.05 * c.height);
+    drawText('"Det mesta"', 0.5 * c.width, 0.75 * c.height, 0.075 * c.height);
+    drawText("Love", 0.5 * c.width, 0.8 * c.height, 0.05 * c.height);
+    drawText("Jakob", 0.5 * c.width, 0.825 * c.height, 0.01 * c.height);
     
     ctx.textAlign = "left";
   }
@@ -927,7 +1003,11 @@ function drawMenu() {
       ctx.fillStyle = "rgb(175, 125, 75)";
       if(menu == 3) {
         if(buttons[i].texture || buttons[i].texture == 0) {
-          if(buttons[i].texture == 0 || ikeaUnlocked) {
+          if(!isNaN(parseInt(buttons[i].text)) && costumes[parseInt(buttons[i].text)].unlocked) {
+            if(costume == parseInt(buttons[i].text)) {
+              ctx.fillStyle = "rgb(0, 255, 0, 0.125)";
+              ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
+            }
             ctx.drawImage(textures[buttons[i].texture], buttons[i].x + 0.02 * c.height, buttons[i].y + 0.02 * c.height, buttons[i].w - 0.04 * c.height, buttons[i].h - 0.04 * c.height);
           } else {
             ctx.drawImage(textures[49], buttons[i].x + 0.02 * c.height, buttons[i].y + 0.02 * c.height, buttons[i].w - 0.04 * c.height, buttons[i].h - 0.04 * c.height);
@@ -946,7 +1026,7 @@ function drawMenu() {
         } else {
           drawText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 5 + buttons[i].h / 2, s);
         }
-      } else {
+      } else if(menu != 3 || (menu == 3 && buttons[i].texture == undefined)) {
         drawText(buttons[i].text, buttons[i].x + off, buttons[i].y + s / 5 + buttons[i].h / 2, s);
       }
     }
@@ -1409,10 +1489,12 @@ function sound(file) {
   this.file = file;
   this.audio = new Audio();
   this.audio.src = this.file;
-  this.source = actx.createMediaElementSource(this.audio);
-  this.gain = actx.createGain();
-  this.source.connect(this.gain);
-  this.gain.connect(actx.destination);
+  this.load = function() {
+    this.source = actx.createMediaElementSource(this.audio);
+    this.gain = actx.createGain();
+    this.source.connect(this.gain);
+    this.gain.connect(actx.destination);
+  }
   this.play = function(volume, loop) {
     this.gain.gain.value = volume;
     if(loop) {
@@ -1430,7 +1512,7 @@ function activateAudio() {
   if(!actx) {
     actx = new AudioContext();
     for(var i = 0; i < audioFiles.length; i++) {
-      audio.push(new sound("Audio/" + audioFiles[i] + ".wav"));
+      audio[i].load();
     }
     audio[3].play(1 * musicVolume, true);
   }

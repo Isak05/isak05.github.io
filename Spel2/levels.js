@@ -270,6 +270,8 @@ function loadLevel(id) {
     res.walls.push(new wall(2.55, 0.1, 0.15, 0.05, 38, true, 0.05));
     res.walls.push(new wall(0.5, -0.9, 0.3, 0.05, 20, true, 0.05));
     res.walls.push(new wall(0.5, -1.35, 0.05, 0.45, 20, true, 0.05));
+    res.walls.push(new wall(-1.75, 0.7, 0.4, 0.8, 63, true, 0.1));
+    res.walls.push(new wall(-1.35, 1.2, 0.65, 0.35, 63, true, 0.1));
 
     res.backgrounds.push(new background(-3, 0.2, 8, 1.6, 63, true, 0.1));
     res.backgrounds.push(new background(-1.8512, -0.3, 0.0182, 0.4492, 20, false, 0.05));
@@ -327,35 +329,17 @@ function loadLevel(id) {
     unlockAchievement(4);
     
     res.spawnPoint = {x: 0 * c.height, y: 0 * c.height};
-    res.portals.push(new portal(0.6 * c.height, 1.1 * c.height, 3));
+    res.portals.push(new portal(0.6 * c.height, -0.2 * c.height, 3));
     
-    res.walls.push(new wall(-0.45, 0.2, 1, 0.05, 20, true, 0.05));
-    res.walls.push(new wall(-0.3, -0.4, 0.05, 0.3, 7, true, 0.05));
-    res.walls.push(new wall(-0.15, -0.4, 0.05, 0.3, 7, true, 0.05));
-    res.walls.push(new wall(-0.1, -0.3, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(-0.05, -0.35, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0, -0.4, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(-0.05, -0.25, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0, -0.2, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.05, -0.15, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.15, -0.4, 0.05, 0.3, 7, true, 0.05));
-    res.walls.push(new wall(0.2, -0.4, 0.15, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.2, -0.3, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.2, -0.15, 0.15, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.4, -0.25, 0.05, 0.15, 7, true, 0.05));
-    res.walls.push(new wall(0.45, -0.35, 0.05, 0.1, 7, true, 0.05));
-    res.walls.push(new wall(0.5, -0.4, 0.05, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(0.55, -0.35, 0.05, 0.1, 7, true, 0.05));
-    res.walls.push(new wall(0.6, -0.25, 0.05, 0.15, 7, true, 0.05));
-    res.walls.push(new wall(0.45, -0.25, 0.15, 0.05, 7, true, 0.05));
-    res.walls.push(new wall(-0.5, 0.15, 0.05, 0.1, 19, true, 0.05));
-    res.walls.push(new wall(0.55, 0.15, 0.05, 0.1, 19, true, 0.05));
-    res.walls.push(new wall(-0.0125, 0.15, 0.075, 0.05, 19, true, 0.05));
+    res.walls.push(new wall(-0.6, 0.2, 1.4, 0.1, 81, true, 0.1));
+    res.walls.push(new wall(0.8, 0.2, 0.9, 0.1, 84, true, 0.1));
     
-    res.npcs.push(new npc(-0.35, 0.05, 3));
-    res.npcs.push(new npc(0.1, 0.1, 3));
+    res.backgrounds.push(new background(-0.6, -0.5, 2.3, 0.7, 6, true, 0.1));
+    res.backgrounds.push(new background(1.3, 0, 0.2, 0.2, 73, false, 0.1));
     
-    res.pickups.push(new pickup(0.45, 0.1, 66, () => {ikeaUnlocked = true; setCostume(1);}, true));
+    res.foregrounds.push(new foreground(1.5, 0.05, 0.05, 0.15, 85, false, 0.05));
+
+    res.pickups.push(new pickup(0.45, 0.1, 66, () => {unlockCostume(1); setCostume(1);}, true));
     
     break;
     
@@ -582,7 +566,10 @@ function npc(x, y, type) {
   if(this.type == 1) {
     this.anims = [
     [{texture: 23, time: 4}, {texture: 24, time: 4}], 
-    [{texture: 22, time: 0}]];
+    [{texture: 22, time: 0}],
+    [{texture: 23, time: 4}, {texture: 24, time: 4}], 
+    [{texture: 74, time: 0}], 
+    [{texture: 82, time: 4}, {texture: 83, time: 4}]];
   }
   if(this.type == 2) {
     this.anims = [[{texture: 45, time: 5}, {texture: 46, time: 5}]];
@@ -620,10 +607,16 @@ function npc(x, y, type) {
   if(this.type == 3) {
     this.speed = c.height * 0.0075;
   }
+  if(challengeMode) {
+    this.speed *= 1.25;
+  }
   
   this.hp = 100;
   if(this.type == 3) {
     this.hp = Infinity;
+  }
+  if(challengeMode) {
+    this.hp *= 1.5;
   }
   this.damage = function(hp) {
     this.hp -= hp;
@@ -681,15 +674,21 @@ function npc(x, y, type) {
     }
     
     if(this.type == 1 && !cheatMode) {
-      if(Math.abs(this.vel.x) <= 5 && this.currentAnim != 1) {
+      if(Math.abs(this.vel.x) <= 5 && this.currentAnim != 1 && this.currentAnim != 3) {
         this.animTimer = 0;
         this.currentAnimFrame = 0;
         this.currentAnim = 1;
+        if(this.hp <= 50) {
+          this.currentAnim = 3;
+        }
         this.texture = this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
-      } else if(Math.abs(this.vel.x) > 5 && this.currentAnim != 0) {
+      } else if(Math.abs(this.vel.x) > 5 && this.currentAnim != 0 && this.currentAnim != 4) {
         this.animTimer = 0;
         this.currentAnimFrame = 0;
         this.currentAnim = 0;
+        if(this.hp <= 50) {
+          this.currentAnim = 4;
+        }
         this.texture = this.texture = this.anims[this.currentAnim][this.currentAnimFrame].texture;
       }
       if(this.fireCooldown > 0) {
