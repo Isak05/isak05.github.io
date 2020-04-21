@@ -394,10 +394,10 @@ for(var i = 0; i < levels; i++) {
 }
 
 ///////////////////////////
-levelId = -1;
+/*levelId = -1;
 start();
 cheatMode = true;
-godMode = true;
+godMode = true;*/
 ///////////////////////////
 
 window.onbeforeunload = function() {
