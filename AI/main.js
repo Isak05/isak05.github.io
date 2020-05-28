@@ -2,6 +2,7 @@ var c = document.getElementById("c");
 c.width = screen.width;
 c.height = screen.height;
 var ctx = c.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 
 var graph = [];
 var maxGraph = 0;
@@ -11,6 +12,7 @@ var speed = 5;
 var realScore = 0;
 var pipe = new vec2(c.width, Math.round(Math.random() * (c.height - 350) + 300));;
 var birds = [];
+var speeded = false;
 var img = new Image();
 img.src = "img.png";
 
@@ -121,6 +123,9 @@ function update() {
           birds[i].agent.mutate();
         }
       }
+    }
+    if(!speeded && l > 0) {
+      break;
     }
   }
   
@@ -260,4 +265,12 @@ function rand(seed) {
 
 function map(value, minIn, maxIn, minOut, maxOut) {
 	return minOut + (maxOut - minOut) * (value - minIn) / (maxIn - minIn);
+}
+
+window.onkeydown = function(e) {
+  switch(e.keyCode) {
+  case 32:
+    speeded = !speeded;  
+    break;
+  }
 }
