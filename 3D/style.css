@@ -1,0 +1,10 @@
+body {
+	margin: 0px;
+	overflow: hidden;
+}
+
+#overlay {
+	position: absolute;
+	top: 0px;
+	display: block;
+}
