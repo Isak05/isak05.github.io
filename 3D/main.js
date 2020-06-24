@@ -30,9 +30,12 @@ function onAmmoStart() {
 	player.init();
 	
 	window.otherPlayers = [];
-	for(var i = 0; i < 2; i++) {
-		otherPlayers.push({});
-		otherPlayers[0].model = createObject({
+	for(var i = 0; i < 3; i++) {
+		otherPlayers.push({
+			posAnim1: {x: 0, y: 0, z: 0}, 
+			posAnim2: {x: 0, y: 0, z: 0}
+		});
+		otherPlayers[i].model = createObject({
 			shape: Shape.CYLINDER,
 			scale: {x: 0.5, y: 1.8, z: 0.5}
 		});
@@ -280,11 +283,11 @@ var player = {
 		strafe: 7.5
 	},
 	update: function() {
-		this.rot.y += -mouse.vel.x * mouse.sensitivity * 0.0075;
-		this.rot.x += -mouse.vel.y * mouse.sensitivity * 0.0075;
+		this.rot.y += -mouse.vel.x * mouse.sensitivity * 0.005;
+		this.rot.x += -mouse.vel.y * mouse.sensitivity * 0.005;
 		this.rot.x = Math.max(Math.min(this.rot.x, Math.PI * 0.5), -Math.PI * 0.5);
 		
-		this.sinceLastJump += clock.getDelta();
+		this.sinceLastJump += delta;
 		
 		this.onGround = false;
 		var raycaster = new THREE.Raycaster(new THREE.Vector3(this.pos.x, this.pos.y - 1.79, this.pos.z), new THREE.Vector3(0, -1, 0));
@@ -469,25 +472,58 @@ var Shape = {
 	CUSTOM: 3
 };
 
+var animationCounter = 0;
+var prevClientCounter = 0;
+var online = false;
+var serverStopped = false;
 var hitCount = 0;
+
+var userId = "User5";
 
 var objects = [];
 var rigidBodies = [];
 var clock = new THREE.Clock();
+var delta = 0;
 function animate() {
+	delta = clock.getDelta();
+	
 	requestAnimationFrame(animate);
 
 	var serverData = document.body.dataset.serverData;
-	document.body.dataset.serverResponse = JSON.stringify({pos: player.pos});
+	document.body.dataset.serverResponse = JSON.stringify({data: {pos: player.pos}, user: userId});
+	document.body.dataset.online = online;
 	parseServerData(serverData);
 	
-	for(var i = 0; i < otherPlayers.length; i++) {
-		if(otherPlayers[0].data != undefined) {
-			otherPlayers[0].model.position.x = otherPlayers[0].data.pos.x;
-			otherPlayers[0].model.position.y = otherPlayers[0].data.pos.y - 0.9;
-			otherPlayers[0].model.position.z = otherPlayers[0].data.pos.z;
+	if(prevClientCounter != document.body.dataset.serverClientCounter) {
+		for(var i = 0; i < otherPlayers.length; i++) {
+			if(otherPlayers[i].data != undefined) {
+				if(otherPlayers[i].data.ip != "ME") {
+					otherPlayers[i].posAnim1.x = otherPlayers[i].posAnim2.x;
+					otherPlayers[i].posAnim1.y = otherPlayers[i].posAnim2.y;
+					otherPlayers[i].posAnim1.z = otherPlayers[i].posAnim2.z;
+					
+					otherPlayers[i].posAnim2.x = otherPlayers[i].data.data.pos.x;
+					otherPlayers[i].posAnim2.y = otherPlayers[i].data.data.pos.y;
+					otherPlayers[i].posAnim2.z = otherPlayers[i].data.data.pos.z;
+				}
+			}
 		}
 	}
+	
+	var progress = delta / (500 / 1000);
+	for(var i = 0; i < otherPlayers.length; i++) {
+		if(otherPlayers[i].data != undefined) {
+			if(otherPlayers[i].data.ip != "ME") {
+				otherPlayers[i].model.position.x = otherPlayers[i].posAnim1.x * progress + otherPlayers[i].posAnim2.x * (1 - progress);
+				otherPlayers[i].model.position.y = otherPlayers[i].posAnim1.y * progress + otherPlayers[i].posAnim2.y * (1 - progress) - 0.9;
+				otherPlayers[i].model.position.z = otherPlayers[i].posAnim1.z * progress + otherPlayers[i].posAnim2.z * (1 - progress);
+			}
+		}
+	}
+	
+	prevClientCounter = document.body.dataset.serverClientCounter;
+	
+	//console.log(otherPlayers);
 	
 	light2.position.set(20 + player.pos.x, 20 + player.pos.y, 10 + player.pos.z);
 	light2.target.position.set(player.pos.x, player.pos.y, player.pos.z);
@@ -501,6 +537,23 @@ function animate() {
 	// Overlay
 	ctx.clearRect(0, 0, c.width, c.height);
 	
+	for(var i = 0; i < otherPlayers.length; i++) {
+		if(otherPlayers[i].data != undefined) {
+			var vec = new THREE.Vector3(otherPlayers[i].data.data.pos.x, otherPlayers[i].data.data.pos.y, otherPlayers[i].data.data.pos.z);
+			vec.project(camera);
+			vec.x = (vec.x * c.width * 0.5) + c.width * 0.5;
+			vec.y = -(vec.y * c.height * 0.5) + c.height * 0.5;
+			
+			if(otherPlayers[i].data.ip != "ME" && (1 - vec.z) > 0) {
+				//console.log(vec.z);
+				ctx.fillStyle = "rgb(255, 255, 255)";
+				ctx.font = (1 - vec.z) * 0.75 * c.height + "px Arial";
+				ctx.textAlign = "center";
+				ctx.fillText(otherPlayers[i].data.ip, vec.x, vec.y);
+			}
+		}
+	}
+	
 	ctx.beginPath();
 	ctx.arc(c.width / 2, c.height / 2, 3, 0, Math.PI * 2);
 	ctx.closePath();
@@ -509,19 +562,29 @@ function animate() {
 	
 	ctx.fillStyle = "rgb(255, 255, 255)";
 	ctx.font = 0.025 * c.height + "px Arial";
-	ctx.fillText(hitCount + " / 50000 hits", 0, 0.025 * c.height);
-	ctx.fillText(Math.floor((50000 - hitCount) / (1000 / 500) / 1 / 60) + " minutes until limit is reached", 0, 0.05 * c.height);
+	ctx.textAlign = "left";
+	if(!serverStopped) {
+		ctx.fillText(hitCount + " / 50000 hits", 0, 0.025 * c.height);
+		ctx.fillText(Math.floor((50000 - hitCount) / (1000 / 500) / otherPlayers.length / 60) + " minutes until limit is reached", 0, 0.05 * c.height);
+	} else {
+		ctx.fillStyle = "rgb(255, 0, 0)";
+		ctx.fillText("Server stopped", 0, 0.025 * c.height);
+	}
 }
 
 function parseServerData(data) {
 	if(data != undefined) {
 		var lines = data.split("\n");
+		if(lines.length == 1 && lines[0] >= 47500) {
+			serverStopped = true;
+			return;
+		}
 		for(var i = 0; i < lines.length; i++) {
 			var pos = lines[i].indexOf(" ");
-			if(pos != -1 && lines[i] != "") {
-				var res = {data: lines[i].substr(pos + 1), ip: lines[i].substr(0, pos)};
+			if(pos != -1 && lines[i] != "" && !lines[i].includes("undefined") && lines[i] != " ") {
+				var res = {data: JSON.parse(lines[i].substr(pos + 1)), ip: lines[i].substr(0, pos)};
 				try {
-					otherPlayers[i - 1].data = JSON.parse(res.data);
+					otherPlayers[i - 1].data = res;
 				} catch(e) {
 					
 				}
@@ -533,7 +596,7 @@ function parseServerData(data) {
 }
 
 function updateRigidBodies() {
-	physicsWorld.stepSimulation(clock.getDelta(), 1);
+	physicsWorld.stepSimulation(delta, 1);
 	for(var i = 0; i < objects.length; i++) {
 		var body = objects[i].userData.rigidBody;
 		if(body != undefined) {
