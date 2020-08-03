@@ -1,0 +1,47 @@
+body {
+	margin: 0px;
+	overflow: hidden;
+}
+
+@media(min-width: 175vh) {
+	#roms, #load, #speed, #speed-text {
+		position: absolute;
+		top: 0px;
+		left: min(150vh, 100vw);
+		height: 3vh;
+		font-size: 2vh;
+		font-family: Arial;
+	}
+	#load {
+		top: 3vh;
+	}
+	#speed {
+		top: 6vh;
+		width: 20vh;
+	}
+	#speed-text {
+		top: 4.5vh;
+		left: 171vh;
+	}
+}
+
+@media(max-width: 175vh) {
+	#roms, #load, #speed, #speed-text {
+		position: absolute;
+		top: min(75vh, 50vw);
+		left: 0px;
+		height: 3vh;
+		font-size: 2vh;
+	}
+	#load {
+		top: min(78vh, 52.5vw);
+	}
+	#speed {
+		top: min(81vh, 55vw);
+		width: 20vh;
+	}
+	#speed-text {
+		top: min(80vh, 54vw);
+		left: 21vh;
+	}
+}
