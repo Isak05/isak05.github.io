@@ -53,6 +53,7 @@ function update() {
 
               if(scope == 0) {
                 line = tempLine;
+                break;
               }
 
               tempLine++;
@@ -77,7 +78,11 @@ function update() {
             }
 
             if(scope == 0) {
-              line = tempLine;
+              var temp = lines[tempLine].match(/exe +while\((.*)\):$/);
+              if(temp != null && temp.length == 2) {
+                line = tempLine - 1;
+                break;
+              }
             }
 
             tempLine--;
@@ -85,7 +90,6 @@ function update() {
               break;
             }
           }
-          line = tempLine;
         }
         
         l = curLine.match(/exe print\(\)$/);
@@ -253,7 +257,6 @@ function evalExp(exp) {
         len--;
         i--;
       }
-      console.log(exp.substr(start, len));
       operators.push(exp.substr(start, len));
     }
   }
