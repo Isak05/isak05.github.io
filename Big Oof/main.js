@@ -82,6 +82,8 @@ function update() {
               if(temp != null && temp.length == 2) {
                 line = tempLine - 1;
                 break;
+              } else {
+                break;
               }
             }
 
@@ -92,7 +94,10 @@ function update() {
           }
         }
         
-        l = curLine.match(/exe print\(\)$/);
+        l = curLine.match(/exe print\((.*)\)$/);
+        if(l != null && l.length == 2) {
+          console.log(evalExp(l[1]));
+        }
       
       }
 
@@ -131,7 +136,7 @@ function calc(val1, val2, oper) {
     res = val1 + val2;
     break;
   case "-":
-   res = val1 - val2;
+    res = val1 - val2;
     break;
   case "*":
     res = val1 * val2;
@@ -172,8 +177,12 @@ function calc(val1, val2, oper) {
 
 function evalExp(exp) {
   for(var i = 0; i < exp.length; i++) {
-    if(exp[i].search(/^[a-zA-Z]$/) != -1) {
+    if(exp[i].search(/^[a-zA-Z"']$/) != -1) {
       var str = exp[i];
+      var quote = "";
+      if(str == '"' || str == "'") {
+        quote = str;
+      }
       var start = i;
       var len = 0;
       while(i < exp.length) {
@@ -183,28 +192,37 @@ function evalExp(exp) {
           i--;
           break;
         }
-        if(exp[i].search(/^[a-zA-Z]$/) != -1) {
-          str += exp[i];
+        if(quote == "") {
+          if(exp[i].search(/^[a-zA-Z]$/) != -1) {
+            str += exp[i];
+          } else {
+            i--;
+            break;
+          }
         } else {
-          i--;
-          break;
+          if(exp[i] == quote) {
+            //i--;
+            break;
+          }
         }
       }
       
-      var rep = "";
-      switch(str) {
-      case "true":
-        rep = 1;
-        break;
-      case "false":
-        rep = 0;
-        break;
-      default:
-        rep = variables[str].value;
-        break;
+      if(quote == "") {
+        var rep = "";
+        switch(str) {
+        case "true":
+          rep = 1;
+          break;
+        case "false":
+          rep = 0;
+          break;
+        default:
+          rep = variables[str].value;
+          break;
+        }
+        exp = exp.substr(0, start) + rep + exp.substr(start + len);
+        i -= len;
       }
-      exp = exp.substr(0, start) + rep + exp.substr(start + len);
-      i -= len;
     }
   }
   
@@ -225,6 +243,16 @@ function evalExp(exp) {
       len--;
       i--;
       values.push(parseFloat(exp.substr(start, len)));
+    } else if(exp[i] == '"' || exp[i] == "'") {
+      var quote = exp[i];
+      var start = i + 1;
+      var len = 0;
+      i++;
+      while(i < exp.length && exp[i] != quote) {
+        len++;
+        i++;
+      }
+      values.push(exp.substr(start, len));
     } else if(exp[i] == ")") {
       while(operators.length > 0 && operators[operators.length - 1] != "(") {
         var val2 = values.pop();
