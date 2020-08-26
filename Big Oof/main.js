@@ -87,6 +87,8 @@ function update() {
           }
           line = tempLine;
         }
+        
+        l = curLine.match(/exe print\(\)$/);
       
       }
 
@@ -106,7 +108,7 @@ function getPrecedence(x) {
   if(x == "||" || x == "&&") {
     return 1;
   }
-  if(x == "<" || x == ">" || x == "<=" || x == ">=") {
+  if(x == "<" || x == ">" || x == "<=" || x == ">=" || x == "==" || x == "!=") {
     return 2;
   }
   if(x == "+" || x == "-") {
@@ -150,6 +152,12 @@ function calc(val1, val2, oper) {
     break;
   case "&&":
     res = val1 && val2;
+    break;
+  case "==":
+    res = (val1 == val2) + 0;
+    break;
+  case "!=":
+    res = (val1 != val2) + 0;
     break;
   case "%":
     res = val1 % val2;
@@ -233,14 +241,19 @@ function evalExp(exp) {
       
       var start = i;
       var len = 1;
-      while(i < exp.length && (exp[i] == "&" || exp[i] == "|")) {
+      while(i < exp.length && (exp[i] == "&" || exp[i] == "|" || exp[i] == "<" || exp[i] == ">" || exp[i] == "=" || exp[i] == "!")) {
         len++;
         i++;
+        if(exp[i].search(/[0-9] /) != -1) {
+          i--;
+          len--;
+        }
       }
       if(len > 1) {
         len--;
         i--;
       }
+      console.log(exp.substr(start, len));
       operators.push(exp.substr(start, len));
     }
   }
