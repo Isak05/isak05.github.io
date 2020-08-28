@@ -7,7 +7,23 @@ canvas {
   display: none;
 }
 
-textarea {
-  width: 100%;
-  height: 95%;
+#file {
+  position: absolute;
+  z-index: 5;
+  top: 50vh;
+  left: 30vw;
+}
+
+#text {
+  position: absolute;
+  top: 0px;
+  width: 75vw;
+  height: 100vh;
+}
+
+#console {
+  display: block;
+  position: absolute;
+  left: 75vw;
+  top: 0px;
 }
