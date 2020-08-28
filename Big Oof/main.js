@@ -6,6 +6,11 @@ var ctx = c.getContext("2d");
 
 var file = document.getElementById("file");
 var text = document.getElementById("text");
+var con = document.getElementById("console");
+con.width = window.innerWidth * 0.25;
+con.height = window.innerHeight;
+var conCtx = con.getContext("2d");
+var consoleText = "";
 var fr = new FileReader();
 
 var view = 0;
@@ -18,12 +23,14 @@ function update() {
     var s = Date.now();
     while(Date.now() - 1000 / 60 < s) {
       var curLine = lines[line];
+      var found = false;
       
       var l = curLine.match(/\/\/.*/);
       if(l == null) {
-      
+        
         l = curLine.match(/def +var\((.*)\) *= *([a-zA-Z]+) *=.*/);
         if(l != null && l.length == 3) {
+          found = true;
           if(l[1] != "int" && l[1] != "float") {
             console.error('Invalid type "' + l[1] + '" on line ' + line);
           } else {
@@ -39,6 +46,7 @@ function update() {
 
         l = curLine.match(/exe +(if|while)\((.*)\):$/);
         if(l != null && l.length == 3) {
+          found = true;
           var res = evalExp(l[2]);
           if(!res) {
             var tempLine = line;
@@ -66,6 +74,7 @@ function update() {
         
         l = curLine.match(/exe end;$/);
         if(l != null && l.length == 1) {
+          found = true;
           var start = line;
           var tempLine = line;
           var scope = 0;
@@ -96,9 +105,13 @@ function update() {
         
         l = curLine.match(/exe print\((.*)\)$/);
         if(l != null && l.length == 2) {
+          found = true;
           console.log(evalExp(l[1]));
         }
-      
+        
+        if(!found && curLine.search(/^\s*$/) == -1) {
+          console.error("Couldn't parse line " + line);
+        }
       }
 
       line++;
@@ -111,6 +124,26 @@ function update() {
     
     requestAnimationFrame(update);
   }
+}
+
+drawConsole();
+function drawConsole() {
+  conCtx.fillStyle = "rgb(255, 255, 255)";
+  conCtx.fillRect(0, 0, con.width, con.height);
+  var s = 15;
+  conCtx.font = s + "px Arial";
+  conCtx.fontWeight = 2;
+  var maxLines = Math.ceil(con.height / s);
+  var lines = consoleText.split("\n");
+  for(var i = Math.max(0, lines.length - maxLines); i < lines.length; i++) {
+    if(lines[i].substr(0, 1) == "i") {
+      conCtx.fillStyle = "rgb(25, 25, 25)";
+    } else if(lines[i].substr(0, 1) == "e") {
+      conCtx.fillStyle = "rgb(255, 100, 100)";
+    }
+    conCtx.fillText(lines[i].substr(1), 0, (i + 1 - Math.max(0, lines.length - maxLines)) * s);
+  }
+  requestAnimationFrame(drawConsole);
 }
 
 function getPrecedence(x) {
@@ -299,6 +332,14 @@ function evalExp(exp) {
   return values[values.length - 1];
 }
 
+console.log = function() {
+  consoleText += "i" + arguments[0] + "\n";
+}
+
+console.error = function() {
+  consoleText += "e" + arguments[0] + "\n";
+}
+
 function variable(value, type) {
   this.type = type;
   this.value = 0;
@@ -327,6 +368,7 @@ function variable(value, type) {
 function run() {
   text.style.display = "none";
   c.style.display = "block";
+  con.style.display = "none";
   
   lines = text.value.split("\n");
   
@@ -337,11 +379,13 @@ function run() {
 
 function reset() {
   variables = [];
+  consoleText = "";
 }
 
 function stop() {
   text.style.display = "block";
   c.style.display = "none";
+  con.style.display = "block";
   
   line = 0;
 }
@@ -349,8 +393,12 @@ function stop() {
 file.onchange = function() {
   fr.readAsText(file.files[0]);
   fr.onload = function() {
-    console.log(file.files[0]);
-    text.value = fr.result;
+    var fileEnding = file.files[0].name.match(/\.(.*)$/)[1];
+    if(fileEnding == "boof") {
+      text.value = fr.result;
+    } else {
+      console.error('Invalid file format "' + fileEnding + '"');
+    }
   }
   file.style.display = "none";
   document.getElementById("temp-file-br").style.display = "none";
