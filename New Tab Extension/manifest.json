@@ -1,0 +1,19 @@
+{
+  "name": "New Tab Extension",
+  "version": "1.0",
+  "description": "Revamps the new tab page",
+  "permissions" : [
+    "notifications", 
+    "background"
+  ],   
+  "chrome_url_overrides" : {
+    "newtab": "index.html"
+  }, 
+  "background" : {
+    "scripts": ["background.js"]
+  }, 
+  "icons" : {
+    "32": "icon.png"
+  },
+  "manifest_version": 2
+}
