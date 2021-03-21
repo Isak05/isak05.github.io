@@ -1,12 +1,76 @@
-body {
-	background-color: black;
+html, body {
+	margin: 0px;
+	height: 100%;
+}
+
+html {
+	--scroll-position: 0;
 }
 
 p {
+	font-size: 20px;
+	font-family: Arial;
+	margin: 25px;
+	margin-left: 25%;
+	width: 50%;
+	text-align: center;
+}
+
+#notice {
 	text-align: center;
 	font-size: 50px;
 	font-family: Arial;
+	width: 100vw;
+	margin: 0px;
 	color: white;
-	margin-top: 10vh;
 	text-shadow: 0px 0px 10px green, 0px 0px 10px green;
+}
+
+#front {
+	background-color: gray;
+	-webkit-box-sizing: border-box;
+	overflow: hidden;
+	padding-top: 10vh;
+	margin: 0px;
+	height: 90vh;
+}
+
+#main-div {
+	background-color: white;
+	box-shadow: 0px 0px 35px rgb(0, 0, 0, 0.75);
+	overflow: auto;
+}
+
+#header {
+	width: 100%;
+	height: 50px;
+	background-color: rgb(50, 50, 50, 0.85);
+	box-shadow: 0px 0px 15px rgb(0, 0, 0, 0.6);
+	position: fixed;
+	top: 0px;
+}
+
+.header-right {
+	position: absolute;
+	top: 50%;
+	-ms-transform: translate(50%, -50%);
+	transform: translate(50%, -50%);
+	color: white;
+	font-size: 20px;
+	font-family: Arial;
+	text-decoration: none;
+	font-weight: normal;
+	transition: font-size 500ms, text-shadow 500ms;
+}
+
+.header-right:hover {
+	font-size: 23px;
+	text-shadow: 0px 0px 5px white;
+}
+
+.header-right.header-button-1 {
+	right: 200px;
+}
+.header-right.header-button-2 {
+	right: 75px;
 }
